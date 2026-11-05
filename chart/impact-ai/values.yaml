@@ -1,0 +1,219 @@
+# SPDX-License-Identifier: Apache-2.0
+# impact.ai cluster kit. Install (the command Cover your AI in impact.ai shows):
+#
+#   helm upgrade --install impact-ai oci://ghcr.io/impact-ai/charts/impact-ai \
+#     -n impact-ai --create-namespace \
+#     --set-string product.id=<product> --set-string ingest.endpoint=<ingest origin> --set-string cluster.name=<name> \
+#     --set-string install.token=<one-time install token>
+#
+# The cluster trades the token for its own ingest key inside the cluster (a pre-install and pre-upgrade hook), so nobody
+# copies, pastes or types a key. To give the key yourself instead (GitOps, an existing Secret), use ingest.key or
+# ingest.existingSecret and leave install.token empty.
+#
+# Values you keep across upgrades: helm upgrade --reset-then-reuse-values (Helm 3.14 or later), or pass the same --set
+# flags again. Not --reuse-values: it keeps the image digests of the release before. A token that was used stays in the
+# release values and does nothing when it is used again.
+
+product:
+  # The impact.ai product this cluster reports to. One cluster reports to one product: installing for another product
+  # is refused and names the first one.
+  id: ""
+
+ingest:
+  # Origin of the impact.ai ingest host, without a path: https://ingest.example.impact.ai (the chart adds /v1/traces
+  # and /v1/inventory).
+  endpoint: ""
+  # The ingest key of the product, one per install, when you give it yourself instead of an install token. Pass it on
+  # standard input so it stays out of shell history:
+  #   --set-file ingest.key=/dev/stdin
+  # It is kept in a Kubernetes Secret (and, like every Helm value, in the release record).
+  key: ""
+  # Or name a Secret in the release namespace that already holds the key under the key `ingest-key`.
+  existingSecret: ""
+  # For a test against a mock ingest that has no certificate, and for nothing else: lets the endpoint be http://. The ingest
+  # key and the install token would cross the network in clear. impact.ai is https, and the chart refuses http without this.
+  allowInsecureHttp: false
+
+install:
+  # The one-time install token of the command Cover your AI shows: valid for 15 minutes and for one use. The chart trades
+  # it inside the cluster for this cluster's own ingest key, which only a Secret of this cluster holds (no Helm value,
+  # no release record). Use it instead of ingest.key and ingest.existingSecret, not with them. Leave it empty to give the
+  # key yourself.
+  token: ""
+  # For the chart's own tests only: lets an install token render when there is no cluster to look in (helm template,
+  # Argo CD, helm install --dry-run). A token install made from such a render would apply its hooks as plain objects, so
+  # the chart refuses it; GitOps gives the key instead (ingest.existingSecret).
+  allowRenderWithoutCluster: false
+
+cluster:
+  # Shown in impact.ai next to the cluster ID. Optional.
+  name: ""
+  # The cluster's ID: the UID of its kube-system namespace. Looked up when empty. Set it when the chart is rendered
+  # without access to the cluster (helm template, Argo CD):
+  #   --set cluster.uid=$(kubectl get namespace kube-system -o jsonpath='{.metadata.uid}')
+  uid: ""
+  # The provider's own ID of the cluster, for example the EKS cluster's ARN:
+  #   arn:aws:eks:eu-west-1:012345678901:cluster/prod-eks
+  # Optional. Added to the resource of every span as cloud.resource_id and sent in the inventory as cluster.arn.
+  arn: ""
+
+# The cloud the cluster runs in. Optional; Cover your AI fills these in when it has discovered the cluster. They give
+# spans an account and a region on nodes that block the instance metadata service, and the inventory the same. Give
+# them with --set-string: an account ID can start with a zero.
+cloud:
+  # aws, azure or gcp.
+  provider: ""
+  # The AWS account ID, the Azure subscription ID or the Google Cloud project.
+  accountId: ""
+  # For example eu-west-1, westeurope or europe-west1. Replaces the region the reporter reads from the nodes.
+  region: ""
+
+namespaces:
+  # Namespaces the kit covers. Empty: all of them except the excluded ones. The system namespaces (kube-system,
+  # kube-public, kube-node-lease) and the namespace of this release are never covered.
+  include: []
+  exclude: []
+
+images:
+  # Pull policy of every kit pod.
+  pullPolicy: IfNotPresent
+  # Digests of python, nodejs and reporter are written here by make release. The two upstream images are pinned by digest
+  # too.
+  python:
+    repository: ghcr.io/impact-ai/autoinstrumentation-python
+    tag: ""
+    digest: ""
+  reporter:
+    repository: ghcr.io/impact-ai/kubernetes-reporter
+    tag: ""
+    digest: ""
+  collector:
+    # The core distribution (otelcol), not the one with every contributed component: the gateway needs six components and
+    # the core image has all of them, without the libraries the others pull in.
+    repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector
+    tag: "0.164.0"
+    digest: sha256:28b6d41ac51bff6b41ba5e8fe503569ffb9d6a1ea90f7a78419e86f34e44f750
+  # The Node.js instrumentation. The release writes its tag and digest.
+  nodejs:
+    repository: ghcr.io/impact-ai/autoinstrumentation-nodejs
+    tag: ""
+    digest: ""
+
+# One value points every image of the kit (and the Operator's) at a mirror: it replaces the registry host,
+# so ghcr.io/impact-ai/autoinstrumentation-python becomes <imageRegistry>/impact-ai/autoinstrumentation-python.
+global:
+  imageRegistry: ""
+
+imagePullSecrets: []
+nodeSelector: {}
+tolerations: []
+priorityClassName: ""
+
+reporter:
+  # How often the cluster's workloads are reported.
+  interval: 5m
+  resources:
+    requests: {cpu: 20m, memory: 32Mi}
+    limits: {memory: 128Mi}
+
+gateway:
+  # Receives spans from the injected workloads, adds the cluster's ID and forwards them to ingest with the key.
+  replicas: 1
+  # The memory request is the gateway's usual working set (107 to 142 MB measured). The chart sets GOMEMLIMIT to 80% of
+  # the memory limit, so that an ingest outage under load makes the gateway refuse spans instead of running out of memory.
+  resources:
+    requests: {cpu: 50m, memory: 128Mi}
+    limits: {memory: 256Mi}
+
+instrumentation:
+  python:
+    # The init container the Operator adds to an annotated pod: it copies the instrumentation into a volume.
+    resources:
+      requests: {cpu: 10m, memory: 16Mi}
+      limits: {cpu: 200m, memory: 64Mi}
+  nodejs:
+    # The same for Node.js, once the release has a Node.js image.
+    resources:
+      requests: {cpu: 10m, memory: 16Mi}
+      limits: {cpu: 200m, memory: 64Mi}
+
+cover:
+  # Automatic coverage: a pod that adds the injection annotation to the pods of the workloads impact.ai lists, as they are
+  # created. No workload object changes and nothing restarts: a workload is covered at its next rollout. The pod has no
+  # Kubernetes permission. auto: installed with the Operator when an install token installed the kit and no image mirror
+  # (global.imageRegistry) is set, because the init container a covered pod gets is pulled from the mirror and the
+  # workloads may not pull from it; "true": always (with the Operator), the value to set behind a mirror the workloads
+  # pull from; "false": never. Whether it covers anything is the cluster's setting in Cover your AI.
+  enabled: auto
+  replicas: 1
+  # How often it asks impact.ai for the list of workloads to cover.
+  pollInterval: 1m
+  # The name of its webhook configuration. Kubernetes runs mutating webhook configurations in name order; this one sorts
+  # before the Operator's. Correctness does not depend on the order (the Operator's pod webhook is called again if a
+  # later webhook changed the pod); the end-to-end tests flip it on purpose.
+  webhookConfigName: impact-ai-cover
+  # Seconds the API server waits for its webhook before it lets the pod start without the annotation. The pod answers
+  # from memory and calls nothing, so 2 is plenty; when the path to the pod drops packets every pod creation in a covered
+  # namespace waits this long, which is why it is not the Operator's webhook.timeoutSeconds.
+  timeoutSeconds: 2
+  resources:
+    requests: {cpu: 10m, memory: 24Mi}
+    limits: {memory: 64Mi}
+
+webhook:
+  # The Operator's webhooks fail open: if the Operator is down or slow, pods start without injection. Only Ignore is
+  # allowed. The cover pod's webhook has its own timeout (cover.timeoutSeconds).
+  failurePolicy: Ignore
+  timeoutSeconds: 5
+
+operator:
+  # auto: install the Operator and the Instrumentation resource unless another injector (another OpenTelemetry Operator,
+  # the AWS CloudWatch Observability add-on, Datadog or Dynatrace) already owns the cluster; then only the reporter and
+  # the gateway are installed. "true" always installs it, "false" never.
+  install: auto
+  # Everything below configures the vendored OpenTelemetry Operator chart (charts/opentelemetry-operator).
+  fullnameOverride: impact-ai-operator
+  nameOverride: opentelemetry-operator
+  manager:
+    image:
+      repository: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator
+      tag: "0.162.0@sha256:771d341d89b2c0a31580293c0a9e09598e2c425b6cf342d31b91da16c2b952d9"
+    # Only the Instrumentation kind is installed, so the collector CRDs are expected to be missing.
+    ignoreMissingCollectorCRDs: true
+    collectorImage:
+      repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector
+      tag: "0.164.0@sha256:28b6d41ac51bff6b41ba5e8fe503569ffb9d6a1ea90f7a78419e86f34e44f750"
+    targetAllocatorImage: {repository: "", tag: ""}
+    # Python and Node.js only. The release writes the Node.js image (images.nodejs).
+    extraArgs:
+      - --enable-java-instrumentation=false
+      - --enable-nodejs-instrumentation=true
+      - --enable-dotnet-instrumentation=false
+      - --enable-apache-httpd-instrumentation=false
+    resources:
+      requests: {cpu: 20m, memory: 64Mi}
+      limits: {memory: 256Mi}
+    serviceAccount:
+      name: impact-ai-operator
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities: {drop: [ALL]}
+      runAsNonRoot: true
+      seccompProfile: {type: RuntimeDefault}
+    # The root file system is read-only; the manager writes its self-signed metrics certificate under /tmp.
+    extraVolumes:
+      - name: tmp
+        emptyDir: {}
+    extraVolumeMounts:
+      - name: tmp
+        mountPath: /tmp
+  # The kit renders the webhooks, their certificate and the CRD itself.
+  crds: {create: false}
+  admissionWebhooks:
+    create: false
+    secretName: impact-ai-operator-webhook-cert
+    certManager: {enabled: false}
+    autoGenerateCert: {enabled: false}
+  nodeSelector:
+    kubernetes.io/os: linux

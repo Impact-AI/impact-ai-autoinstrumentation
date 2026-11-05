@@ -1,0 +1,176 @@
+{
+  "kind": "JobList",
+  "apiVersion": "v1",
+  "metadata": {
+    "resourceVersion": "12345"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "nightly-report-29000",
+        "namespace": "batch",
+        "uid": "batch-nightly-report-29000-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-10-20T08:00:00Z",
+        "labels": {
+          "app": "nightly-report-29000"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "3"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "v1",
+            "kind": "CronJob",
+            "name": "nightly-report",
+            "uid": "owner-uid",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "x"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "report",
+                "image": "registry.example.com/batch/report:3.0",
+                "imagePullPolicy": "IfNotPresent",
+                "resources": {
+                  "limits": {
+                    "memory": "512Mi"
+                  }
+                },
+                "command": [
+                  "python"
+                ],
+                "args": [
+                  "report.py",
+                  "--token",
+                  "sk-live-abcdefghijklmnop"
+                ],
+                "env": [
+                  {
+                    "name": "AZURE_OPENAI_API_KEY",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "azure-openai",
+                        "key": "key"
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "restartPolicy": "Always",
+            "serviceAccountName": "batch"
+          }
+        }
+      },
+      "status": {
+        "active": 1
+      }
+    },
+    {
+      "metadata": {
+        "name": "backfill",
+        "namespace": "batch",
+        "uid": "batch-backfill-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-10-20T08:00:00Z",
+        "labels": {
+          "app": "backfill"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "3"
+        }
+      },
+      "spec": {
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "x"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "job",
+                "image": "registry.example.com/batch/job:1",
+                "imagePullPolicy": "IfNotPresent",
+                "resources": {
+                  "limits": {
+                    "memory": "512Mi"
+                  }
+                }
+              }
+            ],
+            "restartPolicy": "Always",
+            "serviceAccountName": "batch"
+          }
+        },
+        "parallelism": 2
+      },
+      "status": {
+        "active": 2,
+        "ready": 1
+      }
+    },
+    {
+      "metadata": {
+        "name": "old-finished",
+        "namespace": "batch",
+        "uid": "batch-old-finished-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-10-20T08:00:00Z",
+        "labels": {
+          "app": "old-finished"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "3"
+        }
+      },
+      "spec": {
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "x"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "job",
+                "image": "registry.example.com/batch/job:1",
+                "imagePullPolicy": "IfNotPresent",
+                "resources": {
+                  "limits": {
+                    "memory": "512Mi"
+                  }
+                }
+              }
+            ],
+            "restartPolicy": "Always",
+            "serviceAccountName": "batch"
+          }
+        }
+      },
+      "status": {
+        "completionTime": "2026-11-03T08:00:00Z",
+        "conditions": [
+          {
+            "type": "Complete",
+            "status": "True",
+            "lastTransitionTime": "2026-11-03T08:00:00Z"
+          }
+        ]
+      }
+    }
+  ]
+}

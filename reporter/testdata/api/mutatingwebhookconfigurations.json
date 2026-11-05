@@ -1,0 +1,81 @@
+{
+  "kind": "MutatingWebhookConfigurationList",
+  "apiVersion": "v1",
+  "metadata": {
+    "resourceVersion": "12345"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "cert-manager-webhook",
+        "annotations": {
+          "cert-manager.io/inject-ca-from-secret": "cert-manager/cert-manager-webhook-ca"
+        }
+      },
+      "webhooks": [
+        {
+          "name": "webhook.cert-manager.io",
+          "admissionReviewVersions": [
+            "v1"
+          ],
+          "failurePolicy": "Ignore",
+          "sideEffects": "None",
+          "clientConfig": {
+            "caBundle": "TOP-SECRET-CA-BUNDLE",
+            "service": {
+              "name": "cert-manager-webhook",
+              "namespace": "cert-manager",
+              "path": "/mutate",
+              "port": 443
+            }
+          }
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "name": "impact-cluster-kit-opentelemetry-operator-mutation",
+        "annotations": {
+          "meta.helm.sh/release-name": "impact-cluster-kit",
+          "meta.helm.sh/release-namespace": "impact-system"
+        }
+      },
+      "webhooks": [
+        {
+          "name": "minstrumentation.kb.io",
+          "admissionReviewVersions": [
+            "v1"
+          ],
+          "failurePolicy": "Ignore",
+          "sideEffects": "None",
+          "clientConfig": {
+            "caBundle": "TOP-SECRET-CA-BUNDLE",
+            "service": {
+              "name": "impact-cluster-kit-opentelemetry-operator-webhook",
+              "namespace": "impact-system",
+              "path": "/mutate-opentelemetry-io-v1alpha1-instrumentation",
+              "port": 443
+            }
+          }
+        },
+        {
+          "name": "mpod.kb.io",
+          "admissionReviewVersions": [
+            "v1"
+          ],
+          "failurePolicy": "Ignore",
+          "sideEffects": "None",
+          "clientConfig": {
+            "caBundle": "TOP-SECRET-CA-BUNDLE",
+            "service": {
+              "name": "impact-cluster-kit-opentelemetry-operator-webhook",
+              "namespace": "impact-system",
+              "path": "/mutate-v1-pod",
+              "port": 443
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

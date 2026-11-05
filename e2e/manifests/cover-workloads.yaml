@@ -1,0 +1,158 @@
+# SPDX-License-Identifier: Apache-2.0
+# Workloads for the automatic coverage tests (e2e/test_8_auto_cover.py), in namespaces of their own. They run `sleep` in the
+# mock's Python image: the Operator injects any container of an annotated pod, and nothing here needs a real application.
+# The Job and the CronJob's Job are created by the test, after the list names them (a Job cannot be covered afterwards).
+apiVersion: v1
+kind: Namespace
+metadata: {name: auto}
+---
+# A namespace that opted out as a whole.
+apiVersion: v1
+kind: Namespace
+metadata: {name: auto-optout, labels: {impact.ai/opt-out: "true"}}
+---
+# Listed, one of each kind that has pods which come and go.
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: web, namespace: auto}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: web}}
+  template:
+    metadata: {labels: {app: web}}
+    spec:
+      containers:
+        - name: worker
+          image: localhost/impact-instrumentation/mock:dev
+          imagePullPolicy: IfNotPresent
+          command: ["sleep", "infinity"]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: {name: db, namespace: auto}
+spec:
+  serviceName: db
+  replicas: 1
+  selector: {matchLabels: {app: db}}
+  template:
+    metadata: {labels: {app: db}}
+    spec:
+      containers:
+        - name: worker
+          image: localhost/impact-instrumentation/mock:dev
+          imagePullPolicy: IfNotPresent
+          command: ["sleep", "infinity"]
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata: {name: agent, namespace: auto}
+spec:
+  selector: {matchLabels: {app: agent}}
+  template:
+    metadata: {labels: {app: agent}}
+    spec:
+      containers:
+        - name: worker
+          image: localhost/impact-instrumentation/mock:dev
+          imagePullPolicy: IfNotPresent
+          command: ["sleep", "infinity"]
+---
+# A CronJob that never fires by itself: the test makes one of its Jobs, named as the CronJob controller names them.
+apiVersion: batch/v1
+kind: CronJob
+metadata: {name: nightly, namespace: auto}
+spec:
+  schedule: "0 3 * * *"
+  suspend: true
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: report
+              image: localhost/impact-instrumentation/mock:dev
+              imagePullPolicy: IfNotPresent
+              command: ["sleep", "3600"]
+---
+# Opted out: by a label on its pods, by an annotation on its pods, by its namespace.
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: optout-label, namespace: auto}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: optout-label}}
+  template:
+    metadata: {labels: {app: optout-label, impact.ai/opt-out: "true"}}
+    spec:
+      containers:
+        - name: worker
+          image: localhost/impact-instrumentation/mock:dev
+          imagePullPolicy: IfNotPresent
+          command: ["sleep", "infinity"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: optout-annotation, namespace: auto}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: optout-annotation}}
+  template:
+    metadata:
+      labels: {app: optout-annotation}
+      annotations: {impact.ai/opt-out: "true"}
+    spec:
+      containers:
+        - name: worker
+          image: localhost/impact-instrumentation/mock:dev
+          imagePullPolicy: IfNotPresent
+          command: ["sleep", "infinity"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: optout-ns, namespace: auto-optout}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: optout-ns}}
+  template:
+    metadata: {labels: {app: optout-ns}}
+    spec:
+      containers:
+        - name: worker
+          image: localhost/impact-instrumentation/mock:dev
+          imagePullPolicy: IfNotPresent
+          command: ["sleep", "infinity"]
+---
+# The customer already asked the Operator to inject it: the cover pod adds nothing and the Operator injects once.
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: own-inject, namespace: auto}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: own-inject}}
+  template:
+    metadata:
+      labels: {app: own-inject}
+      annotations: {instrumentation.opentelemetry.io/inject-python: impact-ai/impact}
+    spec:
+      containers:
+        - name: worker
+          image: localhost/impact-instrumentation/mock:dev
+          imagePullPolicy: IfNotPresent
+          command: ["sleep", "infinity"]
+---
+# Not on the list.
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: unlisted, namespace: auto}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: unlisted}}
+  template:
+    metadata: {labels: {app: unlisted}}
+    spec:
+      containers:
+        - name: worker
+          image: localhost/impact-instrumentation/mock:dev
+          imagePullPolicy: IfNotPresent
+          command: ["sleep", "infinity"]

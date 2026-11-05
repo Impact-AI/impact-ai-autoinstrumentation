@@ -1,0 +1,14 @@
+{
+  "name": "impact-instrumentation-nodejs-tests",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Test-only dependencies of the Node.js package's unit tests: the official OpenTelemetry encoder is the oracle for the exporter's JSON, and the SDK makes the spans it is fed.",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@opentelemetry/api": "1.10.0",
+    "@opentelemetry/core": "3.0.0",
+    "@opentelemetry/otlp-transformer": "0.300.0",
+    "@opentelemetry/resources": "3.0.0",
+    "@opentelemetry/sdk-trace": "3.0.0"
+  }
+}

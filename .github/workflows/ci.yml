@@ -1,0 +1,68 @@
+# Proposed .github/workflows/ci.yml of the kit (the code owner's file), for v0.3.0. What changes against the file in main,
+# with the times of the pull request (GitHub-hosted ubuntu-latest, queue time not counted):
+#
+#   test        15 -> 20 minutes. It took 10.6 to 12.5 minutes (runs 41859711213, 41852762649, 41867224302); the old limit left 2.5.
+#   e2e         25 -> 35 minutes, and it no longer waits for `test`. The suite grew with the token exchange, automatic
+#               coverage, the Operator's role and the failure cases: it took 24.5 minutes on the last run (41867224302:
+#               build the images 4.1, create the cluster 0.8, load the images 1.8, e2e/ 12.2, then the tracer, agent,
+#               Node.js and gateway container tests 4.8), against the 25 of the old limit. The jobs are independent (each
+#               builds its own images), so a pull request takes as long as the slowest job instead of `test` plus `e2e`.
+#               Splitting the container tests into a job of their own would save about 5 minutes of waiting and cost
+#               about 8 minutes of runner time: not proposed.
+#   e2e-oldest  new: the Kubernetes part of the suite (what `make e2e` runs when E2E_NODE_IMAGE is set) on Kubernetes 1.27,
+#               the oldest version the chart supports: 17.9 minutes (run 41852762649). It proves the Operator's narrow role
+#               there: the suite fails when the Operator's log holds a "forbidden".
+#   overhead    new: the overhead of all eleven runtimes and servers against the budget (`make overhead`), about ten
+#               minutes by the estimate of its author, on a runner of its own so that nothing else disturbs the numbers;
+#               the report goes to the job summary.
+#
+# If `e2e-oldest` and `overhead` should block a merge, add them to the branch ruleset next to `test` and `e2e`.
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+      - name: Unit tests, chart checks and image tests
+        run: make ci
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+      - name: End to end on a kind cluster (Kubernetes 1.34), then the tracer, agent, Node.js and gateway container tests
+        run: make e2e
+  e2e-oldest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      # kind v0.33's node image for Kubernetes 1.27, the oldest version the chart supports (kubeVersion in Chart.yaml).
+      E2E_NODE_IMAGE: docker.io/kindest/node:v1.27.16@sha256:2d21a61643eafc439905e18705b8186f3296384750a835ad7a005dceb9546d20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+      - name: End to end on a kind cluster (Kubernetes 1.27), the Kubernetes part of the suite
+        run: make e2e
+  overhead:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+      - name: Overhead of the injected workloads (+1.5 ms per model call, +40 MiB, +2 s)
+        run: make overhead
+      - name: The report
+        if: always()
+        run: cat build/overhead/OVERHEAD.md >> "$GITHUB_STEP_SUMMARY" || true

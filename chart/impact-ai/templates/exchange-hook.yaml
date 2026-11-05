@@ -1,0 +1,191 @@
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+{{- if include "cluster-kit.tokenInstall" . }}
+{{- /*
+The install token (install.token) is the only credential of the command Cover your AI shows. Before anything else is
+installed or upgraded, a Job trades it for this cluster's own ingest key: `reporter exchange` makes the key with
+crypto/rand, stores it in the Secret below before it asks, and sends impact.ai only its hash. The key therefore exists
+only in that Secret: in no Helm value, no release record and no pod spec, and nobody copies, pastes or types it.
+
+* The token reaches the Job through a Secret made for the hook and mounted as a file, never through the pod spec. Helm
+  keeps the value in the release record like every value; once used or expired it opens nothing.
+* The Secret for the key is made by Helm, empty, as a hook resource of its own before the Job runs (the first resource
+  below, and only while it does not exist). The Job's Role may therefore only read, patch and delete that one Secret,
+  named: it holds no `create`, which RBAC cannot restrict to a name, so it can make no Secret and read or change no
+  other. It deletes the Secret in one case, a refused first install, so that a refusal leaves nothing of the kit; a
+  Secret that holds a working key it never deletes. Helm never deletes the Secret itself (`hook-failed` is the one
+  delete policy, and a Secret hook cannot fail after it exists), so the key survives upgrades and a refused retry; the
+  uninstall hook deletes it.
+* The ServiceAccount, the Role, the Job and the Secret of the token are deleted when the hook ends, whether it succeeded
+  or not.
+* Run again with the same token (`helm upgrade --reset-then-reuse-values`), the Job sees that the Secret carries that
+  token's fingerprint and does nothing. With the token of a command that failed halfway, it finds the key it had stored and
+  sends the same hash, which impact.ai answers with replayed:true instead of spending the token twice.
+* When impact.ai refuses (token used, expired, cancelled, for another product or cluster) the Job prints one plain
+  sentence and fails, and deletes the Secret of the key when it holds no working key; helm.sh/hook-output-log-policy
+  makes Helm print the Job's log with the failure (Helm 3.18 or later). Nothing was installed beyond the empty namespace
+  and the Instrumentation definition Helm applies before any hook.
+*/ -}}
+{{- $hook := dict "helm.sh/hook" "pre-install,pre-upgrade" "helm.sh/hook-delete-policy" "before-hook-creation,hook-succeeded,hook-failed" }}
+{{- $name := include "cluster-kit.exchangeName" . }}
+{{- $secret := include "cluster-kit.keySecretName" . }}
+{{- if not (lookup "v1" "Secret" .Release.Namespace $secret) }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $secret }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ingest-key
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-40"
+    # Not before-hook-creation, the default: that would delete the Secret, and the key in it, before an upgrade makes it
+    # again. hook-failed alone is a policy that names no other: Helm leaves the Secret where it is.
+    helm.sh/hook-delete-policy: hook-failed
+type: Opaque
+---
+{{- end }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "cluster-kit.installTokenName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml (merge (dict "helm.sh/hook-weight" "-30") $hook) | nindent 4 }}
+type: Opaque
+stringData:
+  token: {{ include "cluster-kit.installToken" . | quote }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml (merge (dict "helm.sh/hook-weight" "-30") $hook) | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml (merge (dict "helm.sh/hook-weight" "-30") $hook) | nindent 4 }}
+rules:
+  # The one Secret the key lives in, by name: read it, write the key into it, and delete it when a first install is
+  # refused (the Secret then holds no working key). No create (a rule that creates cannot name its Secret), no list or
+  # watch. The trivy check KSV-0113 reports this rule; the chart README ("Permissions") gives the reason it stays.
+  - apiGroups: [""]
+    resources: [secrets]
+    resourceNames: [{{ $secret }}]
+    verbs: [get, patch, delete]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml (merge (dict "helm.sh/hook-weight" "-20") $hook) | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $name }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ $name }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+    {{- include "cluster-kit.selectorLabels" (dict "name" "exchange" "root" .) | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded,hook-failed
+    # Helm prints the log of a failed hook: that is where the sentence for the customer comes out.
+    helm.sh/hook-output-log-policy: hook-failed
+spec:
+  # impact.ai's answer is final, and the command can be run again: no retries by Kubernetes. The exchange itself waits
+  # out a busy impact.ai (Retry-After) for up to two minutes.
+  backoffLimit: 0
+  activeDeadlineSeconds: 240
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        {{- include "cluster-kit.selectorLabels" (dict "name" "exchange" "root" .) | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ $name }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      {{- include "cluster-kit.pullSecrets" . | nindent 6 }}
+      {{- include "cluster-kit.podPlacement" . | nindent 6 }}
+      containers:
+        - name: exchange
+          image: {{ include "cluster-kit.image" (dict "name" "reporter" "root" .) | quote }}
+          imagePullPolicy: {{ .Values.images.pullPolicy }}
+          # Every argument is quoted as a whole: a value with a newline or a ' #' in it stays one argument. A second
+          # --ingest-endpoint would win over the first and take the token to another host.
+          args:
+            - exchange
+            - {{ printf "--ingest-endpoint=%s" (include "cluster-kit.ingestOrigin" .) | quote }}
+            {{- if .Values.ingest.allowInsecureHttp }}
+            - --allow-insecure-ingest
+            {{- end }}
+            - {{ printf "--product-id=%s" .Values.product.id | quote }}
+            - {{ printf "--secret-name=%s" $secret | quote }}
+            - {{ printf "--cluster-uid=%s" (include "cluster-kit.clusterUID" .) | quote }}
+            - {{ printf "--chart-version=%s" .Chart.Version | quote }}
+            {{- with .Values.cluster.name }}
+            - {{ printf "--cluster-name=%s" . | quote }}
+            {{- end }}
+            {{- with .Values.cluster.arn }}
+            - {{ printf "--cluster-arn=%s" . | quote }}
+            {{- end }}
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {memory: 64Mi}
+          terminationMessagePolicy: FallbackToLogsOnError
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: install-token
+              mountPath: /var/run/secrets/impact-install
+              readOnly: true
+      volumes:
+        - name: install-token
+          secret:
+            secretName: {{ include "cluster-kit.installTokenName" . }}
+            items:
+              - key: token
+                path: token
+{{- end }}

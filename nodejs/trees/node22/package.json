@@ -1,0 +1,28 @@
+{
+  "name": "impact-instrumentation-payload-node22",
+  "version": "0.0.0",
+  "private": true,
+  "description": "What the Node.js image carries for Node 22.15 and later: the OpenTelemetry JavaScript 3.x line (the release train of auto-instrumentations-node 0.82.0) and OpenInference. Resolved to package-lock.json with the integrity hash of every tarball.",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@arizeai/openinference-instrumentation-openai": "4.4.2",
+    "@arizeai/openinference-instrumentation-openai-v4": "npm:@arizeai/openinference-instrumentation-openai@2.3.1",
+    "@opentelemetry/api": "1.10.0",
+    "@opentelemetry/context-async-hooks": "3.0.0",
+    "@opentelemetry/core": "3.0.0",
+    "@opentelemetry/instrumentation": "0.300.0",
+    "@opentelemetry/instrumentation-express": "0.72.0",
+    "@opentelemetry/instrumentation-http": "0.300.0",
+    "@opentelemetry/instrumentation-koa": "0.72.0",
+    "@opentelemetry/resources": "3.0.0",
+    "@opentelemetry/sdk-trace": "3.0.0",
+    "openai": "file:../../shims/openai"
+  },
+  "overrides": {
+    "@opentelemetry/api": "1.10.0",
+    "@opentelemetry/instrumentation": "0.300.0",
+    "@arizeai/openinference-instrumentation-openai-v4": {
+      "@opentelemetry/core": "2.12.0"
+    }
+  }
+}

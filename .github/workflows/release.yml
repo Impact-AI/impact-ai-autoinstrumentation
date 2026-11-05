@@ -1,0 +1,73 @@
+name: release
+on:
+  push:
+    tags: ["v*"]
+# Nothing is granted to the workflow as a whole; the job asks for what signing needs.
+permissions: {}
+concurrency:
+  group: release
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # v0.2.1 took 3 minutes. The release now builds the Node.js image and measures the overhead of every runtime
+    # (about ten minutes) before it pushes, then signs and verifies.
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write      # push the images and the chart to ghcr.io
+      id-token: write      # cosign signs keyless with this job's identity; GitHub's attestations need it too
+      attestations: write  # the build provenance of the images and the chart
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+      - name: Build, push, sign and package images and chart
+        run: make release
+        env:
+          REGISTRY: ghcr.io/${{ github.repository }}
+          VERSION: ${{ github.ref_name }}
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: The digests and names of what was pushed
+        id: digests
+        # make release writes build/release/<key>.digest and <key>.name: the names are under the publish root
+        # (ghcr.io/impact-ai/autoinstrumentation-python, ... , ghcr.io/impact-ai/charts/impact-ai), in lowercase
+        run: |
+          for name in python nodejs reporter chart; do
+            echo "$name=$(cat "build/release/$name.digest")" >> "$GITHUB_OUTPUT"
+            echo "$name-name=$(cat "build/release/$name.name")" >> "$GITHUB_OUTPUT"
+          done
+      - name: Build provenance of the python image
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-name: ${{ steps.digests.outputs.python-name }}
+          subject-digest: ${{ steps.digests.outputs.python }}
+          push-to-registry: true
+          create-storage-record: false  # needs artifact-metadata: write, which signing does not
+      - name: Build provenance of the nodejs image
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-name: ${{ steps.digests.outputs.nodejs-name }}
+          subject-digest: ${{ steps.digests.outputs.nodejs }}
+          push-to-registry: true
+          create-storage-record: false  # needs artifact-metadata: write, which signing does not
+      - name: Build provenance of the reporter image
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-name: ${{ steps.digests.outputs.reporter-name }}
+          subject-digest: ${{ steps.digests.outputs.reporter }}
+          push-to-registry: true
+          create-storage-record: false  # needs artifact-metadata: write, which signing does not
+      - name: Build provenance of the chart
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-name: ${{ steps.digests.outputs.chart-name }}
+          subject-digest: ${{ steps.digests.outputs.chart }}
+          push-to-registry: true
+          create-storage-record: false  # needs artifact-metadata: write, which signing does not
+      - name: Verify the release the way a customer does
+        run: make verify-release
+        env:
+          REGISTRY: ghcr.io/${{ github.repository }}
+          VERSION: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}

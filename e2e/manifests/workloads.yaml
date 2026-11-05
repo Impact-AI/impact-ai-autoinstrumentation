@@ -1,0 +1,187 @@
+# SPDX-License-Identifier: Apache-2.0
+# A cluster as a customer might have it. Applied with kubectl apply, so every object carries a
+# kubectl.kubernetes.io/last-applied-configuration annotation holding this very text, planted values included.
+apiVersion: v1
+kind: Namespace
+metadata: {name: shop}
+---
+apiVersion: v1
+kind: Namespace
+metadata: {name: edge}
+---
+apiVersion: v1
+kind: Secret
+metadata: {name: llm-keys, namespace: shop}
+stringData:
+  anthropic: sk-e2e-planted-secret-anthropic-0123456789
+---
+apiVersion: v1
+kind: Secret
+metadata: {name: openai-credentials, namespace: shop}
+stringData:
+  OPENAI_ORG: org-e2e-planted-secret
+---
+# AI evidence (variable names), a literal key, a key in an argument, a Secret reference and a Secret source.
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: support-assistant, namespace: shop}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: support-assistant}}
+  template:
+    metadata: {labels: {app: support-assistant}}
+    spec:
+      containers:
+        - name: app
+          image: localhost/impact-instrumentation/fixture-app:3.12
+          imagePullPolicy: IfNotPresent
+          command: ["python", "run_asgi.py"]
+          args: ["--api-key=sk-e2e-planted-arg-0123456789abcdef"]
+          env:
+            - {name: STUB_URL, value: "http://theirs.impact-mock.svc:8080"}
+            - {name: OPENAI_API_KEY, value: "sk-e2e-planted-env-0123456789abcdef"}
+            - name: ANTHROPIC_API_KEY
+              valueFrom: {secretKeyRef: {name: llm-keys, key: anthropic}}
+          envFrom:
+            - secretRef: {name: openai-credentials}
+          ports: [{containerPort: 8000}]
+          readinessProbe: {httpGet: {path: /healthz, port: 8000}, periodSeconds: 3}
+---
+# A tracer of its own, started in code (Datadog), exporting to the customer's agent.
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: legacy-tracer, namespace: shop}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: legacy-tracer}}
+  template:
+    metadata: {labels: {app: legacy-tracer}}
+    spec:
+      containers:
+        - name: app
+          image: localhost/impact-instrumentation/fixture-app-ddtrace:3.12
+          imagePullPolicy: IfNotPresent
+          command: ["uvicorn", "app_ddtrace:app", "--host", "0.0.0.0", "--port", "8000"]
+          env:
+            - {name: STUB_URL, value: "http://theirs.impact-mock.svc:8080"}
+            - {name: DD_TRACE_AGENT_URL, value: "http://theirs.impact-mock.svc:8080"}
+            - {name: DD_SERVICE, value: legacy-tracer}
+            - {name: DD_TRACE_STARTUP_LOGS, value: "false"}
+          ports: [{containerPort: 8000}]
+          readinessProbe: {httpGet: {path: /healthz, port: 8000}, periodSeconds: 3}
+---
+# opentelemetry-instrument in the entry point, exporting to the customer's collector.
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: own-otel, namespace: shop}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: own-otel}}
+  template:
+    metadata: {labels: {app: own-otel}}
+    spec:
+      containers:
+        - name: app
+          image: localhost/impact-instrumentation/fixture-app-otel:3.12
+          imagePullPolicy: IfNotPresent
+          command: ["opentelemetry-instrument", "uvicorn", "app_asgi:app", "--host", "0.0.0.0", "--port", "8000"]
+          env:
+            - {name: STUB_URL, value: "http://theirs.impact-mock.svc:8080"}
+            - {name: OTEL_EXPORTER_OTLP_ENDPOINT, value: "http://theirs.impact-mock.svc:8080"}
+            - {name: OTEL_EXPORTER_OTLP_PROTOCOL, value: "http/protobuf"}
+            - {name: OTEL_SERVICE_NAME, value: own-otel}
+            - {name: OTEL_METRICS_EXPORTER, value: "none"}
+            - {name: OTEL_LOGS_EXPORTER, value: "none"}
+          ports: [{containerPort: 8000}]
+          readinessProbe: {httpGet: {path: /healthz, port: 8000}, periodSeconds: 3}
+---
+# Workloads without AI evidence, of every kind the reporter lists. They cannot be scheduled (no node has the label), so
+# they are listed with their desired pods but start no containers: a small cluster keeps CI fast and light.
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: refund-worker, namespace: shop}
+spec:
+  replicas: 2
+  selector: {matchLabels: {app: refund-worker}}
+  template:
+    metadata: {labels: {app: refund-worker}}
+    spec:
+      nodeSelector: {impact.ai/e2e-never: "true"}
+      containers:
+        - name: worker
+          image: localhost/impact-instrumentation/mock:dev
+          imagePullPolicy: IfNotPresent
+          command: ["sleep", "infinity"]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: {name: vector-db, namespace: shop}
+spec:
+  serviceName: vector-db
+  replicas: 1
+  selector: {matchLabels: {app: vector-db}}
+  template:
+    metadata: {labels: {app: vector-db}}
+    spec:
+      nodeSelector: {impact.ai/e2e-never: "true"}
+      containers:
+        - name: db
+          image: localhost/impact-instrumentation/mock:dev
+          imagePullPolicy: IfNotPresent
+          command: ["sleep", "infinity"]
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata: {name: node-agent, namespace: edge}
+spec:
+  selector: {matchLabels: {app: node-agent}}
+  template:
+    metadata: {labels: {app: node-agent}}
+    spec:
+      nodeSelector: {impact.ai/e2e-never: "true"}
+      containers:
+        - name: agent
+          image: localhost/impact-instrumentation/mock:dev
+          imagePullPolicy: IfNotPresent
+          command: ["sleep", "infinity"]
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata: {name: nightly-report, namespace: edge}
+spec:
+  schedule: "0 3 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: report
+              image: localhost/impact-instrumentation/mock:dev
+              imagePullPolicy: IfNotPresent
+              command: ["true"]
+---
+apiVersion: batch/v1
+kind: Job
+metadata: {name: migrate, namespace: edge}
+spec:
+  template:
+    spec:
+      nodeSelector: {impact.ai/e2e-never: "true"}
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: localhost/impact-instrumentation/mock:dev
+          imagePullPolicy: IfNotPresent
+          command: ["sleep", "3600"]
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: debug-shell, namespace: edge}
+spec:
+  nodeSelector: {impact.ai/e2e-never: "true"}
+  containers:
+    - name: shell
+      image: localhost/impact-instrumentation/mock:dev
+      imagePullPolicy: IfNotPresent
+      command: ["sleep", "infinity"]

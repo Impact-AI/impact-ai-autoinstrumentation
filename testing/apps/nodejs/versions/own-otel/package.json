@@ -1,0 +1,11 @@
+{
+  "name": "fixture-own-otel",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "@opentelemetry/exporter-trace-otlp-http": "0.300.0",
+    "@opentelemetry/instrumentation-http": "0.300.0",
+    "@opentelemetry/sdk-node": "0.300.0",
+    "openai": "7.50.0"
+  }
+}

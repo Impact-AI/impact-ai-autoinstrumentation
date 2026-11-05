@@ -1,0 +1,60 @@
+{
+  "kind": "DaemonSetList",
+  "apiVersion": "v1",
+  "metadata": {
+    "resourceVersion": "12345"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "log-agent",
+        "namespace": "shop",
+        "uid": "shop-log-agent-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-10-20T08:00:00Z",
+        "labels": {
+          "app": "log-agent"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "3"
+        }
+      },
+      "spec": {
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "x"
+            },
+            "annotations": {
+              "admission.datadoghq.com/enabled": "false"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "agent",
+                "image": "fluent/fluent-bit:3.1",
+                "imagePullPolicy": "IfNotPresent",
+                "resources": {
+                  "limits": {
+                    "memory": "512Mi"
+                  }
+                },
+                "command": [
+                  "/fluent-bit/bin/fluent-bit"
+                ]
+              }
+            ],
+            "restartPolicy": "Always",
+            "serviceAccountName": "log-agent"
+          }
+        }
+      },
+      "status": {
+        "desiredNumberScheduled": 2,
+        "numberReady": 2,
+        "currentNumberScheduled": 2
+      }
+    }
+  ]
+}

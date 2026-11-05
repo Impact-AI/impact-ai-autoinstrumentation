@@ -1,0 +1,192 @@
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+{{- if include "cluster-kit.coverEnabled" . }}
+{{- /*
+Automatic coverage. impact.ai decides which workloads of the cluster are covered and publishes the list; this pod only
+applies it. A mutating webhook adds the injection annotation (instrumentation.opentelemetry.io/inject-python, or -nodejs)
+to the pods of the listed workloads as they are created, and the Operator, whose webhook sees the pod next, injects. No
+workload object changes: nothing restarts, and Argo CD or Flux have nothing to fight. A running pod is never touched; a
+workload is covered at its next rollout.
+
+* The pod has no Kubernetes permission and mounts no service account token: the list reaches it over HTTPS, with the
+  ingest key as bearer.
+* It fails open everywhere: failurePolicy Ignore and a short timeout on the webhook, no list means no annotation, and a
+  pod, namespace or workload labelled impact.ai/opt-out is never touched.
+* The webhook configuration is named so that it sorts before the Operator's; the Operator's pod webhook is called again
+  when a later webhook changed the pod (reinvocationPolicy, operator-webhooks.yaml), so the order does not matter.
+* The certificate is made here and reused on upgrade (cluster-kit.coverCertificate); no cert-manager.
+*/ -}}
+{{- $name := include "cluster-kit.coverName" . }}
+{{- $cert := include "cluster-kit.coverCertificate" . | fromJson }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $name }}-cert
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+  annotations:
+    # For which service the certificate was made: an upgrade reuses it only for the same one.
+    impact.ai/service: {{ printf "%s.%s" $name .Release.Namespace | quote }}
+type: kubernetes.io/tls
+data:
+  tls.crt: {{ index $cert "tls.crt" }}
+  tls.key: {{ index $cert "tls.key" }}
+  ca.crt: {{ index $cert "ca.crt" }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "cluster-kit.selectorLabels" (dict "name" "cover" "root" .) | nindent 4 }}
+  ports:
+    - name: webhook
+      port: 443
+      targetPort: webhook
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+    {{- include "cluster-kit.selectorLabels" (dict "name" "cover" "root" .) | nindent 4 }}
+spec:
+  replicas: {{ .Values.cover.replicas }}
+  selector:
+    matchLabels:
+      {{- include "cluster-kit.selectorLabels" (dict "name" "cover" "root" .) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "cluster-kit.labels" . | nindent 8 }}
+        {{- include "cluster-kit.selectorLabels" (dict "name" "cover" "root" .) | nindent 8 }}
+      annotations:
+        # A new certificate or a new key restarts the pod at once instead of when the kubelet refreshes the mounted Secret
+        # (after a refused key the pod backs off for minutes, and covers again as soon as it has the new one).
+        checksum/cert: {{ index $cert "tls.crt" | sha256sum | trunc 16 | quote }}
+        checksum/key: {{ include "cluster-kit.keyChecksum" . | quote }}
+    spec:
+      serviceAccountName: {{ $name }}
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      {{- include "cluster-kit.pullSecrets" . | nindent 6 }}
+      {{- include "cluster-kit.podPlacement" . | nindent 6 }}
+      containers:
+        - name: cover
+          image: {{ include "cluster-kit.image" (dict "name" "reporter" "root" .) | quote }}
+          imagePullPolicy: {{ .Values.images.pullPolicy }}
+          args:
+            - cover
+            - {{ printf "--ingest-endpoint=%s" (include "cluster-kit.ingestOrigin" .) | quote }}
+            {{- if .Values.ingest.allowInsecureHttp }}
+            - --allow-insecure-ingest
+            {{- end }}
+            - {{ printf "--instrumentation=%s/%s" .Release.Namespace (include "cluster-kit.instrumentationName" .) | quote }}
+            - {{ printf "--poll-interval=%s" .Values.cover.pollInterval | quote }}
+          ports:
+            - name: webhook
+              containerPort: 9443
+            - name: health
+              containerPort: 8081
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.cover.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: ingest-key
+              mountPath: /var/run/secrets/impact
+              readOnly: true
+            - name: tls
+              mountPath: /var/run/secrets/impact-cover-tls
+              readOnly: true
+            # The last list impact.ai published, kept for a container that restarts; a new pod asks again.
+            - name: state
+              mountPath: /var/lib/impact-cover
+      volumes:
+        - name: ingest-key
+          secret:
+            secretName: {{ include "cluster-kit.keySecretName" . }}
+            items:
+              - key: ingest-key
+                path: ingest-key
+        - name: tls
+          secret:
+            secretName: {{ $name }}-cert
+            items:
+              - key: tls.crt
+                path: tls.crt
+              - key: tls.key
+                path: tls.key
+        - name: state
+          emptyDir:
+            sizeLimit: 8Mi
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: {{ .Values.cover.webhookConfigName }}
+  labels:
+    {{- include "cluster-kit.clusterLabels" . | nindent 4 }}
+webhooks:
+  - name: cover.pods.impact.ai
+    admissionReviewVersions: [v1]
+    sideEffects: None
+    failurePolicy: {{ .Values.webhook.failurePolicy }}
+    # Its own, short timeout: the pod answers from memory, and a path that drops packets costs every pod creation this much.
+    timeoutSeconds: {{ .Values.cover.timeoutSeconds }}
+    # The Operator's namespaces, and the ones that opted out; pods that opted out are skipped here too. An opt-out
+    # annotation on a pod is read by the webhook itself: a selector matches labels.
+    namespaceSelector:
+      {{- include "cluster-kit.coverNamespaceSelector" . | nindent 6 }}
+    objectSelector:
+      matchExpressions:
+        - key: impact.ai/opt-out
+          operator: DoesNotExist
+    clientConfig:
+      caBundle: {{ index $cert "ca.crt" }}
+      service:
+        name: {{ $name }}
+        namespace: {{ .Release.Namespace }}
+        path: /mutate
+        port: 443
+    rules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE]
+        resources: [pods]
+        scope: Namespaced
+{{- end }}

@@ -1,0 +1,603 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "product",
+    "ingest"
+  ],
+  "properties": {
+    "product": {
+      "type": "object",
+      "description": "The impact.ai product this cluster reports to; the group has no default and the command Cover your AI shows fills it in.",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The impact.ai product this cluster reports to, which Cover your AI puts in the command; there is no default, and you change it only to move the cluster to another product after uninstalling the first one.",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        }
+      }
+    },
+    "ingest": {
+      "type": "object",
+      "description": "Where this cluster sends what it finds and how it proves who it is; the group has no default and Cover your AI sets the endpoint.",
+      "required": [
+        "endpoint"
+      ],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "description": "The address of the impact.ai ingest host without a path, such as https://ingest.example.com, which Cover your AI puts in the command; there is no default, and you change it only to send to another environment.",
+          "pattern": "^https?://[A-Za-z0-9.-]+(:[0-9]+)?/?$"
+        },
+        "key": {
+          "type": "string",
+          "description": "The ingest key of this cluster, passed on standard input so it stays out of shell history; the default is empty, and you set it only to install with a key you were given instead of an install token."
+        },
+        "existingSecret": {
+          "type": "string",
+          "description": "The name of a Secret in the release namespace that already holds the key under the entry ingest-key; the default is empty, which lets the chart keep the key itself, and you set it when you manage that Secret yourself."
+        },
+        "allowInsecureHttp": {
+          "type": "boolean",
+          "description": "Lets ingest.endpoint be a plain http address, which sends the ingest key and the install token across the network in clear and is meant for a test server only; the default is false, and you leave it so for impact.ai."
+        }
+      }
+    },
+    "install": {
+      "type": "object",
+      "description": "How this cluster gets its own ingest key; the default is the pasted key of ingest.key, and Cover your AI chooses the install token instead.",
+      "properties": {
+        "token": {
+          "type": "string",
+          "description": "The one-time install token from the command Cover your AI shows, which the chart trades inside the cluster for this cluster's own ingest key, valid for 15 minutes and for one use; the default is empty, and you set it only through that command.",
+          "pattern": "^\\s*[A-Za-z0-9_-]*\\s*$"
+        },
+        "allowRenderWithoutCluster": {
+          "type": "boolean",
+          "description": "For the chart's own tests only: lets an install token render when there is no cluster to look in, which a real token install never does; the default is false, and the chart refuses a token install rendered by helm template or Argo CD without a cluster."
+        }
+      }
+    },
+    "cluster": {
+      "type": "object",
+      "description": "How impact.ai knows this cluster; every value is optional, the defaults are empty, and the cluster's ID is looked up when you leave it empty.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "A name shown next to the cluster's ID in impact.ai, printable text of at most 128 characters; the default is empty, which shows the ID alone, and you set it to tell your clusters apart.",
+          "maxLength": 128,
+          "pattern": "^[^\\x00-\\x1f\\x7f]*$"
+        },
+        "uid": {
+          "type": "string",
+          "description": "The cluster's ID, which is the UID of its kube-system namespace; the default is empty, which looks it up in the cluster, and you set it only when the chart is rendered without access to the cluster (helm template or Argo CD).",
+          "pattern": "^([0-9a-fA-F-]{36})?$"
+        },
+        "arn": {
+          "type": "string",
+          "description": "The cloud provider's own ID of the cluster, such as the EKS ARN, which is added to every span as cloud.resource_id; the default is empty, and you set it when Cover your AI gives it to you or you want spans tied to the cloud resource.",
+          "maxLength": 2048,
+          "pattern": "^\\S*$"
+        }
+      }
+    },
+    "cloud": {
+      "type": "object",
+      "description": "The cloud this cluster runs in, which gives spans an account and a region on nodes that block the instance metadata service; every value is optional, the default is empty, and you set them only on such nodes.",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "description": "The cloud the cluster runs in, aws, azure or gcp; the default is empty, and you set it with the other two cloud values when your nodes block the instance metadata service from pods.",
+          "enum": [
+            "",
+            "aws",
+            "azure",
+            "gcp"
+          ]
+        },
+        "accountId": {
+          "type": "string",
+          "description": "The AWS account ID, Azure subscription ID or Google Cloud project of the cluster, always given as a string because an account ID can start with a zero; the default is empty, and you set it when your nodes block the instance metadata service.",
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._:-]*$"
+        },
+        "region": {
+          "type": "string",
+          "description": "The cloud region of the cluster, such as eu-west-1, westeurope or europe-west1, which replaces the region read from the nodes; the default is empty, and you set it when your nodes carry no region label.",
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9._-]*$"
+        }
+      }
+    },
+    "namespaces": {
+      "type": "object",
+      "description": "Which namespaces the kit covers; by default it covers every namespace except the system ones and its own, and you narrow that with the two lists below.",
+      "properties": {
+        "include": {
+          "type": "array",
+          "description": "The namespaces the kit covers, as a list of namespace names; the default is empty, which means every namespace except the excluded ones, and you set it to cover only some namespaces.",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$"
+          }
+        },
+        "exclude": {
+          "type": "array",
+          "description": "Namespaces the kit never covers, as a list of namespace names, added to kube-system, kube-public, kube-node-lease and its own; the default is empty, and you set it to keep further namespaces out.",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$"
+          }
+        }
+      }
+    },
+    "images": {
+      "type": "object",
+      "description": "The container images of the kit; the defaults are the images this release was built with, pinned by digest, and you change them only to use your own copies.",
+      "properties": {
+        "pullPolicy": {
+          "type": "string",
+          "description": "When Kubernetes pulls the kit's images; the default is IfNotPresent, and you change it to Always only if you replace images under the same tag in a mirror.",
+          "enum": [
+            "Always",
+            "IfNotPresent",
+            "Never"
+          ]
+        },
+        "python": {
+          "type": "object",
+          "description": "The image of the Python instrumentation; the defaults are the ones this release was built with, and you change them only to use your own copy.",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "Where the image of the Python instrumentation is pulled from; the default is ghcr.io/impact-ai/autoinstrumentation-python, and you change it only to use your own copy (global.imageRegistry is simpler for a mirror)."
+            },
+            "tag": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "description": "The tag of the image of the Python instrumentation; the default is empty, and the release writes its own version, and you change it only to pin another build."
+            },
+            "digest": {
+              "type": "string",
+              "description": "The sha256 digest of the image of the Python instrumentation; the default is empty, and the release writes its own, and you change it only to a digest you have verified.",
+              "pattern": "^(sha256:[a-f0-9]{64})?$"
+            }
+          }
+        },
+        "reporter": {
+          "type": "object",
+          "description": "The image of the reporter and the install and uninstall hooks; the defaults are the ones this release was built with, and you change them only to use your own copy.",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "Where the image of the reporter and the install and uninstall hooks is pulled from; the default is ghcr.io/impact-ai/kubernetes-reporter, and you change it only to use your own copy (global.imageRegistry is simpler for a mirror)."
+            },
+            "tag": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "description": "The tag of the image of the reporter and the install and uninstall hooks; the default is empty, and the release writes its own version, and you change it only to pin another build."
+            },
+            "digest": {
+              "type": "string",
+              "description": "The sha256 digest of the image of the reporter and the install and uninstall hooks; the default is empty, and the release writes its own, and you change it only to a digest you have verified.",
+              "pattern": "^(sha256:[a-f0-9]{64})?$"
+            }
+          }
+        },
+        "collector": {
+          "type": "object",
+          "description": "The image of the gateway collector, the OpenTelemetry Collector core distribution (otelcol); the defaults are the ones this release was built with, and you change them only to use your own copy.",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "Where the image of the gateway collector is pulled from; the default is ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector, and you change it only to use your own copy (global.imageRegistry is simpler for a mirror)."
+            },
+            "tag": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "description": "The tag of the image of the gateway collector; the default is 0.164.0, and you change it only to pin another build."
+            },
+            "digest": {
+              "type": "string",
+              "description": "The sha256 digest of the image of the gateway collector; the default is the digest pinned in this release, and you change it only to a digest you have verified.",
+              "pattern": "^(sha256:[a-f0-9]{64})?$"
+            }
+          }
+        },
+        "nodejs": {
+          "type": "object",
+          "description": "The image of the Node.js instrumentation; the defaults are empty in the repository and a release writes its own, so you set them only to test a build.",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "Where the image of the Node.js instrumentation is pulled from; the default is ghcr.io/impact-ai/autoinstrumentation-nodejs, and you change it only to use your own copy (global.imageRegistry is simpler for a mirror)."
+            },
+            "tag": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "description": "The tag of the image of the Node.js instrumentation; the default is empty, and the release writes its own version, and you change it only to pin another build."
+            },
+            "digest": {
+              "type": "string",
+              "description": "The sha256 digest of the image of the Node.js instrumentation; the default is empty, and the release writes its own, and you change it only to a digest you have verified.",
+              "pattern": "^(sha256:[a-f0-9]{64})?$"
+            }
+          }
+        }
+      }
+    },
+    "global": {
+      "type": "object",
+      "description": "Settings shared by everything the chart installs; the default changes nothing, and you set the one value below only to use a mirror.",
+      "properties": {
+        "imageRegistry": {
+          "type": "string",
+          "description": "A registry host that replaces the host of every image the kit and the Operator run, such as registry.example.com/mirror, except the Operator's unused --collector-image argument; the default is empty, which pulls from ghcr.io, and you set it to pull from your own mirror."
+        }
+      }
+    },
+    "imagePullSecrets": {
+      "type": "array",
+      "description": "Secrets in the release namespace that Kubernetes uses to pull the images of the gateway, the reporter, the cover pod and the hooks (the Operator takes operator.imagePullSecrets); the default is none, and you set them when your registry or mirror needs credentials.",
+      "items": {
+        "type": "object",
+        "description": "A reference to a Secret of type docker-registry; there is no default, and you name the one you created.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the pull Secret in the release namespace; there is no default, and you give the Secret you created for your registry."
+          }
+        }
+      }
+    },
+    "nodeSelector": {
+      "type": "object",
+      "description": "Labels a node must have to run the gateway, the reporter, the cover pod and the hooks (the Operator takes operator.nodeSelector); the default is empty, which lets the pods run on any node, and you set it to keep them on certain nodes."
+    },
+    "tolerations": {
+      "type": "array",
+      "description": "Tolerations for the gateway, the reporter, the cover pod and the hooks (the Operator takes operator.tolerations); the default is none, and you set them when the nodes you want carry taints.",
+      "items": {
+        "type": "object"
+      }
+    },
+    "priorityClassName": {
+      "type": "string",
+      "description": "The priority class of the gateway, the reporter, the cover pod and the hooks (the Operator takes operator.priorityClassName); the default is empty, which uses the cluster's default, and you set it when the kit's pods must not be the first to be evicted."
+    },
+    "reporter": {
+      "type": "object",
+      "description": "The reporter that lists this cluster's workloads by name; the defaults suit most clusters, and you change them only for a very large or very busy one.",
+      "properties": {
+        "interval": {
+          "type": "string",
+          "description": "How often the reporter sends the list of workloads, as a number and s, m or h with a minimum of 5s; the default is 5m, and you shorten it only to see changes sooner.",
+          "pattern": "^[0-9]+(s|m|h)$"
+        },
+        "resources": {
+          "type": "object",
+          "description": "CPU and memory of the reporter pod; the defaults suit most clusters and you change them only if the pod is throttled or restarted.",
+          "properties": {
+            "requests": {
+              "type": "object",
+              "description": "What the scheduler reserves for the reporter pod; the defaults are 20m of CPU and 32Mi of memory, and you raise them only if the pod is throttled.",
+              "properties": {
+                "cpu": {
+                  "type": [
+                    "string",
+                    "number"
+                  ],
+                  "description": "The CPU the scheduler reserves for the reporter pod; the default is 20m, and you raise it if the pod is throttled."
+                },
+                "memory": {
+                  "type": [
+                    "string",
+                    "number"
+                  ],
+                  "description": "The memory the scheduler reserves for the reporter pod; the default is 32Mi, and you raise it with the memory limit."
+                }
+              }
+            },
+            "limits": {
+              "type": "object",
+              "description": "What the reporter pod may use at most; the defaults are 128Mi of memory and no limit on CPU, and you raise them only if the pod is throttled or restarted.",
+              "properties": {
+                "memory": {
+                  "type": [
+                    "string",
+                    "number"
+                  ],
+                  "description": "The most memory the reporter pod may use before Kubernetes restarts it; the default is 128Mi, and you raise it if the pod is restarted for lack of memory."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "gateway": {
+      "type": "object",
+      "description": "The collector that receives spans from covered workloads and forwards them to impact.ai; the defaults suit most clusters, and you change them only when many workloads send spans.",
+      "properties": {
+        "replicas": {
+          "type": "integer",
+          "description": "How many copies of the gateway run; the default is 1, and you raise it for availability when many workloads send spans.",
+          "minimum": 0
+        },
+        "resources": {
+          "type": "object",
+          "description": "CPU and memory of the gateway pod; the defaults suit most clusters and you change them only if the pod is throttled or restarted.",
+          "properties": {
+            "requests": {
+              "type": "object",
+              "description": "What the scheduler reserves for the gateway pod; the defaults are 50m of CPU and 128Mi of memory, and you raise them only if the pod is throttled.",
+              "properties": {
+                "cpu": {
+                  "type": [
+                    "string",
+                    "number"
+                  ],
+                  "description": "The CPU the scheduler reserves for the gateway pod; the default is 50m, and you raise it if the pod is throttled."
+                },
+                "memory": {
+                  "type": [
+                    "string",
+                    "number"
+                  ],
+                  "description": "The memory the scheduler reserves for the gateway pod; the default is 128Mi, and you raise it with the memory limit."
+                }
+              }
+            },
+            "limits": {
+              "type": "object",
+              "description": "What the gateway pod may use at most; the defaults are 256Mi of memory and no limit on CPU, and you raise them only if the pod is throttled or restarted.",
+              "properties": {
+                "memory": {
+                  "type": [
+                    "string",
+                    "number"
+                  ],
+                  "description": "The most memory the gateway pod may use before Kubernetes restarts it, with the chart setting the gateway's Go memory limit to 80% of it; the default is 256Mi, and you raise it if the pod is restarted for lack of memory."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "instrumentation": {
+      "type": "object",
+      "description": "Settings of the instrumentation that is injected into covered workloads; the defaults suit most workloads, and you change them only if an init container is throttled.",
+      "properties": {
+        "python": {
+          "type": "object",
+          "description": "Settings of the Python instrumentation; the defaults suit most workloads, and you change them only if its init container is throttled.",
+          "properties": {
+            "resources": {
+              "type": "object",
+              "description": "CPU and memory of the Python init container the Operator adds to a covered pod; the defaults suit most clusters and you change them only if the pod is throttled or restarted.",
+              "properties": {
+                "requests": {
+                  "type": "object",
+                  "description": "What the scheduler reserves for the Python init container the Operator adds to a covered pod; the defaults are 10m of CPU and 16Mi of memory, and you raise them only if the pod is throttled.",
+                  "properties": {
+                    "cpu": {
+                      "type": [
+                        "string",
+                        "number"
+                      ],
+                      "description": "The CPU the scheduler reserves for the Python init container the Operator adds to a covered pod; the default is 10m, and you raise it if the pod is throttled."
+                    },
+                    "memory": {
+                      "type": [
+                        "string",
+                        "number"
+                      ],
+                      "description": "The memory the scheduler reserves for the Python init container the Operator adds to a covered pod; the default is 16Mi, and you raise it with the memory limit."
+                    }
+                  }
+                },
+                "limits": {
+                  "type": "object",
+                  "description": "What the Python init container the Operator adds to a covered pod may use at most; the defaults are 64Mi of memory and 200m of CPU, and you raise them only if the pod is throttled or restarted.",
+                  "properties": {
+                    "cpu": {
+                      "type": [
+                        "string",
+                        "number"
+                      ],
+                      "description": "The most CPU the Python init container the Operator adds to a covered pod may use; the default is 200m, and you raise it if the pod is throttled."
+                    },
+                    "memory": {
+                      "type": [
+                        "string",
+                        "number"
+                      ],
+                      "description": "The most memory the Python init container the Operator adds to a covered pod may use before Kubernetes restarts it; the default is 64Mi, and you raise it if the pod is restarted for lack of memory."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "nodejs": {
+          "type": "object",
+          "description": "Settings of the Node.js instrumentation; the defaults suit most workloads, and you change them only if its init container is throttled.",
+          "properties": {
+            "resources": {
+              "type": "object",
+              "description": "CPU and memory of the Node.js init container the Operator adds to a covered pod; the defaults suit most clusters and you change them only if the pod is throttled or restarted.",
+              "properties": {
+                "requests": {
+                  "type": "object",
+                  "description": "What the scheduler reserves for the Node.js init container the Operator adds to a covered pod; the defaults are 10m of CPU and 16Mi of memory, and you raise them only if the pod is throttled.",
+                  "properties": {
+                    "cpu": {
+                      "type": [
+                        "string",
+                        "number"
+                      ],
+                      "description": "The CPU the scheduler reserves for the Node.js init container the Operator adds to a covered pod; the default is 10m, and you raise it if the pod is throttled."
+                    },
+                    "memory": {
+                      "type": [
+                        "string",
+                        "number"
+                      ],
+                      "description": "The memory the scheduler reserves for the Node.js init container the Operator adds to a covered pod; the default is 16Mi, and you raise it with the memory limit."
+                    }
+                  }
+                },
+                "limits": {
+                  "type": "object",
+                  "description": "What the Node.js init container the Operator adds to a covered pod may use at most; the defaults are 64Mi of memory and 200m of CPU, and you raise them only if the pod is throttled or restarted.",
+                  "properties": {
+                    "cpu": {
+                      "type": [
+                        "string",
+                        "number"
+                      ],
+                      "description": "The most CPU the Node.js init container the Operator adds to a covered pod may use; the default is 200m, and you raise it if the pod is throttled."
+                    },
+                    "memory": {
+                      "type": [
+                        "string",
+                        "number"
+                      ],
+                      "description": "The most memory the Node.js init container the Operator adds to a covered pod may use before Kubernetes restarts it; the default is 64Mi, and you raise it if the pod is restarted for lack of memory."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "cover": {
+      "type": "object",
+      "description": "Automatic coverage, a pod that adds the injection annotation to the pods of the workloads impact.ai lists as they are created; by default it runs when an install token installed the kit, and you turn it off below.",
+      "properties": {
+        "enabled": {
+          "description": "Whether the cover pod runs: auto installs it with an install token and no image mirror, true always and false never; the default is auto, and you set true behind a mirror your workloads pull from, or false to cover workloads only with the commands on the page.",
+          "enum": [
+            "auto",
+            "true",
+            "false",
+            true,
+            false
+          ]
+        },
+        "replicas": {
+          "type": "integer",
+          "description": "How many copies of the cover pod run; the default is 1, and you raise it only for availability because its webhook fails open.",
+          "minimum": 1
+        },
+        "pollInterval": {
+          "type": "string",
+          "description": "How often the cover pod asks impact.ai for the list of workloads to cover, as a number and s, m or h; the default is 1m, and you change it only if impact.ai asks you to.",
+          "pattern": "^[0-9]+(s|m|h)$"
+        },
+        "webhookConfigName": {
+          "type": "string",
+          "description": "The name of the cover pod's webhook configuration, which Kubernetes runs in name order beside the Operator's; the default is impact-ai-cover, and you change it only to test the other order.",
+          "maxLength": 253,
+          "pattern": "^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$"
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "description": "Seconds Kubernetes waits for the cover pod's webhook before it lets the pod start, short because the cover pod answers from memory; the default is 2, and you change it, between 1 and 10, only if the API server reaches the pod slowly.",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "resources": {
+          "type": "object",
+          "description": "CPU and memory of the cover pod; the defaults suit most clusters and you change them only if the pod is throttled or restarted.",
+          "properties": {
+            "requests": {
+              "type": "object",
+              "description": "What the scheduler reserves for the cover pod; the defaults are 10m of CPU and 24Mi of memory, and you raise them only if the pod is throttled.",
+              "properties": {
+                "cpu": {
+                  "type": [
+                    "string",
+                    "number"
+                  ],
+                  "description": "The CPU the scheduler reserves for the cover pod; the default is 10m, and you raise it if the pod is throttled."
+                },
+                "memory": {
+                  "type": [
+                    "string",
+                    "number"
+                  ],
+                  "description": "The memory the scheduler reserves for the cover pod; the default is 24Mi, and you raise it with the memory limit."
+                }
+              }
+            },
+            "limits": {
+              "type": "object",
+              "description": "What the cover pod may use at most; the defaults are 64Mi of memory and no limit on CPU, and you raise them only if the pod is throttled or restarted.",
+              "properties": {
+                "memory": {
+                  "type": [
+                    "string",
+                    "number"
+                  ],
+                  "description": "The most memory the cover pod may use before Kubernetes restarts it; the default is 64Mi, and you raise it if the pod is restarted for lack of memory."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "webhook": {
+      "type": "object",
+      "description": "How the Operator's webhooks behave when they do not answer; by default they let the pod start after 5 seconds, and you tune only the timeout.",
+      "properties": {
+        "failurePolicy": {
+          "type": "string",
+          "description": "What Kubernetes does with a pod when a webhook of the Operator does not answer; the only value is Ignore, which is the default, so the pod starts without injection.",
+          "enum": [
+            "Ignore"
+          ]
+        },
+        "timeoutSeconds": {
+          "type": "integer",
+          "description": "Seconds Kubernetes waits for a webhook of the Operator before it lets the pod start; the default is 5, and you lower it for faster pod starts when the Operator is slow, between 1 and 10.",
+          "minimum": 1,
+          "maximum": 10
+        }
+      }
+    },
+    "operator": {
+      "type": "object",
+      "description": "The OpenTelemetry Operator that injects the instrumentation; its other settings belong to the Operator's own chart, so you set only install here, and its default is auto.",
+      "properties": {
+        "install": {
+          "description": "Whether the chart installs the Operator and the Instrumentation resource: auto leaves them out when another injector owns the cluster, true always installs them and false never does; the default is auto.",
+          "enum": [
+            "auto",
+            "true",
+            "false",
+            true,
+            false
+          ]
+        }
+      }
+    }
+  }
+}

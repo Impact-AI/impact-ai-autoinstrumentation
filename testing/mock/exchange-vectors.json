@@ -1,0 +1,299 @@
+{
+  "about": "The body of POST /v1/installs/exchange (impact.install.v1) and every way it may be wrong. The Go intake (go/exchange.go) reads this file; the chart's exchange client and the kit's mock ingest build their requests and refusals from it. A case is the base body with its patch steps applied: set writes a value at a dotted path (a number indexes an array), remove deletes a member. A valid case is accepted by the decoder; an invalid one is a 400 malformed_request whatever the token. The token travels in the Authorization header as a Bearer value: impactinstall_<env>_<43 base64url characters>, and the key's display prefix must be impact_<env>_ with the same env. Secrets never travel in the body: only the key's sha256 and its first eight secret characters.",
+  "token": {
+    "environment": "local",
+    "secret": "Qm9yZXdvcmxkMTIzNDU2Nzg5MGFiY2RlZmdoaWprbG0",
+    "header": "Bearer impactinstall_local_Qm9yZXdvcmxkMTIzNDU2Nzg5MGFiY2RlZmdoaWprbG0",
+    "invalid": [
+      [""],
+      ["Bearer"],
+      ["Bearer "],
+      ["impactinstall_local_Qm9yZXdvcmx", "kMTIzNDU2Nzg5MGFiY2RlZmdoaWprbG0"],
+      ["Basic impactinstall_local_Qm9yZXdv", "cmxkMTIzNDU2Nzg5MGFiY2RlZmdoaWprbG0"],
+      ["Bearer  impactinstall_local_Qm9yZXd", "vcmxkMTIzNDU2Nzg5MGFiY2RlZmdoaWprbG0"],
+      ["Bearer impactinstall_local_Qm9yZXdvcmx", "kMTIzNDU2Nzg5MGFiY2RlZmdoaWprbG0 extra"],
+      ["Bearer impactinstall_local_Qm9yZXd", "vcmxkMTIzNDU2Nzg5MGFiY2RlZmdoaWprbG"],
+      ["Bearer impactinstall_local_Qm9yZXdv", "cmxkMTIzNDU2Nzg5MGFiY2RlZmdoaWprbG0x"],
+      ["Bearer impactinstall_local_Qm9yZXdv", "cmxkMTIzNDU2Nzg5MGFiY2RlZmdoaWprbG+"],
+      ["Bearer impactinstall_LOCAL_Qm9yZXdv", "cmxkMTIzNDU2Nzg5MGFiY2RlZmdoaWprbG0"],
+      ["Bearer impactinstall__Qm9yZXdvcm", "xkMTIzNDU2Nzg5MGFiY2RlZmdoaWprbG0"],
+      ["Bearer impactinstall_-local_Qm9yZXd", "vcmxkMTIzNDU2Nzg5MGFiY2RlZmdoaWprbG0"],
+      ["Bearer impact_local_Qm9yZXdvcmx", "kMTIzNDU2Nzg5MGFiY2RlZmdoaWprbG0"],
+      ["Bearer impactinstall_local_Qm9yZXdv", "cmxkMTIzNDU2Nzg5MGFiY2RlZmdoaWprbG0\n"]
+    ],
+    "about": "Authorization headers that are not an install token, each as parts to join: none of them reaches the database."
+  },
+  "base": {
+    "schema": "impact.install.v1",
+    "productId": "prod_0123456789abcdef01234567",
+    "cluster": {
+      "uid": "7c0e8f6a-3f3b-4a89-9d44-1d2f0b6f2a10",
+      "arn": "arn:aws:eks:eu-central-1:111122223333:cluster/prod-eks",
+      "name": "prod-eks"
+    },
+    "key": {
+      "lookupHash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+      "displayPrefix": "impact_local_AbCdEf12"
+    },
+    "chart": {
+      "version": "0.3.0"
+    }
+  },
+  "cases": [
+    { "name": "the reference body", "valid": true, "patch": [] },
+    {
+      "name": "a cluster without a cloud id or a name (null)",
+      "valid": true,
+      "patch": [{ "set": "cluster.arn", "value": null }, { "set": "cluster.name", "value": null }]
+    },
+    {
+      "name": "a cluster without a cloud id or a name (absent)",
+      "valid": true,
+      "patch": [{ "remove": "cluster.arn" }, { "remove": "cluster.name" }]
+    },
+    {
+      "name": "a key of another environment is a well-formed body",
+      "valid": true,
+      "patch": [{ "set": "key.displayPrefix", "value": "impact_other-env_AbCdEf12" }]
+    },
+    {
+      "name": "a pre-release chart version",
+      "valid": true,
+      "patch": [{ "set": "chart.version", "value": "0.3.0-rc.1+build5" }]
+    },
+    {
+      "name": "the longest cluster name",
+      "valid": true,
+      "patch": [
+        {
+          "set": "cluster.name",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ]
+    },
+    {
+      "name": "a cluster name over 128 characters",
+      "valid": false,
+      "patch": [
+        {
+          "set": "cluster.name",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ]
+    },
+    {
+      "name": "a cluster name with a control character",
+      "valid": false,
+      "patch": [{ "set": "cluster.name", "value": "prod\neks" }]
+    },
+    {
+      "name": "an empty cluster name",
+      "valid": false,
+      "patch": [{ "set": "cluster.name", "value": "" }]
+    },
+    {
+      "name": "a cluster name that is a credential",
+      "valid": false,
+      "patch": [{ "set": "cluster.name", "value": "sk-abcdefghijklmnopqrstuvwxyz" }]
+    },
+    {
+      "name": "the wrong schema",
+      "valid": false,
+      "patch": [{ "set": "schema", "value": "impact.install.v2" }]
+    },
+    { "name": "an empty schema", "valid": false, "patch": [{ "set": "schema", "value": "" }] },
+    { "name": "no schema", "valid": false, "patch": [{ "remove": "schema" }] },
+    {
+      "name": "an unknown member",
+      "valid": false,
+      "patch": [
+        {
+          "set": "token",
+          "value": "impactinstall_local_Qm9yZXdvcmxkMTIzNDU2Nzg5MGFiY2RlZmdoaWprbG0"
+        }
+      ]
+    },
+    {
+      "name": "an unknown member of the cluster",
+      "valid": false,
+      "patch": [{ "set": "cluster.kubeconfig", "value": "x" }]
+    },
+    {
+      "name": "an unknown member of the key",
+      "valid": false,
+      "patch": [{ "set": "key.secret", "value": "x" }]
+    },
+    {
+      "name": "an unknown member of the chart",
+      "valid": false,
+      "patch": [{ "set": "chart.repository", "value": "x" }]
+    },
+    {
+      "name": "a workspace named in the body",
+      "valid": false,
+      "patch": [{ "set": "workspaceId", "value": "ws_other" }]
+    },
+    { "name": "no product", "valid": false, "patch": [{ "remove": "productId" }] },
+    { "name": "an empty product", "valid": false, "patch": [{ "set": "productId", "value": "" }] },
+    {
+      "name": "a product that is a number",
+      "valid": false,
+      "patch": [{ "set": "productId", "value": 7 }]
+    },
+    {
+      "name": "a product with a space",
+      "valid": false,
+      "patch": [{ "set": "productId", "value": "prod 1" }]
+    },
+    {
+      "name": "a product longer than 64",
+      "valid": false,
+      "patch": [
+        {
+          "set": "productId",
+          "value": "prod_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ]
+    },
+    { "name": "no cluster", "valid": false, "patch": [{ "remove": "cluster" }] },
+    { "name": "a null cluster", "valid": false, "patch": [{ "set": "cluster", "value": null }] },
+    {
+      "name": "a cluster that is a string",
+      "valid": false,
+      "patch": [{ "set": "cluster", "value": "prod" }]
+    },
+    { "name": "no cluster uid", "valid": false, "patch": [{ "remove": "cluster.uid" }] },
+    {
+      "name": "a null cluster uid",
+      "valid": false,
+      "patch": [{ "set": "cluster.uid", "value": null }]
+    },
+    {
+      "name": "a cluster uid that is too short",
+      "valid": false,
+      "patch": [{ "set": "cluster.uid", "value": "abc" }]
+    },
+    {
+      "name": "a cluster uid with a space",
+      "valid": false,
+      "patch": [{ "set": "cluster.uid", "value": "7c0e8f6a 3f3b" }]
+    },
+    {
+      "name": "a cluster uid over 128",
+      "valid": false,
+      "patch": [
+        {
+          "set": "cluster.uid",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ]
+    },
+    {
+      "name": "a cloud id with a space",
+      "valid": false,
+      "patch": [{ "set": "cluster.arn", "value": "arn:aws:eks:eu-central-1 cluster" }]
+    },
+    {
+      "name": "a cloud id that is a credential",
+      "valid": false,
+      "patch": [{ "set": "cluster.arn", "value": "eyJhbGciOiJIUzI1NiJ9.e30.c2ln" }]
+    },
+    { "name": "no key", "valid": false, "patch": [{ "remove": "key" }] },
+    { "name": "a null key", "valid": false, "patch": [{ "set": "key", "value": null }] },
+    { "name": "no key hash", "valid": false, "patch": [{ "remove": "key.lookupHash" }] },
+    {
+      "name": "a key hash of 63 digits",
+      "valid": false,
+      "patch": [
+        {
+          "set": "key.lookupHash",
+          "value": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a0"
+        }
+      ]
+    },
+    {
+      "name": "a key hash of 65 digits",
+      "valid": false,
+      "patch": [
+        {
+          "set": "key.lookupHash",
+          "value": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a080"
+        }
+      ]
+    },
+    {
+      "name": "a key hash in capitals",
+      "valid": false,
+      "patch": [
+        {
+          "set": "key.lookupHash",
+          "value": "9F86D081884C7D659A2FEAA0C55AD015A3BF4F1B2B0B822CD15D6C15B0F00A08"
+        }
+      ]
+    },
+    {
+      "name": "a key hash that is not hex",
+      "valid": false,
+      "patch": [
+        {
+          "set": "key.lookupHash",
+          "value": "zf86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        }
+      ]
+    },
+    {
+      "name": "a key hash that is a number",
+      "valid": false,
+      "patch": [{ "set": "key.lookupHash", "value": 7 }]
+    },
+    { "name": "no display prefix", "valid": false, "patch": [{ "remove": "key.displayPrefix" }] },
+    {
+      "name": "a display prefix with seven characters",
+      "valid": false,
+      "patch": [{ "set": "key.displayPrefix", "value": "impact_local_AbCdEf1" }]
+    },
+    {
+      "name": "a display prefix with nine characters",
+      "valid": false,
+      "patch": [{ "set": "key.displayPrefix", "value": "impact_local_AbCdEf123" }]
+    },
+    {
+      "name": "a display prefix of an install token",
+      "valid": false,
+      "patch": [{ "set": "key.displayPrefix", "value": "impactinstall_local_AbCdEf12" }]
+    },
+    {
+      "name": "a display prefix of another family",
+      "valid": false,
+      "patch": [{ "set": "key.displayPrefix", "value": "other_local_AbCdEf12" }]
+    },
+    {
+      "name": "a display prefix without an environment",
+      "valid": false,
+      "patch": [{ "set": "key.displayPrefix", "value": "impact__AbCdEf12" }]
+    },
+    {
+      "name": "a display prefix with a character outside base64url",
+      "valid": false,
+      "patch": [{ "set": "key.displayPrefix", "value": "impact_local_AbCdEf1+" }]
+    },
+    { "name": "no chart", "valid": false, "patch": [{ "remove": "chart" }] },
+    { "name": "no chart version", "valid": false, "patch": [{ "remove": "chart.version" }] },
+    {
+      "name": "a chart version with a space",
+      "valid": false,
+      "patch": [{ "set": "chart.version", "value": "0.3.0 beta" }]
+    },
+    {
+      "name": "a chart version over 64",
+      "valid": false,
+      "patch": [
+        {
+          "set": "chart.version",
+          "value": "1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ]
+    },
+    { "name": "a null schema", "valid": false, "patch": [{ "set": "schema", "value": null }] }
+  ]
+}

@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: Apache-2.0
+# A policy as a cluster might have one: pods of the namespace `auto` may not carry the init container the Operator injects for
+# Python (a registry allowlist, a user-ID range or a LimitRange ratio would refuse it the same way). ValidatingAdmissionPolicy is
+# served from Kubernetes 1.30; e2e/test_8_auto_cover.py applies this file for one test and deletes it.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata: {name: e2e-refuse-kit-init-container}
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE]
+        resources: [pods]
+  validations:
+    - expression: "!has(object.spec.initContainers) || !object.spec.initContainers.exists(c, c.name == 'opentelemetry-auto-instrumentation-python')"
+      # The message carries a value the reporter must never send: it is the cluster's own words about a pod. The value is
+      # one the check of internal details allows (a planted token), and the test looks for it in every snapshot.
+      message: "this cluster refuses the init container opentelemetry-auto-instrumentation-python (sk-live-abcdefghijklmnop)"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata: {name: e2e-refuse-kit-init-container}
+spec:
+  policyName: e2e-refuse-kit-init-container
+  validationActions: [Deny]
+  matchResources:
+    namespaceSelector:
+      matchLabels: {kubernetes.io/metadata.name: auto}

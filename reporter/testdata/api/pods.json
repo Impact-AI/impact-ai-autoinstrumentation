@@ -1,0 +1,832 @@
+{
+  "kind": "PodList",
+  "apiVersion": "v1",
+  "metadata": {
+    "resourceVersion": "12345"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "support-assistant-5d9c7b6f8d-abcde",
+        "namespace": "shop",
+        "uid": "shop-support-assistant-5d9c7b6f8d-abcde-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-10-20T08:00:00Z",
+        "labels": {
+          "app": "support-assistant-5d9c7b6f8d-abcde",
+          "pod-template-hash": "5d9c7b6f8d"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "3"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "v1",
+            "kind": "ReplicaSet",
+            "name": "support-assistant-5d9c7b6f8d",
+            "uid": "owner-uid",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "app",
+            "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/shop/support-assistant:2.4.1",
+            "imagePullPolicy": "IfNotPresent",
+            "resources": {
+              "limits": {
+                "memory": "512Mi"
+              }
+            },
+            "command": [
+              "/bin/sh",
+              "-c",
+              "python -m support_assistant --api-key=sk-live-abcdefghijklmnop"
+            ],
+            "args": [
+              "--api-key=sk-live-abcdefghijklmnop",
+              "--verbose"
+            ],
+            "env": [
+              {
+                "name": "OPENAI_API_KEY",
+                "value": "sk-live-abcdefghijklmnop"
+              },
+              {
+                "name": "OTEL_SERVICE_NAME",
+                "value": "support-assistant"
+              },
+              {
+                "name": "ANTHROPIC_API_KEY",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "name": "anthropic-credentials",
+                    "key": "api-key"
+                  }
+                }
+              },
+              {
+                "name": "POD_NAME",
+                "valueFrom": {
+                  "fieldRef": {
+                    "fieldPath": "metadata.name"
+                  }
+                }
+              }
+            ],
+            "envFrom": [
+              {
+                "secretRef": {
+                  "name": "llm-config"
+                },
+                "prefix": "LLM_"
+              },
+              {
+                "configMapRef": {
+                  "name": "app-config"
+                }
+              }
+            ],
+            "volumeMounts": [
+              {
+                "name": "tmp",
+                "mountPath": "/tmp"
+              },
+              {
+                "name": "otel-auto-instrumentation-python",
+                "mountPath": "/otel-auto-instrumentation-python"
+              }
+            ]
+          },
+          {
+            "name": "proxy",
+            "image": "envoyproxy/envoy:v1.31.0",
+            "imagePullPolicy": "IfNotPresent",
+            "resources": {
+              "limits": {
+                "memory": "512Mi"
+              }
+            },
+            "command": [
+              "/usr/local/bin/envoy"
+            ],
+            "args": [
+              "-c",
+              "/etc/envoy/envoy.yaml"
+            ],
+            "env": [
+              {
+                "name": "ENVOY_UID",
+                "value": "0"
+              }
+            ]
+          }
+        ],
+        "serviceAccountName": "default",
+        "initContainers": [
+          {
+            "name": "opentelemetry-auto-instrumentation-python",
+            "image": "ghcr.io/impact-ai/autoinstrumentation-python@sha256:0",
+            "command": [
+              "cp",
+              "-r",
+              "/autoinstrumentation/.",
+              "/otel-auto-instrumentation-python"
+            ]
+          }
+        ]
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Ready",
+            "status": "True"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "support-assistant-5d9c7b6f8d-fghij",
+        "namespace": "shop",
+        "uid": "shop-support-assistant-5d9c7b6f8d-fghij-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-10-20T08:00:00Z",
+        "labels": {
+          "app": "support-assistant-5d9c7b6f8d-fghij",
+          "pod-template-hash": "5d9c7b6f8d"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "3"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "v1",
+            "kind": "ReplicaSet",
+            "name": "support-assistant-5d9c7b6f8d",
+            "uid": "owner-uid",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "app",
+            "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/shop/support-assistant:2.4.1",
+            "imagePullPolicy": "IfNotPresent",
+            "resources": {
+              "limits": {
+                "memory": "512Mi"
+              }
+            },
+            "command": [
+              "/bin/sh",
+              "-c",
+              "python -m support_assistant --api-key=sk-live-abcdefghijklmnop"
+            ],
+            "args": [
+              "--api-key=sk-live-abcdefghijklmnop",
+              "--verbose"
+            ],
+            "env": [
+              {
+                "name": "OPENAI_API_KEY",
+                "value": "sk-live-abcdefghijklmnop"
+              },
+              {
+                "name": "OTEL_SERVICE_NAME",
+                "value": "support-assistant"
+              },
+              {
+                "name": "ANTHROPIC_API_KEY",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "name": "anthropic-credentials",
+                    "key": "api-key"
+                  }
+                }
+              },
+              {
+                "name": "POD_NAME",
+                "valueFrom": {
+                  "fieldRef": {
+                    "fieldPath": "metadata.name"
+                  }
+                }
+              }
+            ],
+            "envFrom": [
+              {
+                "secretRef": {
+                  "name": "llm-config"
+                },
+                "prefix": "LLM_"
+              },
+              {
+                "configMapRef": {
+                  "name": "app-config"
+                }
+              }
+            ],
+            "volumeMounts": [
+              {
+                "name": "tmp",
+                "mountPath": "/tmp"
+              },
+              {
+                "name": "otel-auto-instrumentation-python",
+                "mountPath": "/otel-auto-instrumentation-python"
+              }
+            ]
+          },
+          {
+            "name": "proxy",
+            "image": "envoyproxy/envoy:v1.31.0",
+            "imagePullPolicy": "IfNotPresent",
+            "resources": {
+              "limits": {
+                "memory": "512Mi"
+              }
+            },
+            "command": [
+              "/usr/local/bin/envoy"
+            ],
+            "args": [
+              "-c",
+              "/etc/envoy/envoy.yaml"
+            ],
+            "env": [
+              {
+                "name": "ENVOY_UID",
+                "value": "0"
+              }
+            ]
+          }
+        ],
+        "serviceAccountName": "default",
+        "initContainers": [
+          {
+            "name": "opentelemetry-auto-instrumentation-python",
+            "image": "ghcr.io/impact-ai/autoinstrumentation-python@sha256:0",
+            "command": [
+              "cp",
+              "-r",
+              "/autoinstrumentation/.",
+              "/otel-auto-instrumentation-python"
+            ]
+          }
+        ]
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Ready",
+            "status": "True"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "web-7f9c6d5b4-xyz12",
+        "namespace": "shop",
+        "uid": "shop-web-7f9c6d5b4-xyz12-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-10-20T08:00:00Z",
+        "labels": {
+          "app": "web-7f9c6d5b4-xyz12",
+          "pod-template-hash": "7f9c6d5b4"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "3"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "v1",
+            "kind": "ReplicaSet",
+            "name": "web-7f9c6d5b4",
+            "uid": "owner-uid",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "web",
+            "image": "registry.example.com/shop/web:5.1.0",
+            "imagePullPolicy": "IfNotPresent",
+            "resources": {
+              "limits": {
+                "memory": "512Mi"
+              }
+            }
+          }
+        ],
+        "serviceAccountName": "default"
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Ready",
+            "status": "True"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "vector-db-0",
+        "namespace": "shop",
+        "uid": "shop-vector-db-0-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-10-20T08:00:00Z",
+        "labels": {
+          "app": "vector-db-0"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "3"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "v1",
+            "kind": "StatefulSet",
+            "name": "vector-db",
+            "uid": "owner-uid",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "db",
+            "image": "qdrant/qdrant:v1.12.0",
+            "imagePullPolicy": "IfNotPresent",
+            "resources": {
+              "limits": {
+                "memory": "512Mi"
+              }
+            }
+          }
+        ],
+        "serviceAccountName": "default"
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Ready",
+            "status": "True"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "debug-shell",
+        "namespace": "shop",
+        "uid": "shop-debug-shell-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-10-20T08:00:00Z",
+        "labels": {
+          "app": "debug-shell"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "3"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "shell",
+            "image": "busybox:1.36",
+            "imagePullPolicy": "IfNotPresent",
+            "resources": {
+              "limits": {
+                "memory": "512Mi"
+              }
+            },
+            "command": [
+              "sleep",
+              "86400"
+            ],
+            "env": [
+              {
+                "name": "TOKEN",
+                "value": "sk-live-abcdefghijklmnop"
+              }
+            ]
+          }
+        ],
+        "serviceAccountName": "default"
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Ready",
+            "status": "True"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "etcd-mirror-node-1",
+        "namespace": "shop",
+        "uid": "shop-etcd-mirror-node-1-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-10-20T08:00:00Z",
+        "labels": {
+          "app": "etcd-mirror-node-1"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "3"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "v1",
+            "kind": "Node",
+            "name": "node-1",
+            "uid": "owner-uid",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "etcd",
+            "image": "registry.k8s.io/etcd:3.5.15-0",
+            "imagePullPolicy": "IfNotPresent",
+            "resources": {
+              "limits": {
+                "memory": "512Mi"
+              }
+            }
+          }
+        ],
+        "serviceAccountName": "default"
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Ready",
+            "status": "True"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "coredns-5d78c9869d-aaaaa",
+        "namespace": "kube-system",
+        "uid": "kube-system-coredns-5d78c9869d-aaaaa-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-10-20T08:00:00Z",
+        "labels": {
+          "app": "coredns-5d78c9869d-aaaaa",
+          "pod-template-hash": "5d78c9869d"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "3"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "v1",
+            "kind": "ReplicaSet",
+            "name": "coredns-5d78c9869d",
+            "uid": "owner-uid",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "coredns",
+            "image": "registry.k8s.io/coredns/coredns:v1.11.3",
+            "imagePullPolicy": "IfNotPresent",
+            "resources": {
+              "limits": {
+                "memory": "512Mi"
+              }
+            }
+          }
+        ],
+        "serviceAccountName": "default"
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Ready",
+            "status": "True"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "nightly-report-29000-zzzzz",
+        "namespace": "batch",
+        "uid": "batch-nightly-report-29000-zzzzz-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-10-20T08:00:00Z",
+        "labels": {
+          "app": "nightly-report-29000-zzzzz"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "3"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "v1",
+            "kind": "Job",
+            "name": "nightly-report-29000",
+            "uid": "owner-uid",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "report",
+            "image": "registry.example.com/batch/report:3.0",
+            "imagePullPolicy": "IfNotPresent",
+            "resources": {
+              "limits": {
+                "memory": "512Mi"
+              }
+            }
+          }
+        ],
+        "serviceAccountName": "default"
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Ready",
+            "status": "True"
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "search-assistant-6b8f7c9d5-aaaaa",
+        "namespace": "shop",
+        "uid": "shop-search-assistant-6b8f7c9d5-aaaaa-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-11-03T11:00:00Z",
+        "labels": {
+          "app": "search-assistant",
+          "pod-template-hash": "6b8f7c9d5"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "4",
+          "instrumentation.opentelemetry.io/inject-python": "impact-system/impact",
+          "impact.ai/auto-covered": "2026-11-03T11:00:00Z"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "v1",
+            "kind": "ReplicaSet",
+            "name": "search-assistant-6b8f7c9d5",
+            "uid": "owner-uid",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "app",
+            "image": "registry.example.com/shop/search-assistant:1.8.0",
+            "imagePullPolicy": "IfNotPresent",
+            "env": [
+              {
+                "name": "OPENAI_API_KEY",
+                "value": "sk-live-abcdefghijklmnop"
+              }
+            ],
+            "volumeMounts": [
+              {
+                "name": "otel-auto-instrumentation-python",
+                "mountPath": "/otel-auto-instrumentation-python"
+              }
+            ]
+          }
+        ],
+        "serviceAccountName": "search-assistant",
+        "initContainers": [
+          {
+            "name": "opentelemetry-auto-instrumentation-python",
+            "image": "ghcr.io/impact-ai/autoinstrumentation-python@sha256:0",
+            "command": [
+              "cp",
+              "-r",
+              "/autoinstrumentation/.",
+              "/otel-auto-instrumentation-python"
+            ]
+          }
+        ]
+      },
+      "status": {
+        "phase": "Pending",
+        "initContainerStatuses": [
+          {
+            "name": "opentelemetry-auto-instrumentation-python",
+            "ready": false,
+            "restartCount": 0,
+            "image": "ghcr.io/impact-ai/autoinstrumentation-python@sha256:0",
+            "imageID": "",
+            "state": {
+              "waiting": {
+                "reason": "ImagePullBackOff",
+                "message": "Back-off pulling image \"mirror.example.com/mirror/python@sha256:0\": pull access denied, token sk-live-abcdefghijklmnop"
+              }
+            }
+          }
+        ],
+        "containerStatuses": [
+          {
+            "name": "app",
+            "ready": false,
+            "restartCount": 0,
+            "image": "registry.example.com/shop/search-assistant:1.8.0",
+            "imageID": "",
+            "state": {
+              "waiting": {
+                "reason": "PodInitializing"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "search-assistant-6b8f7c9d5-bbbbb",
+        "namespace": "shop",
+        "uid": "shop-search-assistant-6b8f7c9d5-bbbbb-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-11-03T11:00:00Z",
+        "labels": {
+          "app": "search-assistant",
+          "pod-template-hash": "6b8f7c9d5"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "4",
+          "instrumentation.opentelemetry.io/inject-python": "impact-system/impact",
+          "impact.ai/auto-covered": "2026-11-03T11:00:00Z"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "v1",
+            "kind": "ReplicaSet",
+            "name": "search-assistant-6b8f7c9d5",
+            "uid": "owner-uid",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "app",
+            "image": "registry.example.com/shop/search-assistant:1.8.0",
+            "imagePullPolicy": "IfNotPresent",
+            "env": [
+              {
+                "name": "OPENAI_API_KEY",
+                "value": "sk-live-abcdefghijklmnop"
+              }
+            ],
+            "volumeMounts": [
+              {
+                "name": "otel-auto-instrumentation-python",
+                "mountPath": "/otel-auto-instrumentation-python"
+              }
+            ]
+          }
+        ],
+        "serviceAccountName": "search-assistant",
+        "initContainers": [
+          {
+            "name": "opentelemetry-auto-instrumentation-python",
+            "image": "ghcr.io/impact-ai/autoinstrumentation-python@sha256:0",
+            "command": [
+              "cp",
+              "-r",
+              "/autoinstrumentation/.",
+              "/otel-auto-instrumentation-python"
+            ]
+          }
+        ]
+      },
+      "status": {
+        "phase": "Pending",
+        "initContainerStatuses": [
+          {
+            "name": "opentelemetry-auto-instrumentation-python",
+            "ready": false,
+            "restartCount": 0,
+            "image": "ghcr.io/impact-ai/autoinstrumentation-python@sha256:0",
+            "imageID": "",
+            "state": {
+              "waiting": {
+                "reason": "ErrImagePull",
+                "message": "rpc error: code = Unknown desc = failed to pull and unpack image \"mirror.example.com/mirror/python@sha256:0\": 401 Unauthorized"
+              }
+            }
+          }
+        ],
+        "containerStatuses": [
+          {
+            "name": "app",
+            "ready": false,
+            "restartCount": 0,
+            "image": "registry.example.com/shop/search-assistant:1.8.0",
+            "imageID": "",
+            "state": {
+              "waiting": {
+                "reason": "PodInitializing"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "search-assistant-7c6d5e4f3b-ccccc",
+        "namespace": "shop",
+        "uid": "shop-search-assistant-7c6d5e4f3b-ccccc-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-11-03T11:00:00Z",
+        "labels": {
+          "app": "search-assistant",
+          "pod-template-hash": "7c6d5e4f3b"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "4"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "v1",
+            "kind": "ReplicaSet",
+            "name": "search-assistant-7c6d5e4f3b",
+            "uid": "owner-uid",
+            "controller": true,
+            "blockOwnerDeletion": true
+          }
+        ]
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "app",
+            "image": "registry.example.com/shop/search-assistant:1.8.0",
+            "imagePullPolicy": "IfNotPresent",
+            "env": [
+              {
+                "name": "OPENAI_API_KEY",
+                "value": "sk-live-abcdefghijklmnop"
+              }
+            ]
+          }
+        ],
+        "serviceAccountName": "search-assistant"
+      },
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {
+            "type": "Ready",
+            "status": "True"
+          }
+        ]
+      }
+    }
+  ]
+}

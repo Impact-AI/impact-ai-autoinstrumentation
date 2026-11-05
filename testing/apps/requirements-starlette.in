@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# A returns assistant (return-reasons): what its image holds besides the database driver, at its pins. No FastAPI,
+# no OpenAI or Anthropic SDK, no packaging: the payload's own copies of the shared libraries are all there is.
+boto3==1.43.123
+starlette==1.10.0
+uvicorn==0.54.0

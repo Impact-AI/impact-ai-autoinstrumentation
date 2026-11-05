@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# Tool versions for local work and CI (jdx/mise-action installs exactly these).
+# Container tooling (docker or podman), make and git come from the machine.
+[tools]
+go = "1.27.3"
+python = "3.13.18"
+uv = "0.13.6"
+helm = ["3.22.1", "4.3.1"]  # the first is the one on the PATH; the end-to-end suite installs once with the second
+kind = "0.33.0"
+kubectl = "1.34.13"
+trivy = "0.76.1"
+cosign = "3.1.4"

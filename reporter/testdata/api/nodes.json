@@ -1,0 +1,44 @@
+{
+  "kind": "NodeList",
+  "apiVersion": "v1",
+  "metadata": {
+    "resourceVersion": "12345"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "ip-10-0-1-10.ec2.internal",
+        "labels": {
+          "kubernetes.io/hostname": "ip-10-0-1-10",
+          "eks.amazonaws.com/nodegroup": "default",
+          "topology.kubernetes.io/region": "us-east-1",
+          "topology.kubernetes.io/zone": "us-east-1a"
+        }
+      },
+      "spec": {
+        "providerID": "aws:///us-east-1a/i-0abc"
+      },
+      "status": {
+        "nodeInfo": {
+          "kubeletVersion": "v1.31.2-eks-1234abc",
+          "osImage": "Amazon Linux 2023"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "ip-10-0-2-20.ec2.internal",
+        "labels": {
+          "kubernetes.io/hostname": "ip-10-0-2-20",
+          "eks.amazonaws.com/nodegroup": "default",
+          "topology.kubernetes.io/region": "us-east-1"
+        }
+      },
+      "status": {
+        "nodeInfo": {
+          "kubeletVersion": "v1.31.2-eks-1234abc"
+        }
+      }
+    }
+  ]
+}

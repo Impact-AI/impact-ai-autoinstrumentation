@@ -1,0 +1,192 @@
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+{{- /*
+helm uninstall: before anything is deleted, a Job stops the reporter, waits until its pods are gone, and then sends one
+final snapshot with mode "uninstalled" and no workloads, so impact.ai shows the cluster as not reporting at once. Stopping
+the reporter first means a late snapshot of the old reporter cannot flip the cluster back to reporting. The Job never
+fails for operational reasons (the reporter exits 0), and its objects are removed when it is done.
+
+With automatic coverage the same Job also leaves nothing of it behind. It stops the cover pod too, so that no pod is
+marked meanwhile, and, after the final snapshot, deletes the Secret the install hook made for the ingest key, which Helm
+does not own. That is all it may do to Secrets: it can delete that one, and read none.
+
+It writes to no pod. The marks the cover pod put on pods (the injection annotations, the marker and its label) come off
+in scripts/uninstall-cluster-kit.sh, which runs under the operator's own kubectl rights and finds the pods by the label:
+a permission to patch pods in every namespace is a permission to run code in them, for a result that is only cosmetic.
+Its objects that are cluster-scoped carry the release as a label, so that the script's last step finds what an uninstall
+that was cut short leaves behind (a hook's objects are not Helm's to delete then).
+*/ -}}
+{{- $hook := dict "helm.sh/hook" "pre-delete" "helm.sh/hook-delete-policy" "before-hook-creation,hook-succeeded,hook-failed" }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "cluster-kit.uninstallName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml (merge (dict "helm.sh/hook-weight" "-10") $hook) | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "cluster-kit.uninstallName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml (merge (dict "helm.sh/hook-weight" "-10") $hook) | nindent 4 }}
+rules:
+  # Scale the reporter (and the cover pod) to zero, nothing else.
+  - apiGroups: [apps]
+    resources: [deployments/scale]
+    resourceNames: [{{ include "cluster-kit.reporterName" . }}{{ if include "cluster-kit.coverEnabled" . }}, {{ include "cluster-kit.coverName" . }}{{ end }}]
+    verbs: [patch]
+  {{- if include "cluster-kit.tokenInstall" . }}
+  # Delete the key Secret the install hook made, nothing else: no get, list or watch.
+  - apiGroups: [""]
+    resources: [secrets]
+    resourceNames: [{{ include "cluster-kit.keySecretName" . }}]
+    verbs: [delete]
+  {{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "cluster-kit.uninstallName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml (merge (dict "helm.sh/hook-weight" "-10") $hook) | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "cluster-kit.uninstallName" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "cluster-kit.uninstallName" . }}
+    namespace: {{ .Release.Namespace }}
+---
+# The same read-only rules as the reporter: the notice describes the cluster (ID, version, provider) like a snapshot.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: impact-ai-kit-uninstall
+  labels:
+    {{- include "cluster-kit.clusterLabels" . | nindent 4 }}
+  annotations:
+    {{- toYaml (merge (dict "helm.sh/hook-weight" "-10") $hook) | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "cluster-kit.clusterRoleName" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "cluster-kit.uninstallName" . }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "cluster-kit.uninstallName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+    {{- include "cluster-kit.selectorLabels" (dict "name" "uninstall" "root" .) | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-delete
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0
+  # 60 s to stop the reporter + 60 s to send, with slack. The reporter in this mode exits 0 on every operational failure.
+  # With the cover pod: 60 s to stop the reporter, 60 s to stop the cover pod, 60 s to send, with the same slack.
+  activeDeadlineSeconds: {{ ternary 240 180 (not (empty (include "cluster-kit.coverEnabled" .))) }}
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        {{- include "cluster-kit.selectorLabels" (dict "name" "uninstall" "root" .) | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ include "cluster-kit.uninstallName" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      {{- include "cluster-kit.pullSecrets" . | nindent 6 }}
+      {{- include "cluster-kit.podPlacement" . | nindent 6 }}
+      # Prefer the node the reporter runs on: its image is already there, so the notice does not depend on the registry.
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    {{- include "cluster-kit.selectorLabels" (dict "name" "reporter" "root" .) | nindent 20 }}
+      containers:
+        - name: notice
+          image: {{ include "cluster-kit.image" (dict "name" "reporter" "root" .) | quote }}
+          imagePullPolicy: {{ .Values.images.pullPolicy }}
+          # Every argument is quoted as a whole, as in the reporter and the exchange: a value stays one argument.
+          args:
+            - "--uninstall-notice"
+            - {{ printf "--ingest-endpoint=%s" (include "cluster-kit.ingestOrigin" .) | quote }}
+            {{- if .Values.ingest.allowInsecureHttp }}
+            - "--allow-insecure-ingest"
+            {{- end }}
+            - {{ printf "--release-name=%s" .Release.Name | quote }}
+            - {{ printf "--release-namespace=%s" .Release.Namespace | quote }}
+            - {{ printf "--stop-deployment=%s" (include "cluster-kit.reporterName" .) | quote }}
+            - {{ printf "--stop-namespace=%s" .Release.Namespace | quote }}
+            - {{ printf "--stop-pod-selector=app.kubernetes.io/name=reporter,app.kubernetes.io/instance=%s" .Release.Name | quote }}
+            - "--stop-timeout=60s"
+            - "--notice-timeout=60s"
+            {{- if include "cluster-kit.coverEnabled" . }}
+            - {{ printf "--cover-deployment=%s" (include "cluster-kit.coverName" .) | quote }}
+            - {{ printf "--cover-pod-selector=app.kubernetes.io/name=cover,app.kubernetes.io/instance=%s" .Release.Name | quote }}
+            {{- end }}
+            {{- if include "cluster-kit.tokenInstall" . }}
+            - {{ printf "--key-secret=%s" (include "cluster-kit.keySecretName" .) | quote }}
+            {{- end }}
+            {{- with .Values.cluster.name }}
+            - {{ printf "--cluster-name=%s" . | quote }}
+            {{- end }}
+            {{- with include "cluster-kit.cloudArgs" . }}
+            {{- . | trim | nindent 12 }}
+            {{- end }}
+          env:
+            - name: POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {memory: 128Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: ingest-key
+              mountPath: /var/run/secrets/impact
+              readOnly: true
+      volumes:
+        - name: ingest-key
+          secret:
+            secretName: {{ include "cluster-kit.keySecretName" . }}
+            # Not there when the install was refused (or someone deleted it): the pod then starts without the key,
+            # the notice is skipped and the uninstall goes on, instead of waiting for a Secret that will not come.
+            optional: true
+            items:
+              - key: ingest-key
+                path: ingest-key

@@ -1,0 +1,11 @@
+{
+  "kind": "Namespace",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "kube-system",
+    "uid": "4e5622e7-f420-499c-9662-50af7f8a64b9"
+  },
+  "status": {
+    "phase": "Active"
+  }
+}

@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: Apache-2.0
+apiVersion: v2
+name: impact-ai
+description: >-
+  impact.ai cluster kit. Lists a cluster's workloads by name (never values) and covers Python and Node.js workloads
+  that call AI models with no code change and no new image.
+type: application
+# make release replaces these with the release version
+version: 0.0.0-dev
+appVersion: 0.0.0-dev
+kubeVersion: ">=1.27.0-0"
+keywords: [opentelemetry, observability, ai, llm]
+home: https://github.com/impact-ai/impact-ai-k8s
+sources:
+  - https://github.com/impact-ai/impact-ai-k8s
+annotations:
+  artifacthub.io/license: Apache-2.0
+dependencies:
+  # Vendored, pinned and reduced by scripts/vendor_operator_chart.py. No repository: it lives in charts/.
+  - name: opentelemetry-operator
+    version: 0.128.0
+    alias: operator

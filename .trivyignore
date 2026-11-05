@@ -1,0 +1,3 @@
+# Vulnerabilities trivy is told to accept (scripts/scan-images.sh, make release). Only fixable CRITICAL and HIGH ones fail
+# a build to begin with, so an entry here is a finding that cannot be fixed yet. One per line: the ID, and above it why,
+# who decided and until when. Expired entries are removed in the next release.

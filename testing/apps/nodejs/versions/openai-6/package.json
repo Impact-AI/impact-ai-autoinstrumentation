@@ -1,0 +1,8 @@
+{
+  "name": "fixture-openai-6",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "openai": "6.49.0"
+  }
+}

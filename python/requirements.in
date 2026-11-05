@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# What the image installs, by direct pin. `make python-lock` resolves these to requirements.lock with hashes.
+# No provider SDK (openai, anthropic, boto3, botocore) and no exporter/HTTP stack: the package sends OTLP/JSON on
+# the standard library (see src/impact_instrumentation/otlp.py), so protobuf, requests, urllib3 and certifi stay out.
+
+# SDK and instrumentation base
+opentelemetry-sdk==1.45.2
+opentelemetry-instrumentation==0.66b2
+opentelemetry-util-http==0.66b2
+
+# Content on the span (qualification of 2026-11-03): OpenTelemetry GenAI packages for OpenAI and Anthropic,
+# OpenLLMetry's package for Bedrock Converse (botocore's instrumentation puts content in logs only).
+#
+# Agents (AE-11): the OpenAI Agents SDK and LangChain / LangGraph. The packages of one release are tested together and
+# one util-genai serves them all, so they move together. 1.3b0 and not the 1.1 pins of the PyPI `impact` 1.2.0rc7:
+# with genai-langchain 1.1b1 a LangChain agent is an invoke_workflow, and each model call gets two chat spans; with
+# 1.3b0 it is an invoke_agent with its gen_ai.agent.name, one chat span per call, and the Agents SDK's tool span has
+# its arguments (see python/tests/image/test_agents.py).
+opentelemetry-util-genai==1.3b0
+opentelemetry-instrumentation-genai-openai==1.3b0
+opentelemetry-instrumentation-genai-anthropic==1.3b0
+opentelemetry-instrumentation-genai-openai-agents==1.3b0
+opentelemetry-instrumentation-genai-langchain==1.3b0
+opentelemetry-instrumentation-bedrock==0.62.4
+
+# Request roots for ASGI and WSGI frameworks
+opentelemetry-instrumentation-asgi==0.66b2
+opentelemetry-instrumentation-wsgi==0.66b2
+opentelemetry-instrumentation-fastapi==0.66b2
+opentelemetry-instrumentation-starlette==0.66b2
+opentelemetry-instrumentation-flask==0.66b2
+opentelemetry-instrumentation-django==0.66b2
+opentelemetry-instrumentation-falcon==0.66b2
+opentelemetry-instrumentation-pyramid==0.66b2

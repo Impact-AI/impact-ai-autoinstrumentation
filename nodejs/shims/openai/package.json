@@ -1,0 +1,8 @@
+{
+  "name": "openai",
+  "version": "0.0.0-impact-shim",
+  "private": true,
+  "description": "Stands in for the application's own openai package where OpenInference's openai instrumentation requires it by name while it loads. It is never the module the application imports: the payload is not on the application's module path.",
+  "main": "index.js",
+  "license": "Apache-2.0"
+}

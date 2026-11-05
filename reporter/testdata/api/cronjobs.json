@@ -1,0 +1,83 @@
+{
+  "kind": "CronJobList",
+  "apiVersion": "v1",
+  "metadata": {
+    "resourceVersion": "12345"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "nightly-report",
+        "namespace": "batch",
+        "uid": "batch-nightly-report-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-10-20T08:00:00Z",
+        "labels": {
+          "app": "nightly-report"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "3"
+        }
+      },
+      "spec": {
+        "schedule": "0 2 * * *",
+        "suspend": false,
+        "jobTemplate": {
+          "spec": {
+            "template": {
+              "metadata": {
+                "labels": {
+                  "app": "x"
+                }
+              },
+              "spec": {
+                "containers": [
+                  {
+                    "name": "report",
+                    "image": "registry.example.com/batch/report:3.0",
+                    "imagePullPolicy": "IfNotPresent",
+                    "resources": {
+                      "limits": {
+                        "memory": "512Mi"
+                      }
+                    },
+                    "command": [
+                      "python"
+                    ],
+                    "args": [
+                      "report.py",
+                      "--token",
+                      "sk-live-abcdefghijklmnop"
+                    ],
+                    "env": [
+                      {
+                        "name": "AZURE_OPENAI_API_KEY",
+                        "valueFrom": {
+                          "secretKeyRef": {
+                            "name": "azure-openai",
+                            "key": "key"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "restartPolicy": "Always",
+                "serviceAccountName": "batch"
+              }
+            }
+          }
+        }
+      },
+      "status": {
+        "active": [
+          {
+            "kind": "Job",
+            "name": "nightly-report-29000",
+            "namespace": "batch"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "kind": "StatefulSetList",
+  "apiVersion": "v1",
+  "metadata": {
+    "resourceVersion": "12345"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "vector-db",
+        "namespace": "shop",
+        "uid": "shop-vector-db-uid",
+        "resourceVersion": "1",
+        "creationTimestamp": "2026-10-20T08:00:00Z",
+        "labels": {
+          "app": "vector-db"
+        },
+        "annotations": {
+          "deployment.kubernetes.io/revision": "3"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "serviceName": "vector-db",
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "x"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "db",
+                "image": "qdrant/qdrant:v1.12.0",
+                "imagePullPolicy": "IfNotPresent",
+                "resources": {
+                  "limits": {
+                    "memory": "512Mi"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "QDRANT__SERVICE__API_KEY",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "qdrant",
+                        "key": "api-key"
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "restartPolicy": "Always"
+          }
+        }
+      },
+      "status": {
+        "replicas": 1,
+        "readyReplicas": 1
+      }
+    }
+  ]
+}

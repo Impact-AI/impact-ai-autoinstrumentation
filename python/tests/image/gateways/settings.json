@@ -1,0 +1,29 @@
+{
+  "schema": "impact.gateway.settings.v1",
+  "gateway": "http://impact-ai-gateway.impact-ai.svc:4318",
+  "gateways": {
+    "litellm": {
+      "name": "LiteLLM",
+      "imageNames": ["berriai/litellm", "litellm/litellm"],
+      "configYaml": "litellm_settings:\n  callbacks: [\"otel\"]\n",
+      "env": {
+        "OTEL_EXPORTER": "otlp_http",
+        "OTEL_ENDPOINT": "{gateway}",
+        "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT": "span_only",
+        "OTEL_RESOURCE_ATTRIBUTES": "k8s.namespace.name={namespace},k8s.deployment.name={name}"
+      },
+      "content": "span"
+    },
+    "portkey": {
+      "name": "Portkey",
+      "imageNames": ["portkeyai/gateway"],
+      "configYaml": null,
+      "env": {
+        "EXPERIMENTAL_GEN_AI_OTEL_TRACES_ENABLED": "true",
+        "EXPERIMENTAL_GEN_AI_OTEL_EXPORTER_OTLP_ENDPOINT": "{gateway}",
+        "EXPERIMENTAL_GEN_AI_OTEL_RESOURCE_ATTRIBUTES": "k8s.namespace.name={namespace},k8s.deployment.name={name}"
+      },
+      "content": "enterprise"
+    }
+  }
+}

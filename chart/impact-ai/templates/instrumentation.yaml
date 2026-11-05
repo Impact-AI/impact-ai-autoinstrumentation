@@ -1,0 +1,50 @@
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+{{- if include "cluster-kit.operatorEnabled" . }}
+{{- /*
+The Operator injects this image into pods annotated instrumentation.opentelemetry.io/inject-python: "<namespace>/impact"
+(inject-nodejs for the Node.js image, once the release has one).
+Only what the package needs is set: where the gateway is, and nothing else. The Operator would also add OTEL_TRACES_EXPORTER,
+OTEL_METRICS_EXPORTER, OTEL_LOGS_EXPORTER, OTEL_EXPORTER_OTLP_PROTOCOL and OTEL_SERVICE_NAME to a workload that has not
+set them. The package ignores them, and another tracer in the workload may obey them (ddtrace 4 exports OTLP to
+localhost:4318 when it sees OTEL_TRACES_EXPORTER=otlp). The Operator adds a default only when the variable is not
+already defined, so each is defined here as an optional reference to a ConfigMap key that does not exist: Kubernetes
+then leaves the variable out. The package applies its own defaults (content on the span, probes excluded, service
+name) only when it starts, so a workload that already has a tracer keeps its environment as it was.
+*/ -}}
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: {{ include "cluster-kit.instrumentationName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+spec:
+  imagePullPolicy: {{ .Values.images.pullPolicy }}
+  # The injected init container must pass the strictest Pod Security level (restricted), or a namespace that enforces
+  # it would refuse the pods of the workloads that were annotated.
+  initContainerSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    runAsGroup: 65532
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: [ALL]
+    seccompProfile:
+      type: RuntimeDefault
+  python:
+    image: {{ include "cluster-kit.image" (dict "name" "python" "root" .) | quote }}
+    resourceRequirements:
+      {{- toYaml .Values.instrumentation.python.resources | nindent 6 }}
+    env:
+      {{- include "cluster-kit.instrumentationEnv" . | nindent 6 }}
+  {{- if include "cluster-kit.nodejsEnabled" . }}
+  # The same for Node.js. The image is the release's own; the environment and its suppressed defaults are Python's.
+  nodejs:
+    image: {{ include "cluster-kit.image" (dict "name" "nodejs" "root" .) | quote }}
+    resourceRequirements:
+      {{- toYaml .Values.instrumentation.nodejs.resources | nindent 6 }}
+    env:
+      {{- include "cluster-kit.instrumentationEnv" . | nindent 6 }}
+  {{- end }}
+{{- end }}

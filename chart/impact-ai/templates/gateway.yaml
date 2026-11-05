@@ -1,0 +1,94 @@
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cluster-kit.gatewayName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "cluster-kit.selectorLabels" (dict "name" "gateway" "root" .) | nindent 4 }}
+  ports:
+    - name: otlp-http
+      port: 4318
+      targetPort: otlp-http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cluster-kit.gatewayName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+    {{- include "cluster-kit.selectorLabels" (dict "name" "gateway" "root" .) | nindent 4 }}
+spec:
+  replicas: {{ .Values.gateway.replicas }}
+  selector:
+    matchLabels:
+      {{- include "cluster-kit.selectorLabels" (dict "name" "gateway" "root" .) | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "cluster-kit.labels" . | nindent 8 }}
+        {{- include "cluster-kit.selectorLabels" (dict "name" "gateway" "root" .) | nindent 8 }}
+      annotations:
+        # A new key or configuration restarts the gateway (the key is read from the environment at start).
+        checksum/config: {{ include (print $.Template.BasePath "/gateway-config.yaml") . | sha256sum | trunc 16 | quote }}
+        checksum/key: {{ include "cluster-kit.keyChecksum" . | quote }}
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      {{- include "cluster-kit.pullSecrets" . | nindent 6 }}
+      {{- include "cluster-kit.podPlacement" . | nindent 6 }}
+      containers:
+        - name: collector
+          image: {{ include "cluster-kit.image" (dict "name" "collector" "root" .) | quote }}
+          imagePullPolicy: {{ .Values.images.pullPolicy }}
+          args: ["--config=/conf/config.yaml"]
+          env:
+            - name: IMPACT_INGEST_ENDPOINT
+              value: {{ include "cluster-kit.ingestOrigin" . | quote }}
+            - name: IMPACT_INGEST_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "cluster-kit.keySecretName" . }}
+                  key: ingest-key
+            {{- with include "cluster-kit.gatewayGoMemLimit" . }}
+            # 80% of the memory limit: the Go runtime collects garbage before the container is killed for using too much.
+            - name: GOMEMLIMIT
+              value: {{ . | quote }}
+            {{- end }}
+          ports:
+            - name: otlp-http
+              containerPort: 4318
+            - name: health
+              containerPort: 13133
+          livenessProbe:
+            httpGet:
+              path: /
+              port: health
+          readinessProbe:
+            httpGet:
+              path: /
+              port: health
+          resources:
+            {{- toYaml .Values.gateway.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: config
+              mountPath: /conf
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "cluster-kit.gatewayName" . }}

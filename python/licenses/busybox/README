@@ -1,0 +1,6 @@
+BusyBox 1.37 is in this image to provide the `cp` that the OpenTelemetry Operator's init container runs. It is the unmodified
+binary of docker.io/library/busybox:1.37 (digest sha256:a7dbc319b1438115a207e11930dc4bb3e643dcb3ec0bdd694bb36cd8fad289ec),
+licensed under the GNU General Public License version 2 only (COPYING, next to this file).
+
+The corresponding source code is at https://busybox.net/downloads/busybox-1.37.0.tar.bz2 and, for as long as this release
+is supported and for at least three years after it, from Impact AI on request (https://github.com/impact-ai/impact-ai-k8s).

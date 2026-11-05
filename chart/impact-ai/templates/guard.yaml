@@ -1,0 +1,19 @@
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+{{- /* Renders nothing. Fails the install when this cluster already reports to another product or release, or has no way to get its key. */ -}}
+{{- include "cluster-kit.guard" . -}}
+{{- $token := include "cluster-kit.installToken" . -}}
+{{- if and $token (or .Values.ingest.key .Values.ingest.existingSecret) -}}
+{{- fail "install.token and ingest.key (or ingest.existingSecret) are two ways to give this cluster its key: use one. Leave ingest.key and ingest.existingSecret empty to install with the token, or leave install.token empty (--set install.token=) to keep the key you give" -}}
+{{- end -}}
+{{- /*
+A token install belongs to Helm, or to a tool that runs Helm against the cluster: the exchange and uninstall hooks, and the
+Secret the exchange fills, are Helm hooks. Rendered without a cluster (helm template, Argo CD, helm install --dry-run) the
+hooks become plain objects, or the hooks of the tool: the pre-delete Job would run at install time, and a failed sync would
+delete the key Secret. The chart tests render without one on purpose and set install.allowRenderWithoutCluster.
+*/ -}}
+{{- if and $token (not (dig "install" "allowRenderWithoutCluster" false .Values.AsMap)) (not (lookup "v1" "Namespace" "" "kube-system")) -}}
+{{- fail "install.token needs Helm (or a tool that runs Helm against the cluster, such as Flux): this render has no cluster to look in, as helm template, Argo CD and helm install --dry-run have none. A token install made from such a render would apply its hooks as plain objects, so the uninstall hook would run at install time and a failed sync would delete the cluster's key Secret. For GitOps give the key instead: set ingest.existingSecret to a Secret you manage (the key under ingest-key), leave install.token empty and render with helm template --no-hooks" -}}
+{{- end -}}
+{{- if and (not $token) (not .Values.ingest.key) (not .Values.ingest.existingSecret) -}}
+{{- fail "ingest.key is required: pass it on standard input with --set-file ingest.key=/dev/stdin (or name a Secret in ingest.existingSecret), or install with the one-time install token of the Cover your AI command (install.token)" -}}
+{{- end -}}

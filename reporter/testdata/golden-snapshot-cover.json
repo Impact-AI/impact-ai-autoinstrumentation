@@ -1,0 +1,357 @@
+{
+  "cluster": {
+    "kubernetesVersion": "1.31.2",
+    "name": "prod-eks",
+    "provider": "eks",
+    "region": "us-east-1",
+    "uid": "4e5622e7-f420-499c-9662-50af7f8a64b9"
+  },
+  "observedAt": "2026-11-03T12:00:00Z",
+  "reporter": {
+    "clusterOwner": null,
+    "instance": "5b1d0f4c-0000-4000-8000-000000000001",
+    "mode": "inject",
+    "version": "dev"
+  },
+  "schema": "impact.inventory.v1",
+  "sequence": 1793707200,
+  "workloads": [
+    {
+      "annotations": {},
+      "containers": [
+        {
+          "envFrom": [],
+          "envNames": [
+            "AZURE_OPENAI_API_KEY"
+          ],
+          "executables": [
+            "python"
+          ],
+          "image": "registry.example.com/batch/report:3.0",
+          "injected": {
+            "python": false
+          },
+          "name": "report",
+          "secretRefs": [
+            {
+              "envName": "AZURE_OPENAI_API_KEY",
+              "key": "key",
+              "secret": "azure-openai"
+            }
+          ]
+        }
+      ],
+      "kind": "CronJob",
+      "name": "nightly-report",
+      "namespace": "batch",
+      "pods": {
+        "desired": 1,
+        "ready": 1
+      },
+      "serviceAccount": "batch"
+    },
+    {
+      "annotations": {},
+      "containers": [
+        {
+          "envFrom": [],
+          "envNames": [],
+          "executables": [],
+          "image": "registry.example.com/batch/job:1",
+          "injected": {
+            "python": false
+          },
+          "name": "job",
+          "secretRefs": []
+        }
+      ],
+      "kind": "Job",
+      "name": "backfill",
+      "namespace": "batch",
+      "pods": {
+        "desired": 2,
+        "ready": 1
+      },
+      "serviceAccount": "batch"
+    },
+    {
+      "annotations": {
+        "admission.datadoghq.com/enabled": "false"
+      },
+      "containers": [
+        {
+          "envFrom": [],
+          "envNames": [],
+          "executables": [
+            "fluent-bit"
+          ],
+          "image": "fluent/fluent-bit:3.1",
+          "injected": {
+            "python": false
+          },
+          "name": "agent",
+          "secretRefs": []
+        }
+      ],
+      "kind": "DaemonSet",
+      "name": "log-agent",
+      "namespace": "shop",
+      "pods": {
+        "desired": 2,
+        "ready": 2
+      },
+      "serviceAccount": "log-agent"
+    },
+    {
+      "annotations": {},
+      "containers": [
+        {
+          "envFrom": [],
+          "envNames": [
+            "OPENAI_API_KEY"
+          ],
+          "executables": [
+            "python"
+          ],
+          "image": "registry.example.com/shop/billing-api:3.1.0",
+          "injected": {
+            "python": false
+          },
+          "name": "app",
+          "secretRefs": []
+        }
+      ],
+      "kind": "Deployment",
+      "name": "billing-api",
+      "namespace": "shop",
+      "pods": {
+        "desired": 1,
+        "ready": 0
+      },
+      "serviceAccount": "billing-api",
+      "stall": {
+        "replicaFailure": "FailedCreate"
+      }
+    },
+    {
+      "annotations": {},
+      "containers": [
+        {
+          "envFrom": [],
+          "envNames": [],
+          "executables": [
+            "python3"
+          ],
+          "image": "registry.example.com/shop/idle:1",
+          "injected": {
+            "python": false
+          },
+          "name": "idle",
+          "secretRefs": []
+        }
+      ],
+      "kind": "Deployment",
+      "name": "idle",
+      "namespace": "shop",
+      "pods": {
+        "desired": 1,
+        "ready": 0
+      },
+      "serviceAccount": "idle"
+    },
+    {
+      "annotations": {},
+      "autoCovered": "2026-11-03T11:00:00Z",
+      "containers": [
+        {
+          "envFrom": [],
+          "envNames": [
+            "OPENAI_API_KEY"
+          ],
+          "executables": [
+            "python"
+          ],
+          "image": "registry.example.com/shop/search-assistant:1.8.0",
+          "injected": {
+            "python": true
+          },
+          "name": "app",
+          "secretRefs": []
+        }
+      ],
+      "kind": "Deployment",
+      "name": "search-assistant",
+      "namespace": "shop",
+      "pods": {
+        "desired": 2,
+        "ready": 1
+      },
+      "serviceAccount": "search-assistant",
+      "stall": {
+        "initWaiting": [
+          "ErrImagePull",
+          "ImagePullBackOff"
+        ]
+      }
+    },
+    {
+      "annotations": {
+        "impact.ai/cover": "true",
+        "instrumentation.opentelemetry.io/inject-python": "impact-system/impact-cluster-kit"
+      },
+      "containers": [
+        {
+          "envFrom": [
+            {
+              "kind": "ConfigMap",
+              "name": "app-config"
+            },
+            {
+              "kind": "Secret",
+              "name": "llm-config"
+            }
+          ],
+          "envNames": [
+            "ANTHROPIC_API_KEY",
+            "OPENAI_API_KEY",
+            "OTEL_SERVICE_NAME",
+            "POD_NAME"
+          ],
+          "executables": [
+            "sh"
+          ],
+          "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/shop/support-assistant:2.4.1",
+          "injected": {
+            "python": true
+          },
+          "name": "app",
+          "secretRefs": [
+            {
+              "envName": "ANTHROPIC_API_KEY",
+              "key": "api-key",
+              "secret": "anthropic-credentials"
+            }
+          ]
+        },
+        {
+          "envFrom": [],
+          "envNames": [
+            "ENVOY_UID"
+          ],
+          "executables": [
+            "envoy"
+          ],
+          "image": "envoyproxy/envoy:v1.31.0",
+          "injected": {
+            "python": false
+          },
+          "name": "proxy",
+          "secretRefs": []
+        }
+      ],
+      "kind": "Deployment",
+      "name": "support-assistant",
+      "namespace": "shop",
+      "pods": {
+        "desired": 2,
+        "ready": 2
+      },
+      "serviceAccount": "support-assistant"
+    },
+    {
+      "annotations": {},
+      "containers": [
+        {
+          "envFrom": [],
+          "envNames": [
+            "PORT",
+            "SESSION_SECRET"
+          ],
+          "executables": [
+            "node"
+          ],
+          "image": "registry.example.com/shop/web:5.1.0",
+          "injected": {
+            "python": false
+          },
+          "name": "web",
+          "secretRefs": [
+            {
+              "envName": "SESSION_SECRET",
+              "key": "secret",
+              "secret": "web-session"
+            }
+          ]
+        }
+      ],
+      "kind": "Deployment",
+      "name": "web",
+      "namespace": "shop",
+      "pods": {
+        "desired": 3,
+        "ready": 3
+      },
+      "serviceAccount": "default"
+    },
+    {
+      "annotations": {},
+      "containers": [
+        {
+          "envFrom": [],
+          "envNames": [
+            "TOKEN"
+          ],
+          "executables": [
+            "sleep"
+          ],
+          "image": "busybox:1.36",
+          "injected": {
+            "python": false
+          },
+          "name": "shell",
+          "secretRefs": []
+        }
+      ],
+      "kind": "Pod",
+      "name": "debug-shell",
+      "namespace": "shop",
+      "pods": {
+        "desired": 1,
+        "ready": 1
+      },
+      "serviceAccount": "default"
+    },
+    {
+      "annotations": {},
+      "containers": [
+        {
+          "envFrom": [],
+          "envNames": [
+            "QDRANT__SERVICE__API_KEY"
+          ],
+          "executables": [],
+          "image": "qdrant/qdrant:v1.12.0",
+          "injected": {
+            "python": false
+          },
+          "name": "db",
+          "secretRefs": [
+            {
+              "envName": "QDRANT__SERVICE__API_KEY",
+              "key": "api-key",
+              "secret": "qdrant"
+            }
+          ]
+        }
+      ],
+      "kind": "StatefulSet",
+      "name": "vector-db",
+      "namespace": "shop",
+      "pods": {
+        "desired": 1,
+        "ready": 1
+      },
+      "serviceAccount": "default"
+    }
+  ]
+}

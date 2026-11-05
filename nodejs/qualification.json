@@ -1,0 +1,365 @@
+{
+  "schema": "impact.nodejs.qualification.v1",
+  "cells": [
+    {
+      "node": 22,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "anthropic",
+      "major": 0,
+      "version": "0.134.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 22,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "anthropic",
+      "major": 1,
+      "version": "1.4.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 22,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "openai",
+      "major": 4,
+      "version": "4.104.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 22,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "openai",
+      "major": 5,
+      "version": "5.23.2",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 22,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "openai",
+      "major": 6,
+      "version": "6.49.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 22,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "openai",
+      "major": 7,
+      "version": "7.50.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 22,
+      "tree": "node22",
+      "module": "esm",
+      "library": "anthropic",
+      "major": 0,
+      "version": "0.134.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 22,
+      "tree": "node22",
+      "module": "esm",
+      "library": "anthropic",
+      "major": 1,
+      "version": "1.4.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 22,
+      "tree": "node22",
+      "module": "esm",
+      "library": "openai",
+      "major": 4,
+      "version": "4.104.0",
+      "started": false,
+      "traced": false
+    },
+    {
+      "node": 22,
+      "tree": "node22",
+      "module": "esm",
+      "library": "openai",
+      "major": 5,
+      "version": "5.23.2",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 22,
+      "tree": "node22",
+      "module": "esm",
+      "library": "openai",
+      "major": 6,
+      "version": "6.49.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 22,
+      "tree": "node22",
+      "module": "esm",
+      "library": "openai",
+      "major": 7,
+      "version": "7.50.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 24,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "anthropic",
+      "major": 0,
+      "version": "0.134.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 24,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "anthropic",
+      "major": 1,
+      "version": "1.4.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 24,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "openai",
+      "major": 4,
+      "version": "4.104.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 24,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "openai",
+      "major": 5,
+      "version": "5.23.2",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 24,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "openai",
+      "major": 6,
+      "version": "6.49.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 24,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "openai",
+      "major": 7,
+      "version": "7.50.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 24,
+      "tree": "node22",
+      "module": "esm",
+      "library": "anthropic",
+      "major": 0,
+      "version": "0.134.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 24,
+      "tree": "node22",
+      "module": "esm",
+      "library": "anthropic",
+      "major": 1,
+      "version": "1.4.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 24,
+      "tree": "node22",
+      "module": "esm",
+      "library": "openai",
+      "major": 4,
+      "version": "4.104.0",
+      "started": false,
+      "traced": false
+    },
+    {
+      "node": 24,
+      "tree": "node22",
+      "module": "esm",
+      "library": "openai",
+      "major": 5,
+      "version": "5.23.2",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 24,
+      "tree": "node22",
+      "module": "esm",
+      "library": "openai",
+      "major": 6,
+      "version": "6.49.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 24,
+      "tree": "node22",
+      "module": "esm",
+      "library": "openai",
+      "major": 7,
+      "version": "7.50.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 26,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "anthropic",
+      "major": 0,
+      "version": "0.134.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 26,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "anthropic",
+      "major": 1,
+      "version": "1.4.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 26,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "openai",
+      "major": 4,
+      "version": "4.104.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 26,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "openai",
+      "major": 5,
+      "version": "5.23.2",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 26,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "openai",
+      "major": 6,
+      "version": "6.49.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 26,
+      "tree": "node22",
+      "module": "cjs",
+      "library": "openai",
+      "major": 7,
+      "version": "7.50.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 26,
+      "tree": "node22",
+      "module": "esm",
+      "library": "anthropic",
+      "major": 0,
+      "version": "0.134.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 26,
+      "tree": "node22",
+      "module": "esm",
+      "library": "anthropic",
+      "major": 1,
+      "version": "1.4.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 26,
+      "tree": "node22",
+      "module": "esm",
+      "library": "openai",
+      "major": 4,
+      "version": "4.104.0",
+      "started": false,
+      "traced": false
+    },
+    {
+      "node": 26,
+      "tree": "node22",
+      "module": "esm",
+      "library": "openai",
+      "major": 5,
+      "version": "5.23.2",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 26,
+      "tree": "node22",
+      "module": "esm",
+      "library": "openai",
+      "major": 6,
+      "version": "6.49.0",
+      "started": true,
+      "traced": true
+    },
+    {
+      "node": 26,
+      "tree": "node22",
+      "module": "esm",
+      "library": "openai",
+      "major": 7,
+      "version": "7.50.0",
+      "started": true,
+      "traced": true
+    }
+  ]
+}

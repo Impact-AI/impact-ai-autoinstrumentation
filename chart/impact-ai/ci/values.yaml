@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: Apache-2.0
+# Values for helm lint and the render checks (make ci): no cluster is queried, so the cluster's ID is given.
+product:
+  id: prod_test
+ingest:
+  endpoint: https://ingest.example.test
+  key: test-ingest-key
+install:
+  # These values render without a cluster, so a token install would be refused: the tests set this to look at one.
+  allowRenderWithoutCluster: true
+cluster:
+  name: test-cluster
+  uid: 4e5622e7-f420-499c-9662-50af7f8a64b9
+images:
+  python:
+    tag: v0.0.0-test
+    digest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  reporter:
+    tag: v0.0.0-test
+    digest: sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb

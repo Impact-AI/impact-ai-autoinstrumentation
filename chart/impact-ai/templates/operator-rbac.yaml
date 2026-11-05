@@ -1,0 +1,99 @@
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+{{- if include "cluster-kit.operatorEnabled" . }}
+{{- /*
+The OpenTelemetry Operator's rights, written by the kit instead of taken from the upstream chart. Upstream's role is made
+for the collector, target allocator and OpAMP features, which this kit does not install: it creates and deletes pods,
+workloads, Services and policies in every namespace, and below Kubernetes 1.33 it holds nodes/proxy. The kit uses one
+thing, the pod webhook that injects an Instrumentation, and this role is what that needs (OpenTelemetry Operator 0.162.0:
+internal/webhook/podmutation, internal/instrumentation, cmd/operator, with the kubebuilder:rbac markers next to them).
+No Secrets, no ConfigMaps, no write on pods or workloads. When the Operator is bumped, the end-to-end suite fails if its
+log holds a "forbidden"; add the read verb on that kind and nothing more.
+*/ -}}
+{{- $account := required "operator.manager.serviceAccount.name is needed: the Operator's role is bound to it" .Values.operator.manager.serviceAccount.name }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "cluster-kit.operatorName" . }}-manager
+  labels:
+    {{- include "cluster-kit.clusterLabels" . | nindent 4 }}
+rules:
+  # The pod webhook reads the pod's namespace, the Instrumentation named in its annotation, and the ReplicaSet or Job that
+  # owns the pod (their owners' names become k8s.deployment.name and k8s.cronjob.name on the spans). The Operator keeps
+  # these in a cache, which lists and watches them.
+  - apiGroups: [""]
+    resources: [namespaces]
+    verbs: [get, list, watch]
+  - apiGroups: [apps]
+    resources: [replicasets]
+    verbs: [get, list, watch]
+  - apiGroups: [batch]
+    resources: [jobs]
+    verbs: [get, list, watch]
+  # The only thing the Operator writes: the Instrumentation resources (it defaults the ones it manages at start).
+  - apiGroups: [opentelemetry.io]
+    resources: [instrumentations]
+    verbs: [get, list, watch, update, patch]
+  - apiGroups: [opentelemetry.io]
+    resources: [instrumentations/status]
+    verbs: [get, update, patch]
+  # Events it records on a pod or an Instrumentation.
+  - apiGroups: ["", events.k8s.io]
+    resources: [events]
+    verbs: [create, patch]
+  # Its metrics endpoint checks the caller's token and rights.
+  - apiGroups: [authentication.k8s.io]
+    resources: [tokenreviews]
+    verbs: [create]
+  - apiGroups: [authorization.k8s.io]
+    resources: [subjectaccessreviews]
+    verbs: [create]
+  # At start it looks for the API server's address in the EndpointSlices of the kubernetes Service, and falls back to the
+  # environment when it cannot read them. Read only.
+  - apiGroups: [discovery.k8s.io]
+    resources: [endpointslices]
+    verbs: [get, list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "cluster-kit.operatorName" . }}-manager
+  labels:
+    {{- include "cluster-kit.clusterLabels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "cluster-kit.operatorName" . }}-manager
+subjects:
+  - kind: ServiceAccount
+    name: {{ $account }}
+    namespace: {{ .Release.Namespace }}
+---
+# Leader election, in the release namespace: one Lease.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "cluster-kit.operatorName" . }}-leader-election
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [coordination.k8s.io]
+    resources: [leases]
+    verbs: [create, get, list, update]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "cluster-kit.operatorName" . }}-leader-election
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cluster-kit.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "cluster-kit.operatorName" . }}-leader-election
+subjects:
+  - kind: ServiceAccount
+    name: {{ $account }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

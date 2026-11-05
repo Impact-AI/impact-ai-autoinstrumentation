@@ -1,0 +1,16 @@
+{{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+impact.ai cluster kit {{ .Chart.Version }} is installed in namespace {{ .Release.Namespace }}.
+
+Cluster ID : {{ include "cluster-kit.clusterUID" . }}
+Product    : {{ .Values.product.id }}
+Mode       : {{ if include "cluster-kit.operatorEnabled" . }}injection and reporting{{ else }}reporting only{{ with include "cluster-kit.foreignInjector" . }} ({{ . }} already owns this cluster's injection){{ end }}{{ end }}
+
+{{- if include "cluster-kit.tokenInstall" . }}
+Ingest key : made in this cluster from the install token; it is kept in the Secret {{ include "cluster-kit.keySecretName" . }}
+{{- end }}
+{{- if include "cluster-kit.coverEnabled" . }}
+Coverage   : automatic; workloads impact.ai lists are covered at their next rollout (set per cluster in Cover your AI)
+{{- end }}
+
+The workloads of this cluster appear in impact.ai within a few minutes (Cover your AI).
+To remove everything this chart installed, see the uninstall steps in the chart README.
