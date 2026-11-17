@@ -116,7 +116,7 @@ http
       if (!route) return send(response, 404, { error: 'no such route' });
       return send(response, 200, { answer: await route(ask.prompt || PROMPT) });
     } catch (error) {
-      return send(response, 500, { error: String(error && error.stack) });
+      return send(response, 500, { error: 'request failed' });
     }
   })
   .listen(Number(process.env.PORT || 8000), '0.0.0.0');

@@ -105,6 +105,8 @@ def main() -> None:
     parser.add_argument("--key", required=True)
     args = parser.parse_args()
     tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    if tls.minimum_version < ssl.TLSVersion.TLSv1_2:
+        tls.minimum_version = ssl.TLSVersion.TLSv1_2
     tls.load_cert_chain(args.cert, args.key)
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     server.daemon_threads = True

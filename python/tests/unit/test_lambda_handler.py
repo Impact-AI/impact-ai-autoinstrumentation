@@ -428,7 +428,12 @@ def test_a_report_trusts_the_ca_the_exporter_trusts():
 def test_one_tls_context_serves_every_send_until_the_ca_file_changes(tmp_path, monkeypatch):
     made = []
     monkeypatch.setattr(otlp, "_TLS_CONTEXTS", {})
-    monkeypatch.setattr(otlp.ssl, "create_default_context", lambda cafile=None: made.append(cafile) or object())
+
+    def make_context(cafile=None):
+        made.append(cafile)
+        return otlp.ssl.SSLContext(otlp.ssl.PROTOCOL_TLS_CLIENT)
+
+    monkeypatch.setattr(otlp.ssl, "create_default_context", make_context)
     assert otlp.tls_context() is otlp.tls_context()
     ca = tmp_path / "ca.pem"
     ca.write_text("one")

@@ -220,6 +220,8 @@ def tls_context(ca_file: str | None = None) -> ssl.SSLContext:
     context = _TLS_CONTEXTS.get(key)
     if context is None:
         context = ssl.create_default_context(cafile=ca_file)
+        if context.minimum_version < ssl.TLSVersion.TLSv1_2:
+            context.minimum_version = ssl.TLSVersion.TLSv1_2
         if len(_TLS_CONTEXTS) >= 8:
             _TLS_CONTEXTS.clear()
         _TLS_CONTEXTS[key] = context

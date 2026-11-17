@@ -10,4 +10,6 @@ source scripts/lib.sh
 
 image="$IMAGE_PREFIX/nodejs-unit:$TAG"
 "$CONTAINER" build -q -f nodejs/tests/Dockerfile -t "$image" nodejs >/dev/null
-"$CONTAINER" run --rm "$image"
+# The fixture HTTP-error regression reads the application outside the nodejs package build context.
+"$CONTAINER" run --rm \
+  -v "$PWD/testing/apps/nodejs/src/langsmith.cjs:/testing/apps/nodejs/src/langsmith.cjs:ro" "$image"

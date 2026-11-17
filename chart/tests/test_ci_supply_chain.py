@@ -59,3 +59,11 @@ def test_the_dependency_review_allows_exactly_the_known_vulnerabilities_of_the_t
     assert all(entry.get("reason") and entry.get("ignoreUntil") for entry in entries), "each says why and until when"
     assert config["fail-on-severity"] == "moderate"
     assert sorted(config["allow-ghsas"]) == sorted(ids), "the dependency review allows what osv-scanner.toml names"
+
+
+def test_go_is_installed_before_codeql_initializes_its_tracing_wrapper():
+    steps = yaml.safe_load((WORKFLOWS / "codeql.yml").read_text())["jobs"]["analyze"]["steps"]
+    install = next(i for i, step in enumerate(steps) if step.get("uses", "").startswith("jdx/mise-action@"))
+    init = next(i for i, step in enumerate(steps) if step.get("uses", "").startswith("github/codeql-action/init@"))
+    build = next(i for i, step in enumerate(steps) if step.get("run") == "go build ./...")
+    assert install < init < build, "installing Go after init shadows CodeQL's tracing wrapper"

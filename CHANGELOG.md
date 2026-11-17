@@ -74,6 +74,8 @@ the [chart README](chart/impact-ai/README.md#upgrade) shows.
 
 ### Fixed
 
+- Require TLS 1.2 or newer for Python telemetry export, including when system defaults allow older protocols.
+
 - The Python payload copies its packages instead of linking them from the build cache.
 
 ## [0.3.0-rc1] - 2026-11-05

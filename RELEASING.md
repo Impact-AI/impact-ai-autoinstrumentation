@@ -12,7 +12,10 @@ maintainers at Impact AI; anyone can follow what each step checks.
    the version and the step `propose`. It makes the release commit of `main`'s tree (`scripts/publish-public.sh`: the
    public tree, checked for internal details with built-in and any configured extra patterns), pushes it to the branch
    `release/X.Y.Z` here and opens its pull request into `main` as Impact AI's release App, titled `Release X.Y.Z`, with the version's
-   changelog section. Nothing of a release runs on anyone's machine.
+   changelog section. Nothing of a release runs on anyone's machine. To repair an open proposal, merge the fixes into
+   the development repository and run `propose` again with the same version. It appends a checked release commit and
+   updates the same PR, without force-pushing. Closed or merged proposals and unexpected outside commits are refused;
+   tagged versions are never replaced. After review and merge, `tag` selects the latest merged revision.
 3. **Review.** CI runs on the pull request. A maintainer reviews it, approves it and merges it **with a merge commit**,
    which keeps the release commit on `main`. Review the tree for company-specific names the generic checks cannot identify.
 4. **Tag.** The same workflow's step `tag` tags the merged release commit `vX.Y.Z` as the release identity and pushes

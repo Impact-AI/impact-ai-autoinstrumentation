@@ -244,7 +244,7 @@ def chat_body(request: dict) -> dict:
 
 # Google's Gemini API and Vertex AI: the same methods on every path that ends in the model, the model the last segment
 # before the colon.
-GEMINI = re.compile(r"/(?:[^:]+/)?models/(?P<model>[^/:]+):(?P<method>generateContent|streamGenerateContent)")
+GEMINI = re.compile(r"(?P<model>[^/:]+):(?P<method>generateContent|streamGenerateContent)")
 
 
 def gemini_chunk(model: str, text: str, output_tokens: int, finish: str | None) -> dict:
@@ -268,7 +268,10 @@ def gemini_answer(path: str, query: str) -> tuple[str, bytes] | None:
     """(content type, body) of a Gemini or Vertex AI call, or None for any other path. A stream is two parts whose text
     joins to the usual answer, the usage counted up in each, as the API sends them: server-sent events when the query
     asks for them (alt=sse), else a JSON array."""
-    match = GEMINI.fullmatch(path)
+    prefix, separator, tail = path.rpartition("/models/")
+    if not separator or (prefix and not prefix.startswith("/")) or ":" in prefix:
+        return None
+    match = GEMINI.fullmatch(tail)
     if not match:
         return None
     model = match["model"]

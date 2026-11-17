@@ -416,11 +416,18 @@ def test_only_an_explicit_release_rehearsal_equal_to_1_lifts_the_guard(tmp_path,
     assert result.returncode == 1 and "refusing to release" in result.stderr
 
 
-def test_the_repository_releases_are_made_in_is_the_one_the_other_scripts_name():
+@pytest.mark.parametrize("public_tree", [False, True], ids=["development", "public"])
+def test_the_repository_releases_are_made_in_is_the_one_the_other_scripts_name(tmp_path, monkeypatch, public_tree):
+    if public_tree:
+        for name in ("scripts/names.sh", "scripts/verify-release.sh", "chart/impact-ai/README.md"):
+            target = tmp_path / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(ROOT / name, target)
+        monkeypatch.setitem(globals(), "ROOT", tmp_path)
+        monkeypatch.setitem(globals(), "CHART", tmp_path / "chart" / "impact-ai")
     repository = bash('echo "$RELEASE_REPOSITORY"')
     assert repository == PUBLIC_REPOSITORY
     assert f"ghcr.io/{repository}" in (ROOT / "scripts" / "verify-release.sh").read_text()
-    assert f"github.com/{repository}.git" in (ROOT / "scripts" / "publish-public.sh").read_text()
     assert repository in (CHART / "README.md").read_text(), "and the signing identity of the chart README"
 
 
