@@ -242,11 +242,6 @@ def chat_body(request: dict) -> dict:
     }
 
 
-# Google's Gemini API and Vertex AI: the same methods on every path that ends in the model, the model the last segment
-# before the colon.
-GEMINI = re.compile(r"(?P<model>[^/:]+):(?P<method>generateContent|streamGenerateContent)")
-
-
 def gemini_chunk(model: str, text: str, output_tokens: int, finish: str | None) -> dict:
     """One GenerateContentResponse, in the REST API's own spelling."""
     candidate: dict = {"content": {"role": "model", "parts": [{"text": text}]}, "index": 0}
@@ -271,11 +266,10 @@ def gemini_answer(path: str, query: str) -> tuple[str, bytes] | None:
     prefix, separator, tail = path.rpartition("/models/")
     if not separator or (prefix and not prefix.startswith("/")) or ":" in prefix:
         return None
-    match = GEMINI.fullmatch(tail)
-    if not match:
+    model, separator, method = tail.partition(":")
+    if not separator or not model or "/" in model or method not in {"generateContent", "streamGenerateContent"}:
         return None
-    model = match["model"]
-    if match["method"] == "generateContent":
+    if method == "generateContent":
         return "application/json", json.dumps(gemini_chunk(model, ANSWER, 5, "STOP")).encode()
     head, tail = ANSWER.split(" ", 1)
     parts = [gemini_chunk(model, head, 2, None), gemini_chunk(model, " " + tail, 5, "STOP")]

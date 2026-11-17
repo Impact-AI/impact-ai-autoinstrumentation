@@ -85,7 +85,7 @@ public final class ExtensionSelfTest {
     equal("default-enabled stays off", "false", widened.get("otel.instrumentation.common.default-enabled"));
     check("default-enabled is not doubled", !widened.containsKey("otel.instrumentation.common.default.enabled"));
     try {
-      java.io.File file = java.io.File.createTempFile("otel", ".properties");
+      java.io.File file = java.nio.file.Files.createTempFile("otel", ".properties").toFile();
       file.deleteOnExit();
       java.nio.file.Files.write(file.toPath(), "otel.instrumentation.jms.enabled=true\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
       Map<String, String> fileEnv = new HashMap<>(kitEnv);

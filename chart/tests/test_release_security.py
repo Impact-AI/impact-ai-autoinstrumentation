@@ -25,6 +25,7 @@ def test_gemini_rejects_a_long_non_model_path_without_backtracking():
 import runpy
 mock = runpy.run_path('testing/mock/server.py')
 assert mock['gemini_answer']('/' + '/9' * 100000, '') is None
+assert mock['gemini_answer']('/models/' + '.' * 100000 + ':other', '') is None
 """
     subprocess.run([sys.executable, "-c", code], cwd=ROOT, check=True, timeout=3)  # noqa: S603
 
@@ -54,11 +55,12 @@ def test_otlp_does_not_accept_a_tls_default_older_than_12(monkeypatch, minimum):
         otlp._TLS_CONTEXTS.clear()
 
 
-def test_datadog_stub_does_not_accept_a_tls_default_older_than_12(monkeypatch):
+@pytest.mark.parametrize("minimum", [ssl.TLSVersion.MINIMUM_SUPPORTED, ssl.TLSVersion.TLSv1_3])
+def test_datadog_stub_does_not_accept_a_tls_default_older_than_12(monkeypatch, minimum):
     backend = load("datadog_release_security", "testing/apps/datadog/backend.py")
 
     class Context:
-        minimum_version = ssl.TLSVersion.MINIMUM_SUPPORTED
+        minimum_version = minimum
 
         def load_cert_chain(self, *args):
             pass
@@ -75,4 +77,13 @@ def test_datadog_stub_does_not_accept_a_tls_default_older_than_12(monkeypatch):
     monkeypatch.setattr(backend, "ThreadingHTTPServer", Server)
     monkeypatch.setattr(sys, "argv", ["backend", "--cert", "fixture.pem", "--key", "fixture.key"])
     backend.main()
-    assert context.minimum_version >= ssl.TLSVersion.TLSv1_2
+    assert context.minimum_version == max(minimum, ssl.TLSVersion.TLSv1_2)
+
+
+@pytest.mark.parametrize(
+    "tail",
+    ["", ":generateContent", "a/b:generateContent", "a:b:generateContent", "a:generateContent/", "a:generateContent\n"],
+)
+def test_gemini_rejects_malformed_model_methods(tail):
+    mock = load("mock_release_security", "testing/mock/server.py")
+    assert mock.gemini_answer("/models/" + tail, "") is None

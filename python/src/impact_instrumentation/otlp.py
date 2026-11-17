@@ -220,8 +220,11 @@ def tls_context(ca_file: str | None = None) -> ssl.SSLContext:
     context = _TLS_CONTEXTS.get(key)
     if context is None:
         context = ssl.create_default_context(cafile=ca_file)
-        if context.minimum_version < ssl.TLSVersion.TLSv1_2:
-            context.minimum_version = ssl.TLSVersion.TLSv1_2
+        # Establish the floor on every path, then retain a stricter system default.
+        minimum = context.minimum_version
+        context.minimum_version = ssl.TLSVersion.TLSv1_2
+        if minimum > ssl.TLSVersion.TLSv1_2:
+            context.minimum_version = minimum
         if len(_TLS_CONTEXTS) >= 8:
             _TLS_CONTEXTS.clear()
         _TLS_CONTEXTS[key] = context

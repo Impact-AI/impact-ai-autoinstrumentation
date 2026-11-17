@@ -24,8 +24,11 @@ public final class LauncherSelfTest {
 
   private static final List<String> failures = new ArrayList<>();
   private static int checks;
+  private static File temporaryDirectory;
 
   public static void main(String[] args) throws Exception {
+    temporaryDirectory = Files.createTempDirectory("impact-launcher-test").toFile();
+    temporaryDirectory.deleteOnExit();
     File jar = new File(args[0]);
     File own = new File("/otel-auto-instrumentation-java-app/javaagent.jar");
     Settings built = settingsOf(jar);
@@ -302,7 +305,7 @@ public final class LauncherSelfTest {
     Properties properties = new Properties();
     properties.setProperty("java.specification.version", version);
     properties.setProperty("java.version", version);
-    properties.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir"));
+    properties.setProperty("java.io.tmpdir", temporaryDirectory.getPath());
     return new Environment(variables, properties, none(), new File("/otel-auto-instrumentation-java-app/javaagent.jar"));
   }
 
