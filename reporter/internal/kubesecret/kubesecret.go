@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kube"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kube"
 )
 
 // ErrNotFound is the one answer a caller acts on; every other failure is a *kube.StatusError, which names the method,

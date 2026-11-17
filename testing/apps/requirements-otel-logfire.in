@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# Pydantic Logfire with its OpenAI and Pydantic AI integrations, the way Logfire traces an agent.
+logfire[openai]==5.5.0
+pydantic-ai-slim[openai]==2.66.0
+openai==3.46.0

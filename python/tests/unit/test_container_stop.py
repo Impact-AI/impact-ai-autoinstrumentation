@@ -23,16 +23,16 @@ def test_stop_kills_and_removes_with_options_that_both_docker_and_podman_know(mo
     calls: list[tuple[str, ...]] = []
     monkeypatch.setattr(containers, "run", lambda *args, **kwargs: calls.append(args))
 
-    containers.Container("i019-example").stop()
+    containers.Container("kit-test-example").stop()
 
     # `docker rm` has no -t/--time: the grace period is not asked for, the container is killed first
-    assert calls == [("kill", "i019-example"), ("rm", "-f", "i019-example")]
+    assert calls == [("kill", "kit-test-example"), ("rm", "-f", "kit-test-example")]
 
 
 def test_stop_does_not_care_that_the_container_is_already_gone(monkeypatch):
     seen: list[dict] = []
     monkeypatch.setattr(containers, "run", lambda *args, **kwargs: seen.append(kwargs))
 
-    containers.Container("i019-example").stop()
+    containers.Container("kit-test-example").stop()
 
     assert seen and all(kwargs.get("check") is False for kwargs in seen)

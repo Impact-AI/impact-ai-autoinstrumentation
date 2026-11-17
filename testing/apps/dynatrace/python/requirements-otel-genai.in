@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# The OpenTelemetry GenAI cell: the SDK with its OTLP/HTTP protobuf exporter, the GenAI instrumentation of the OpenAI SDK
+# and its utilities for agent, tool and retrieval spans (the versions the kit's own image pins).
+opentelemetry-sdk==1.45.2
+opentelemetry-exporter-otlp-proto-http==1.45.2
+opentelemetry-util-genai==1.3b0
+opentelemetry-instrumentation-genai-openai==1.3b0
+openai==3.46.0

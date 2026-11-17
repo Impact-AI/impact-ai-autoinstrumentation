@@ -51,7 +51,7 @@ test('the detail is cut at 200 characters', () => {
   assert.equal(attributesOf(span.attributes)['impact.setup.detail'].length, 200);
 });
 
-test('a state the monorepo does not know is refused', () => {
+test('a state the impact.ai service does not know is refused', () => {
   assert.throws(() => report.build('maybe', '', ENV), /unknown setup state/);
   assert.deepEqual(report.STATES, ['active', 'pre-existing', 'failed']);
 });
@@ -169,5 +169,66 @@ for (const [what, make, skip] of [
     } finally {
       await gateway.close();
     }
+  });
+}
+
+// --- the tool beside the package ------------------------------------------------------------------------------------
+// The service keeps impact.setup.tool, impact.setup.tool.version and impact.setup.exporter only as strings of these
+// shapes, and impact.setup.alongside only as a boolean (a string "true" says nothing); it drops anything else.
+
+const coexistence = require('../../src/impact/coexistence');
+const detect = require('../../src/impact/detect');
+
+const TOOL_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
+const TOOL_VERSION = /^[A-Za-z0-9][A-Za-z0-9._+!-]{0,63}$/;
+const EXPORTER_KIND = /^[a-z][a-z0-9-]{0,31}$/;
+// The tool ids impact.ai's service knows; a report names no other.
+const KNOWN_TOOLS = new Set([
+  'arize-ax', 'braintrust', 'datadog', 'dynatrace', 'elastic-edot', 'grafana-alloy', 'honeycomb', 'langfuse', 'langsmith',
+  'litellm', 'logfire', 'newrelic', 'openlit', 'opentelemetry', 'phoenix', 'portkey', 'splunk-otel', 'traceloop', 'zipkin',
+]);
+const TOOL_KEYS = ['impact.setup.tool', 'impact.setup.tool.version', 'impact.setup.exporter', 'impact.setup.alongside'];
+
+function toolWire(tool, started) {
+  const payload = JSON.parse(JSON.stringify(report.build('pre-existing', 'x', ENV, coexistence.attributes(tool, started))));
+  const out = {};
+  for (const item of payload.resourceSpans[0].scopeSpans[0].spans[0].attributes) {
+    if (TOOL_KEYS.includes(item.key)) out[item.key] = item.value;
+  }
+  return out;
+}
+
+test('the tool fields are strings of the shapes the service keeps, and alongside is a boolean', () => {
+  const tool = { id: 'langsmith', version: '0.11.8', exporter: 'otlp-http' };
+  assert.deepEqual(toolWire(tool, false), {
+    'impact.setup.tool': { stringValue: 'langsmith' },
+    'impact.setup.tool.version': { stringValue: '0.11.8' },
+    'impact.setup.exporter': { stringValue: 'otlp-http' },
+    'impact.setup.alongside': { boolValue: false },
+  });
+  assert.deepEqual(toolWire(tool, true)['impact.setup.alongside'], { boolValue: true });
+  // A report that names no tool has none of the four.
+  assert.deepEqual(toolWire(null, true), {});
+});
+
+test('every tool the package can name is one the service knows', () => {
+  const named = new Set([...Object.values(detect.TOOLS), ...Object.keys(detect.TOOL_PACKAGES)]);
+  for (const tool of named) {
+    assert.ok(KNOWN_TOOLS.has(tool), tool);
+    assert.match(tool, TOOL_ID);
+  }
+});
+
+test('every exporter kind the package can name has the shape the service keeps', () => {
+  for (const kind of [...detect.TRACES_EXPORTERS, ...Object.values(detect.OTLP_PROTOCOLS), detect.LANGSMITH_EXPORTER, 'zipkin']) {
+    assert.match(kind, EXPORTER_KIND);
+  }
+});
+
+for (const version of ['0.11.8', '1.0.0-rc.1', '2.0.0+build.1', '5.60.0']) {
+  test('a version the package names has the shape the service keeps: ' + version, () => {
+    const tool = detect.toolOf([{ kind: 'distribution', name: 'dd-trace', version }], { 'dd-trace': version }, {});
+    assert.equal(tool.version, version);
+    assert.match(tool.version, TOOL_VERSION);
   });
 }

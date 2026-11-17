@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-4 cover a Python workload without code, AE-5 stand down beside another tracer."""
+"""Cover a Python workload without code, and stand down beside another tracer."""
 
 from __future__ import annotations
 
@@ -61,7 +61,7 @@ def setup_reports(world, deployment: str) -> list[dict]:
     return [s for s in spans_of(world, deployment) if s["name"] == "impact.setup"]
 
 
-def test_ae4_the_row_command_covers_the_workload_with_no_change_to_its_image_or_code(world):
+def test_the_row_command_covers_the_workload_with_no_change_to_its_image_or_code(world):
     before = get("-n", "shop", "deployment", "support-assistant")["spec"]["template"]["spec"]["containers"][0]
     annotate("support-assistant")
     after = get("-n", "shop", "deployment", "support-assistant")["spec"]["template"]["spec"]["containers"][0]
@@ -79,7 +79,7 @@ def test_ae4_the_row_command_covers_the_workload_with_no_change_to_its_image_or_
     assert OPERATOR_DEFAULTS.isdisjoint(env) or all("valueFrom" in env[n] for n in OPERATOR_DEFAULTS & set(env))
 
 
-def test_ae4_the_workloads_llm_spans_arrive_with_provider_model_tokens_placement_and_content(world):
+def test_the_workloads_llm_spans_arrive_with_provider_model_tokens_placement_and_content(world):
     for provider in ("openai", "anthropic", "bedrock"):
         assert call_app("shop", "support-assistant", provider) == {"answer": ANSWER}
 
@@ -114,13 +114,13 @@ def test_ae4_the_workloads_llm_spans_arrive_with_provider_model_tokens_placement
     assert report["attrs"]["impact.setup.untraced"] == []
 
 
-def test_ae4_health_probe_requests_are_not_traced(world):
+def test_health_probe_requests_are_not_traced(world):
     # the readiness probe calls /healthz every 3 seconds
     names = [s["name"] for s in spans_of(world, "support-assistant")]
     assert not [n for n in names if "healthz" in n]
 
 
-def test_ae4_the_reporter_sees_the_workload_injected_and_still_no_value(world):
+def test_the_reporter_sees_the_workload_injected_and_still_no_value(world):
     def injected():
         for snapshot in reversed(world.mock.inventories()):
             for w in snapshot["workloads"]:
@@ -147,7 +147,7 @@ def assert_stood_down(world, deployment: str, detail_starts: str) -> None:
     assert [c["name"] for c in pod["spec"].get("initContainers", [])] == [INIT]  # injected, and the package stood down
 
 
-def test_ae5_datadog_started_in_code_keeps_its_own_traces(world):
+def test_datadog_started_in_code_keeps_its_own_traces(world):
     annotate("legacy-tracer")
     call_app("shop", "legacy-tracer", "openai")
     assert_stood_down(world, "legacy-tracer", "ddtrace ")
@@ -162,7 +162,7 @@ def test_ae5_datadog_started_in_code_keeps_its_own_traces(world):
     assert OPERATOR_DEFAULTS.isdisjoint(runtime_env("legacy-tracer"))
 
 
-def test_ae5_an_entry_point_that_runs_opentelemetry_instrument_keeps_its_own_traces(world):
+def test_an_entry_point_that_runs_opentelemetry_instrument_keeps_its_own_traces(world):
     annotate("own-otel")
     call_app("shop", "own-otel", "openai")
     assert_stood_down(world, "own-otel", "opentelemetry-instrument (launcher)")

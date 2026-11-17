@@ -1,0 +1,25 @@
+{
+  "schema": "impact.lambda.environment.v1",
+  "description": "The environment variables a function's change adds for the Python layer, with the longest value each may have. Lambda allows 4 KB for all of a function's variables; these stay within budgetBytes, counted as Lambda's configuration holds them (a JSON object: each name and value quoted, a colon and a comma).",
+  "budgetBytes": 512,
+  "variables": [
+    {
+      "name": "AWS_LAMBDA_EXEC_WRAPPER",
+      "value": "/opt/impact-ai-instrument",
+      "why": "Lambda runs the layer's wrapper, which starts the package with the runtime"
+    },
+    {
+      "name": "OTEL_EXPORTER_OTLP_ENDPOINT",
+      "maxValueBytes": 128,
+      "example": "https://ingest.example.com",
+      "why": "where the spans go: the environment's ingest"
+    },
+    {
+      "name": "OTEL_EXPORTER_OTLP_HEADERS",
+      "maxValueBytes": 160,
+      "example": "authorization=Bearer%20<ingest key>",
+      "why": "the ingest key, in the OTLP header setting the package reads",
+      "provisional": "How the ingest key reaches a function is not decided. Until it is, this setting is for tests and trials: a function's change made for a customer must not write the key into the function's configuration, where anyone who can read the configuration, its infrastructure code or its change history can read it. Its bytes stay in the budget for whatever setting takes its place."
+    }
+  ]
+}

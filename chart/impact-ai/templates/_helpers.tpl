@@ -75,7 +75,8 @@ the exchange and the cover pod are told, and the reporter refuses an http endpoi
 
 {{/*
 An image reference. repository + tag, or repository@digest, or repository:tag@digest. A registry host is replaced by
-global.imageRegistry when that is set. Also used by the vendored Operator chart.
+global.imageRegistry when that is set. Also used by the vendored Operator chart, for its own image and for every image
+its arguments name (scripts/vendor_operator_chart.py).
 */}}
 {{- define "cluster-kit.imageReference" -}}
 {{- $repository := .repository -}}
@@ -375,14 +376,20 @@ defaulting then fills in its upstream Node.js image on the Instrumentation.
 {{- end -}}
 
 {{/*
-The environment of an injected container, for either language: where the gateway is, and nothing else. The Operator adds
-OTEL_TRACES_EXPORTER, OTEL_METRICS_EXPORTER, OTEL_LOGS_EXPORTER, OTEL_EXPORTER_OTLP_PROTOCOL and OTEL_SERVICE_NAME to a
-workload that has not set them; each is defined here as an optional reference to a ConfigMap key that does not exist,
-so Kubernetes leaves the variable out (see instrumentation.yaml).
+The environment of an injected container, for either language: where the gateway is, and whether the workload trusts
+the user, session and use case its callers send in baggage (IMPACT_TRUST_CALLER_BAGGAGE, the value of the pod's
+annotation impact.ai/trust-caller-baggage through the downward API; empty, so not trusted, when the pod has none). The
+Operator adds OTEL_TRACES_EXPORTER, OTEL_METRICS_EXPORTER, OTEL_LOGS_EXPORTER, OTEL_EXPORTER_OTLP_PROTOCOL and
+OTEL_SERVICE_NAME to a workload that has not set them; each is defined here as an optional reference to a ConfigMap key
+that does not exist, so Kubernetes leaves the variable out (see instrumentation.yaml).
 */}}
 {{- define "cluster-kit.instrumentationEnv" -}}
 - name: IMPACT_OTLP_ENDPOINT
   value: {{ printf "http://%s.%s.svc:4318" (include "cluster-kit.gatewayName" .) .Release.Namespace | quote }}
+- name: IMPACT_TRUST_CALLER_BAGGAGE
+  valueFrom:
+    fieldRef:
+      fieldPath: "metadata.annotations['impact.ai/trust-caller-baggage']"
 {{- range $name := list "OTEL_TRACES_EXPORTER" "OTEL_METRICS_EXPORTER" "OTEL_LOGS_EXPORTER" "OTEL_EXPORTER_OTLP_PROTOCOL" "OTEL_SERVICE_NAME" }}
 - name: {{ $name }}
   valueFrom:

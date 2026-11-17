@@ -1,0 +1,23 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- The kit's startup hook (StartupHook.cs). It targets net8.0, the oldest .NET the upstream agent supports, whatever the
+     .NET the kit is proved on: a hook built for a newer .NET cannot load on an older runtime, and a startup hook that
+     cannot load stops the application. ProvedDotnet is the .NET versions the kit is proved on (DOTNET_VERSIONS); on any
+     other the hook stops the upstream agent. It compiles against the oldest stable Microsoft.Extensions.AI
+     (9.5.0) and that version's net8.0 dependencies; at run time it uses the application's own copy, which it checks is
+     that version or newer, and ships no dependency of its own. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ProvedDotnet Condition="'$(ProvedDotnet)' == ''">10.0</ProvedDotnet>
+    <AssemblyName>Impact.StartupHook</AssemblyName>
+    <RootNamespace />
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <NuGetAudit>false</NuGetAudit>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="ProvedDotnet" Value="$(ProvedDotnet)" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="[9.5.0]" />
+  </ItemGroup>
+</Project>

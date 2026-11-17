@@ -24,7 +24,7 @@ VALUES = yaml.safe_load((CHART / "values.yaml").read_text())
 OPERATOR_PASSTHROUGH = "operator."
 OWN = {"operator.install"}
 
-# The values this increment adds, which must be there whatever else changes.
+# The values of the install token and automatic coverage, which must be there whatever else changes.
 NEW = (
     "install",
     "install.token",
@@ -84,7 +84,7 @@ def test_the_schema_has_a_property_for_every_value_a_customer_can_set():
     assert unknown == [], f"values.yaml has values the schema does not describe: {unknown}"
 
 
-def test_every_value_this_increment_adds_is_in_both_files_and_described():
+def test_every_value_of_the_token_and_coverage_is_in_both_files_and_described():
     for path in NEW:
         assert path in NODES, path
         assert str(NODES[path].get("description", "")).strip(), path

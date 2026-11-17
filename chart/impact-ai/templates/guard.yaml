@@ -15,5 +15,5 @@ delete the key Secret. The chart tests render without one on purpose and set ins
 {{- fail "install.token needs Helm (or a tool that runs Helm against the cluster, such as Flux): this render has no cluster to look in, as helm template, Argo CD and helm install --dry-run have none. A token install made from such a render would apply its hooks as plain objects, so the uninstall hook would run at install time and a failed sync would delete the cluster's key Secret. For GitOps give the key instead: set ingest.existingSecret to a Secret you manage (the key under ingest-key), leave install.token empty and render with helm template --no-hooks" -}}
 {{- end -}}
 {{- if and (not $token) (not .Values.ingest.key) (not .Values.ingest.existingSecret) -}}
-{{- fail "ingest.key is required: pass it on standard input with --set-file ingest.key=/dev/stdin (or name a Secret in ingest.existingSecret), or install with the one-time install token of the Cover your AI command (install.token)" -}}
+{{- fail "ingest.key is required: install with the one-time install token of the Cover your AI command (install.token), or give the key yourself: name a Secret that holds it in ingest.existingSecret, or pass it on standard input from a prompt that does not show it, as the chart README shows (--set-file ingest.key=/dev/stdin)" -}}
 {{- end -}}

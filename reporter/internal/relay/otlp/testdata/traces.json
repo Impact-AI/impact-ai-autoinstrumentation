@@ -1,0 +1,81 @@
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [
+          { "key": "service.name", "value": { "stringValue": "checkout" } },
+          { "key": "telemetry.sdk.language", "value": { "stringValue": "python" } }
+        ]
+      },
+      "scopeSpans": [
+        {
+          "scope": {
+            "name": "example.library",
+            "version": "1.0.0",
+            "attributes": [
+              { "key": "example.scope.attribute", "value": { "stringValue": "a scope attribute" } }
+            ]
+          },
+          "spans": [
+            {
+              "traceId": "5b8efff798038103d269b633813fc60c",
+              "spanId": "eee19b7ec3c1b174",
+              "parentSpanId": "eee19b7ec3c1b173",
+              "traceState": "vendor=value",
+              "flags": 257,
+              "name": "a client span",
+              "kind": 3,
+              "startTimeUnixNano": "1544712660000000000",
+              "endTimeUnixNano": "1544712661000000000",
+              "attributes": [
+                {
+                  "key": "example.array",
+                  "value": { "arrayValue": { "values": [{ "stringValue": "a" }, { "intValue": "2" }] } }
+                },
+                { "key": "example.bool", "value": { "boolValue": true } },
+                { "key": "example.double", "value": { "doubleValue": 0.5 } },
+                { "key": "example.int", "value": { "intValue": "420" } },
+                {
+                  "key": "example.map",
+                  "value": {
+                    "kvlistValue": {
+                      "values": [
+                        { "key": "inner", "value": { "stringValue": "value" } },
+                        { "key": "number", "value": { "doubleValue": -1.25 } }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "droppedAttributesCount": 1,
+              "events": [
+                {
+                  "timeUnixNano": "1544712660500000000",
+                  "name": "an event",
+                  "attributes": [{ "key": "example.event.attribute", "value": { "intValue": "1" } }]
+                }
+              ],
+              "links": [
+                {
+                  "traceId": "0102030405060708090a0b0c0d0e0f10",
+                  "spanId": "1112131415161718",
+                  "attributes": [{ "key": "example.link.attribute", "value": { "stringValue": "linked" } }]
+                }
+              ],
+              "status": { "message": "an error", "code": 2 }
+            },
+            {
+              "traceId": "5b8efff798038103d269b633813fc60c",
+              "spanId": "eee19b7ec3c1b173",
+              "name": "a server span",
+              "kind": 2,
+              "startTimeUnixNano": "1544712659000000000",
+              "endTimeUnixNano": "1544712662000000000",
+              "status": { "code": 1 }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

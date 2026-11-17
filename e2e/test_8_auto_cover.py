@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-15 automatic coverage, on the install test_7_exchange.py ends with.
+"""Automatic coverage, on the install test_7_exchange.py ends with.
 
 impact.ai's list says which workloads are covered (the mock serves it as contract C11). The cover pod adds the injection
 annotation to their pods as they are created, and the Operator injects. Proved here, on a kind cluster:
@@ -227,7 +227,7 @@ def snapshot_of_state() -> dict:
     return state
 
 
-def test_ae15_putting_workloads_on_the_list_restarts_nothing_and_changes_no_workload(cluster):
+def test_putting_workloads_on_the_list_restarts_nothing_and_changes_no_workload(cluster):
     before = snapshot_of_state()
     mark = cluster.mock.last_seq()
     cluster.mock.set_cover(LISTED)
@@ -245,7 +245,7 @@ def roll_all() -> list[dict]:
     return roll([(kind, name, selector) for name, (kind, selector) in WORKLOADS.items()])
 
 
-def test_ae15_the_next_rollout_covers_a_deployment_a_statefulset_and_a_daemonset_once_each(cluster):
+def test_the_next_rollout_covers_a_deployment_a_statefulset_and_a_daemonset_once_each(cluster):
     for pod in roll_all():
         assert_covered_once(pod)
     # The workload objects hold nothing the cover pod added: no drift for a GitOps tool to fight.
@@ -260,7 +260,7 @@ JOBS = (
 )  # the second is named as the CronJob controller names its Jobs: <cronjob>-<8 digits>
 
 
-def test_ae15_a_job_and_the_job_of_a_cronjob_are_covered_as_theirs(cluster):
+def test_a_job_and_the_job_of_a_cronjob_are_covered_as_theirs(cluster):
     def make() -> None:  # a Job's pods are made once: another attempt starts from new Jobs
         kubectl("-n", AUTO, "delete", "job", *JOBS, "--ignore-not-found", "--cascade=foreground", "--wait=true")
         image = "--image=localhost/impact-instrumentation/mock:dev"
@@ -271,7 +271,7 @@ def test_ae15_a_job_and_the_job_of_a_cronjob_are_covered_as_theirs(cluster):
         assert_covered_once(pod)
 
 
-def test_ae15_opt_outs_the_customers_own_annotation_and_unlisted_workloads_are_left_alone(cluster):
+def test_opt_outs_the_customers_own_annotation_and_unlisted_workloads_are_left_alone(cluster):
     deployments = (
         ("optout-label", AUTO, "app=optout-label"),
         ("optout-annotation", AUTO, "app=optout-annotation"),
@@ -310,7 +310,7 @@ def webhook_names() -> list[str]:
     )
 
 
-def test_ae15_the_cover_pod_is_called_before_the_operator_and_the_pod_is_injected_once(cluster):
+def test_the_cover_pod_is_called_before_the_operator_and_the_pod_is_injected_once(cluster):
     # The default order, which test_..._covers_a_deployment... already proved by the init container count of 1.
     assert webhook_names() == ["impact-ai-cover", "impact-ai-operator-mutation"]
     operator_pod_webhook = next(
@@ -330,7 +330,7 @@ def operator_ca_bundles() -> list[str]:
     ]
 
 
-def test_ae15_with_the_operator_called_first_a_reinvocation_still_injects_exactly_once(cluster):
+def test_with_the_operator_called_first_a_reinvocation_still_injects_exactly_once(cluster):
     before_cover = pods(NAMESPACE, "app.kubernetes.io/name=cover")[0]["metadata"]["uid"]
     before_cert = get("-n", NAMESPACE, "secret", "impact-ai-cover-cert")["data"]
     before_operator = get("-n", NAMESPACE, "secret", OPERATOR_CERT)["data"]
@@ -364,7 +364,7 @@ def _token_of_the_install(world) -> str:
 # --- a covered application traces; the reporter says what it found --------------------------------------------
 
 
-def test_ae15_a_covered_application_traces_without_a_change_to_its_deployment(cluster):
+def test_a_covered_application_traces_without_a_change_to_its_deployment(cluster):
     world = cluster
     template = get("-n", "shop", "deployment", "support-assistant")["spec"]["template"]["metadata"]
     assert INJECT not in (template.get("annotations") or {}), "nobody annotated the application"
@@ -401,7 +401,7 @@ def latest(world, namespace: str, kind: str, name: str):
     return None
 
 
-def test_ae15_the_snapshot_carries_the_marker_and_the_labels_of_the_workloads(cluster):
+def test_the_snapshot_carries_the_marker_and_the_labels_of_the_workloads(cluster):
     world = cluster
 
     def reported():
@@ -432,7 +432,7 @@ def test_ae15_the_snapshot_carries_the_marker_and_the_labels_of_the_workloads(cl
 # --- no permission, no token -----------------------------------------------------------------------------------
 
 
-def test_ae15_the_cover_pod_has_no_kubernetes_permission_and_no_token(cluster):
+def test_the_cover_pod_has_no_kubernetes_permission_and_no_token(cluster):
     account = "system:serviceaccount:impact-ai:impact-ai-cover"
     asks = (
         ("get", "pods"), ("list", "pods"), ("patch", "pods"), ("get", "secrets"), ("list", "namespaces"),
@@ -451,7 +451,7 @@ def test_ae15_the_cover_pod_has_no_kubernetes_permission_and_no_token(cluster):
 # --- fail open -------------------------------------------------------------------------------------------------
 
 
-def test_ae15_with_the_cover_pod_down_pods_start_normally_and_uninjected(cluster):
+def test_with_the_cover_pod_down_pods_start_normally_and_uninjected(cluster):
     world = cluster
     kubectl("-n", NAMESPACE, "scale", "deployment/impact-ai-cover", "--replicas=0")
     wait_until(lambda: not pods(NAMESPACE, "app.kubernetes.io/name=cover"), timeout=90, message="the cover pod to go")
@@ -470,7 +470,7 @@ def test_ae15_with_the_cover_pod_down_pods_start_normally_and_uninjected(cluster
     wait_operator_ready()
 
 
-def test_ae15_with_impact_ai_failing_the_cover_pod_keeps_the_last_list_and_nothing_waits_for_it(cluster):
+def test_with_impact_ai_failing_the_cover_pod_keeps_the_last_list_and_nothing_waits_for_it(cluster):
     # impact.ai answers 503 to every poll for a while (the mock keeps its state, so the cluster's key stays valid for
     # what follows). The cover pod keeps the list it has: a pod is covered all the same.
     world = cluster
@@ -504,7 +504,7 @@ def one_pod_per_uid(selector: str) -> dict[str, dict]:
     return {p["metadata"]["uid"]: p for p in pods(AUTO, selector) if not p["metadata"].get("deletionTimestamp")}
 
 
-def test_ae15_when_the_kit_image_cannot_be_pulled_the_next_rollout_of_a_listed_workload_stalls_and_the_old_pod_serves(
+def test_when_the_kit_image_cannot_be_pulled_the_next_rollout_of_a_listed_workload_stalls_and_the_old_pod_serves(
     cluster,
 ):
     wait_operator_ready()
@@ -577,7 +577,7 @@ def policy_is_served() -> bool:
     return kubectl("get", "validatingadmissionpolicies.admissionregistration.k8s.io", check=False).returncode == 0
 
 
-def test_ae15_when_a_policy_refuses_the_injected_init_container_the_next_rollout_stalls_and_the_old_pod_serves(cluster):
+def test_when_a_policy_refuses_the_injected_init_container_the_next_rollout_stalls_and_the_old_pod_serves(cluster):
     if not policy_is_served():
         pytest.skip("ValidatingAdmissionPolicy is served from Kubernetes 1.30")
     wait_operator_ready()

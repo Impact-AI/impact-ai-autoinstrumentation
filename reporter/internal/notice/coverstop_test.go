@@ -11,9 +11,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kube"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kubesecret"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kubetest"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kube"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kubesecret"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kubetest"
 )
 
 // The uninstall of a kit with automatic coverage: the cover pod is stopped beside the reporter, and the Secret the install

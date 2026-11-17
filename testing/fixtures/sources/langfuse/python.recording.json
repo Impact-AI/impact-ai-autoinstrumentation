@@ -1,0 +1,33 @@
+{
+  "how": "canonical.py langfuse (testing/apps/otel_tools) against the kit's recording mock as the tool's backend and provider.py as the model provider",
+  "packages": {
+    "langfuse": "5.2.0",
+    "openai": "3.46.0"
+  },
+  "recorded": "2026-11-09",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/api/public/otel/v1/traces",
+      "query": "",
+      "headers": {
+        "Host": "127.0.0.1:47345",
+        "user-agent": "OTel-OTLP-Exporter-Python/1.45.2",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "content-type": "application/x-protobuf",
+        "authorization": "Basic cGstbGYtcGxhbnRlZDpzay1sZi1wbGFudGVk",
+        "x-langfuse-sdk-name": "python",
+        "x-langfuse-sdk-version": "5.2.0",
+        "x-langfuse-public-key": "pk-lf-planted",
+        "x-langfuse-ingestion-version": "4",
+        "Content-Encoding": "gzip",
+        "Content-Length": "1360"
+      },
+      "contentType": "application/x-protobuf",
+      "contentEncoding": "gzip",
+      "bodyBase64": "H4sIAOjv8WoC/+1XW4gcRRTdGTfJ5mYlSQdFN4m2nXfYbnpmZze7iyKbqDFtNgshGiS7DjXdNbPt9HR1qquTjEuDfhgM/qhR0I/kx/8YDAQEQRARBF/xR3z8aSKCRAQJ+mdVzftB7xoEQfxrqu7cOvfcU+fWwDv3wctp0OBuhj1cwYxWjdApGx7ySxEqYWUIVgdVtkh82AFKZ4yPKlhZD3eSAPvNHXgA7uoMO4Vp6BJfZMoYuXEjCw/BphDTU66NDdcPGfLFh6PshO0OLkwUzUmk48nilJ6bRKaO7PGcXhgzc6g4MeXksjaMwPrGzxu518CqnJE1TNgGw409CW8TbAyjICCU6SgMXXEYg82wQdRXjEJsUI4VhbiZQbm4BXIw3NjXeQXKqnGxM7IVIIgKnmvny7gqCg/KulfUAx7LsKN8PgQbzl96f79+5fG3dq3Ht15484cPlKH415vPb71eVbWhk/ijL/Z6yut7N85xwmYO6SXsY4oYx2+mpnZ7T17f5924Zya6vP+G+LCSUFpfpWGkuUsKomaZiRMaREy5kobL6SWNEeKF2rR6gn9WA8y/tGLk2yJQG237nlaXNEGXCChhlifUwVREODi0qRvUg7TDhJTVKFCRr8oQtVBVXRaqrmOI6ABRnoTxnsiMjSNJ4VlsMxlAuVYoc3EtQObIu05HdMio65e0OObxFJ+MXIpFwIlW9EIcxwt8t4LDkEu0XiAlnvw9J0RCtwnvis/E0vFFTLHqhnXQGTOXfVg9MHfk2KNHjukHZo7MHH1aixdi67UU7OhLaoU42DNa5SkulDhiXAlEAyMqDs4IROhMnpEy9gUm7ZBfdH2XVQUaRoJ8UI8qirKwb1fzXAfI4wHTqinZwSFfxu3LsbUH7u2LSfClDAO0VGR9k4LNfWNJxIQq3kvB1VSLqeaFqAEkXt5GXkMvsiuaWMhnerSCaCmqcHJlmUvzzdbMa9PzmqC3i915LRY5eiUmmtyjTNncVvv8yPNiawLuT2hN466XAqbniJ41szndnNTNCetyCrS+P4yEdvIOZsj1QuVcCs5yamxSCTws9lt9zNZ6w3dYazEjVxlhyGtbzJkSeVeOxiH1WrqzdW3Hzw28mBpIDQwoH6b7Gcq5kWfu+OQXcqHNUNY2CeVG8tPBg9I/ZuYuWCswkkKijzwC+2W3pShW2mnRvvLp+q+W4tjaliTh1TAotGfNJmvXgNEl7g38tvGsWrjoBgH3hVHNJ4yrR+u+zU0S3xjsR+LE9799fO3Hq9faSFy3iL1At7nmKOY03nz3iRqND96aXQGNBxNp3AO7uAf5qkNw2DJPUUS3D1m7k7haB2spn6su5nPP4h6fyNj5NLySbt7kckHPZLLiFoY2kYZlGlPCjRg+I01yTmAKJSj1tMsWXV9lp4nqoGpo9JjlqNqWN2fu68y7b6wt7zGK7DJ3dC7uSkGcgCh1T2ExOrBe4cJfJruZmerMPp5ty34cY36HnBqjdfTEV2eJz4H3Zl5o6uIs9NPF296rv8dffvbpctMa/TFXU8dwdfbn5dXx52CiPL4dhK8H/5/Wf2daC4n0nWOdc2MFg+32qL6dCch56MAtkHWM3nw3tjZW+Bk195Mn1P1vXhudlw4oF/uc+B941JSTXe4wWMsqoeZtUknqIqq5BGev1x7+xVfGZL9XxpjZ55UxNvmPvjIu9X1lNO1vTf3vEze9p16yv5Oml37saM30tsHWZtUuZ5vyFhtumEdBkKeEMCW9IZXsjNOJxrgFRlrPj55nxfYkEfETOPM+45M5UT+7YefK1NEg7C+UtHgbMg8AAA=="
+    }
+  ]
+}

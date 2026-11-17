@@ -33,14 +33,23 @@ SERVERS = {"express": "Express"}
 
 def label(record: dict) -> str:
     server = SERVERS.get(record["server"], record["server"])
-    return f"{NAMES[record['runtime']]} {record['version']}, {server}"
+    calls = f", calling {record['library']}" if record.get("library") else ""
+    return f"{NAMES[record['runtime']]} {record['version']}, {server}{calls}"
 
 
 def load(directory: Path) -> list[dict]:
     records = [json.loads(path.read_text()) for path in sorted((directory / "combos").glob("*.json"))]
     if not records:
         raise SystemExit(f"no records in {directory / 'combos'}: run the overhead measurements first (make overhead)")
-    return sorted(records, key=lambda r: (r["runtime"], [int(part) for part in r["version"].split(".")], r["server"]))
+    return sorted(
+        records,
+        key=lambda r: (
+            r["runtime"],
+            [int(part) for part in r["version"].split(".")],
+            r["server"],
+            r.get("library") or "",
+        ),
+    )
 
 
 def summarize(records: list[dict], version: str) -> dict:

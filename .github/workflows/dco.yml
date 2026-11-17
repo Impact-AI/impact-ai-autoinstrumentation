@@ -1,0 +1,31 @@
+# The Developer Certificate of Origin: every commit of a pull request is signed off by its author (CONTRIBUTING.md,
+# scripts/check_dco.py). Only in the public repository, where outside contributions arrive. A release's pull request, a
+# branch release/<version> of this repository itself, which only a maintainer can push, carries the release commit of
+# Impact AI's release identity (scripts/publish-public.sh) and is not checked.
+name: dco
+on:
+  pull_request:
+permissions: {}
+concurrency:
+  group: dco-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  sign-off:
+    if: >-
+      github.repository == 'Impact-AI/impact-autoinstrumentation' &&
+      !(github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release/'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Every commit is signed off by its author
+        run: make check-dco
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}

@@ -5,7 +5,7 @@ package inventory
 import (
 	"strings"
 
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kube"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kube"
 )
 
 // cleanVersion turns a git version such as v1.31.2-eks-abc or v1.30.3+k3s1

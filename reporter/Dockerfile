@@ -5,7 +5,7 @@
 # the named context `root` (--build-context root=.): the LICENSE and NOTICE live there, and the image carries them in
 # /licenses with the license of what the binary contains.
 # Cross-compiled on the build platform, so multi-architecture builds need no emulation.
-FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.27.3@sha256:2920bb124f1a2e12a1d39f0cab756ae0068441ee1da7655dec7f5e374944095b AS build
+FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.27.3@sha256:e519d3b0a5b285e5aa53ab9eef02bc6bbb9cb04608389b743a136a9ce75f0d1e AS build
 ARG TARGETOS=linux
 ARG TARGETARCH
 ARG VERSION=dev
@@ -24,7 +24,7 @@ FROM gcr.io/distroless/static:nonroot@sha256:25ac8f0c3b2334a9eb05452266bd4697864
 ARG VERSION=dev
 LABEL org.opencontainers.image.title="impact.ai cluster reporter" \
       org.opencontainers.image.description="Reports a cluster's workloads by name (never values) to impact.ai" \
-      org.opencontainers.image.source="https://github.com/impact-ai/impact-ai-k8s" \
+      org.opencontainers.image.source="https://github.com/Impact-AI/impact-autoinstrumentation" \
       org.opencontainers.image.version="${VERSION}"
 COPY --from=build /out/reporter /reporter
 COPY --from=build /out/licenses/go /licenses/go

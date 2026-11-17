@@ -397,6 +397,33 @@ class Mock:
                         )
         return out
 
+    def logs(self, path: str = "/v1/logs", since: int = 0) -> list[dict]:
+        """Log records received (and accepted) on `path`, oldest first, with their resource attributes as `resource`.
+        The gateway sends OTLP protobuf, gzip."""
+        from opentelemetry.proto.collector.logs.v1.logs_service_pb2 import ExportLogsServiceRequest
+
+        out = []
+        for record in self.requests(path, since):
+            if record.get("status") not in (200, 202):
+                continue
+            request = ExportLogsServiceRequest()
+            request.ParseFromString(self.raw(record))
+            for resource_logs in request.resource_logs:
+                resource = {a.key: any_value(a.value) for a in resource_logs.resource.attributes}
+                for scope_logs in resource_logs.scope_logs:
+                    for log in scope_logs.log_records:
+                        out.append(
+                            {
+                                "event_name": log.event_name,
+                                "body": any_value(log.body),
+                                "attrs": {a.key: any_value(a.value) for a in log.attributes},
+                                "resource": resource,
+                                "trace_id": log.trace_id.hex(),
+                                "span_id": log.span_id.hex(),
+                            }
+                        )
+        return out
+
     def bodies(self) -> list[bytes]:
         return [self.raw(r) for r in self.requests()]
 
@@ -405,6 +432,8 @@ def any_value(value):
     which = value.WhichOneof("value")
     if which == "array_value":
         return [any_value(item) for item in value.array_value.values]
+    if which == "kvlist_value":  # the body of a GenAI log event
+        return {item.key: any_value(item.value) for item in value.kvlist_value.values}
     return getattr(value, which) if which else None
 
 
@@ -474,7 +503,8 @@ def install(
 
 
 def token_values(token: str, product: str = PRODUCT) -> list[str]:
-    """The values of the command Cover your AI shows with AE-14: the one-time install token in place of the key."""
+    """The values of the command Cover your AI shows for a token install: the one-time install token in place of the
+    key."""
     values = kit_values(product)
     at = values.index("--set-file")  # ingest.key=/dev/stdin: nobody pastes a key any more
     del values[at : at + 2]

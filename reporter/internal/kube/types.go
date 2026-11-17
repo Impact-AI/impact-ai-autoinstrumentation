@@ -3,7 +3,7 @@
 // Package kube is a minimal, read-only Kubernetes API client for the reporter.
 //
 // Every type in types.go is a decode target for an API response and holds names
-// only (AE-3): there is no field for environment values, container arguments,
+// only: there is no field for environment values, container arguments,
 // Secret or ConfigMap data, certificates, or annotations outside the allowlist.
 // Values that are not declared here are skipped by encoding/json, so they are
 // never stored, logged or sent. types_test.go enforces this by reflection.

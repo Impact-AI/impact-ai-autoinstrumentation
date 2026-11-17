@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-7 (image side): the workload never depends on impact.ai. When the gateway is refused, hangs, answers 503 or
+"""Fail open (image side): the workload never depends on impact.ai. When the gateway is refused, hangs, answers 503 or
 rejects the key, the application starts and serves normally and no exception or noise reaches it. A process that
 ends does not wait for a gateway that hangs either (at most five seconds, with 1,200 spans buffered)."""
 

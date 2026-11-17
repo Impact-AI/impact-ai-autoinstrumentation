@@ -13,6 +13,10 @@ The render tests undo the escape the way the Collector does. The container tests
 (`otelcol validate` and `otelcol print-config`, which resolves the configuration) on the rendered ConfigMap, with a
 listener on the host standing in for somebody else's server: it is never asked for anything, the statements come back
 as the literal values, and with the escape taken out the same run does send the key there.
+
+The statements are read for both signals the gateway forwards: the spans' (`trace_statements`) and the log records'
+(`log_statements`). They are one list, written once, but a test that read only the first would not notice a second
+list that took a value without the escape.
 """
 
 from __future__ import annotations
@@ -58,8 +62,14 @@ def config_text(tmp_path: Path, *, name: str = "", arn: str = "") -> str:
     return yaml.safe_load(rendered)["data"]["config.yaml"]
 
 
-def statements(config: str) -> list[str]:
-    (block,) = yaml.safe_load(config)["processors"]["transform/cluster"]["trace_statements"]
+SIGNALS = (
+    "trace_statements",
+    "log_statements",
+)  # the spans' and the log records' statements of the transform processor
+
+
+def statements(config: str, signal: str = "trace_statements") -> list[str]:
+    (block,) = yaml.safe_load(config)["processors"]["transform/cluster"][signal]
     return block["statements"]
 
 
@@ -80,10 +90,11 @@ def attributes_of(resolved: list[str]) -> dict[str, str]:
     return found
 
 
+@pytest.mark.parametrize("signal", SIGNALS)
 @pytest.mark.parametrize("name", NAMES.values(), ids=NAMES)
-def test_every_dollar_sign_of_a_cluster_name_and_an_arn_is_written_as_two(name, tmp_path):
+def test_every_dollar_sign_of_a_cluster_name_and_an_arn_is_written_as_two(name, signal, tmp_path):
     config = config_text(tmp_path, name=name, arn=ARN)
-    attributes = attributes_of([as_the_collector_reads(s) for s in statements(config)])
+    attributes = attributes_of([as_the_collector_reads(s) for s in statements(config, signal)])
     assert attributes["k8s.cluster.name"] == name
     assert attributes["cloud.resource_id"] == ARN
     assert attributes["cloud.account.id"] == "012345678901" and attributes["cloud.region"] == "eu-west-1"
@@ -159,21 +170,22 @@ def collector(config: str, command: str, canary: Canary) -> subprocess.Completed
         shutil.rmtree(directory, ignore_errors=True)
 
 
-def resolved_statements(printed: str) -> list[str]:
-    (block,) = yaml.safe_load(printed)["processors"]["transform/cluster"]["trace_statements"]
+def resolved_statements(printed: str, signal: str = "trace_statements") -> list[str]:
+    (block,) = yaml.safe_load(printed)["processors"]["transform/cluster"][signal]
     return block["statements"]
 
 
 @needs_a_container_engine
+@pytest.mark.parametrize("signal", SIGNALS)
 @pytest.mark.parametrize("name", NAMES.values(), ids=NAMES)
-def test_the_collector_reads_back_the_name_and_the_arn_it_was_given(name, tmp_path):
+def test_the_collector_reads_back_the_name_and_the_arn_it_was_given(name, signal, tmp_path):
     config = config_text(tmp_path, name=name, arn=ARN)
     with Canary() as canary:
         result = collector(config, "print-config", canary)
         assert result.returncode == 0, result.stderr
-        resolved = resolved_statements(result.stdout)
+        resolved = resolved_statements(result.stdout, signal)
         assert canary.requests == []
-    assert resolved == [as_the_collector_reads(s) for s in statements(config)]
+    assert resolved == [as_the_collector_reads(s) for s in statements(config, signal)]
     assert attributes_of(resolved)["k8s.cluster.name"] == name
     assert attributes_of(resolved)["cloud.resource_id"] == ARN
     assert KEY not in "".join(resolved)
@@ -188,6 +200,7 @@ def test_a_name_that_is_a_url_does_not_send_the_key_there_and_without_the_escape
             result = collector(config, command, canary)
             assert result.returncode == 0, (command, result.stderr)
         assert canary.requests == [], "the Collector asked somebody for something"
-        # the control: the configuration as it would be without the escape, which the Collector does resolve
+        # the control: the configuration as it would be without the escape, which the Collector does resolve, once for
+        # each place the name is written: the spans' statements and the log records'
         collector(config.replace("$$", "$"), "print-config", canary)
-        assert canary.requests == [f"/x?k={KEY}"], "the test would not have seen the key leave"
+        assert canary.requests == [f"/x?k={KEY}"] * len(SIGNALS), "the test would not have seen the key leave"

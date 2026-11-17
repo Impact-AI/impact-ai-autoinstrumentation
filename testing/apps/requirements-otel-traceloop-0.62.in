@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# Traceloop (OpenLLMetry) at 0.62.3, the release a reference deployment of the OpenTelemetry demo's agent pins.
+traceloop-sdk==0.62.3
+opentelemetry-instrumentation-openai==0.62.3
+opentelemetry-instrumentation-qdrant==0.62.3
+qdrant-client==1.20.0
+openai==3.46.0

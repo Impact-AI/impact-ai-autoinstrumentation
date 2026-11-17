@@ -1,0 +1,13 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- A startup hook of the workload's own (StartupHook.cs), as an APM agent that attaches by startup hook has one. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <DotnetVersion Condition="'$(DotnetVersion)' == ''">10.0</DotnetVersion>
+    <TargetFramework>net$(DotnetVersion)</TargetFramework>
+    <AssemblyName>Own.StartupHook</AssemblyName>
+    <RootNamespace />
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+</Project>

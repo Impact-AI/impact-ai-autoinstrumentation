@@ -14,8 +14,8 @@ import (
 	"unicode/utf8"
 )
 
-// The shared vectors of the exchange: a byte-for-byte copy of capabilities/ai-coverage/tests/fixtures/exchange-vectors.json
-// of the monorepo, whose intake reads the same file (the kit's mock ingest reads it too, chart/tests/test_mock_ingest.py).
+// The shared vectors of the exchange: a byte-for-byte copy of the test vectors of the
+// impact.ai service, whose intake reads the same file (the kit's mock ingest reads it too, chart/tests/test_mock_ingest.py).
 // It lists every way the body of POST /v1/installs/exchange may be wrong. The kit keeps one copy, next to the mock.
 const vectorsFile = "../../../testing/mock/exchange-vectors.json"
 
@@ -85,7 +85,7 @@ func (v vectors) body(t *testing.T, c vectorCase) []byte {
 	return out
 }
 
-// The rules of the real exchange (capabilities/ai-coverage/go/exchange.go and inventory.go), as far as the body goes. They
+// The rules of the real exchange of the impact.ai service, as far as the body goes. They
 // are ported here to hold the reporter's request to them; TestThePortReadsTheSharedVectorsAsTheFileSays keeps the port
 // honest against the file the real decoder is held to.
 var (

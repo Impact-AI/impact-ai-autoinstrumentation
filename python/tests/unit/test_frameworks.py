@@ -46,17 +46,34 @@ def test_the_ones_the_image_cannot_trace_are_listed_and_marked_untraced():
             "llama-index-core": "0.14.25",
             "mcp": "2.2.0",
             "openai": "3.42.1",
-            "google-genai": "2.22.0",
+            "mistralai": "2.1.0",
         }
     )
     assert found.frameworks == [
         "crewai 1.15.35",
         "llama-index-core 0.14.25",
         "mcp 2.2.0",
-        "google-genai 2.22.0",
+        "mistralai 2.1.0",
         "openai 3.42.1",
     ]
-    assert found.untraced == ["crewai 1.15.35", "llama-index-core 0.14.25", "mcp 2.2.0", "google-genai 2.22.0"]
+    assert found.untraced == ["crewai 1.15.35", "llama-index-core 0.14.25", "mcp 2.2.0", "mistralai 2.1.0"]
+
+
+def test_google_genai_is_traced_by_the_instrumentation_of_the_same_name():
+    # The Gemini API and Vertex AI, through Google's SDK: opentelemetry-instrumentation-google-genai.
+    assert survey({"google-genai": "2.34.0"}, available=SHIPPED | {"google-genai"}).untraced == []
+    assert survey({"google-genai": "2.34.0"}, available=SHIPPED).untraced == ["google-genai 2.34.0"]
+    off = {"OTEL_PYTHON_DISABLED_INSTRUMENTATIONS": "google-genai"}
+    assert survey({"google-genai": "2.34.0"}, environ=off, available=SHIPPED | {"google-genai"}).untraced == [
+        "google-genai 2.34.0"
+    ]
+
+
+def test_the_older_vertex_ai_sdk_stays_untraced_beside_google_genai():
+    # google-cloud-aiplatform's vertexai module is another library: google-genai's instrumentation does not see it.
+    found = survey({"google-genai": "2.34.0", "google-cloud-aiplatform": "2.7.0"}, available=SHIPPED | {"google-genai"})
+    assert found.frameworks == ["google-cloud-aiplatform 2.7.0", "google-genai 2.34.0"]
+    assert found.untraced == ["google-cloud-aiplatform 2.7.0"]
 
 
 def test_what_the_image_traces_is_never_untraced():
@@ -135,7 +152,13 @@ def test_every_entry_is_a_normalized_distribution_name_and_every_tracer_is_one_t
     for name, entry in frameworks.CATALOG.items():
         assert name == name.lower().replace("_", "-"), name
         assert entry.kind in frameworks.RANK, name
-        assert entry.tracer is None or entry.tracer in {"openai", "anthropic", "openai_agents", "langchain"}, name
+        assert entry.tracer is None or entry.tracer in {
+            "openai",
+            "anthropic",
+            "openai_agents",
+            "langchain",
+            "google-genai",
+        }, name
 
 
 def test_the_survey_only_reads_the_listing():

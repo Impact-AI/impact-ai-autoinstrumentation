@@ -4,28 +4,42 @@
 # Publish a release: multi-architecture images (linux/amd64 and linux/arm64) with provenance and an SBOM, then the chart
 # with the images' digests written into it, and the overhead of the injected workloads measured by this very build.
 #
-#   REGISTRY=ghcr.io/Impact-AI/impact-ai-k8s VERSION=v0.3.0 REGISTRY_USER=... REGISTRY_TOKEN=... make release
+#   REGISTRY=ghcr.io/Impact-AI/impact-autoinstrumentation VERSION=v0.3.0 REGISTRY_USER=... REGISTRY_TOKEN=... make release
 #
 # REGISTRY is the repository the release runs in (the workflow's ghcr.io/${{ github.repository }}, with the owner's
 # capitals): the host to log in to, and where the publish root comes from. The release pushes at the root of the
 # organisation, the registry host and the lowercased owner, ghcr.io/impact-ai (PUBLISH_ROOT replaces it; scripts/names.sh):
 #   $PUBLISH_ROOT/autoinstrumentation-python:<version>, $PUBLISH_ROOT/autoinstrumentation-nodejs:<version>,
-#   $PUBLISH_ROOT/kubernetes-reporter:<version> and oci://$PUBLISH_ROOT/charts/impact-ai:<version>.
-# It writes the digests to build/release/<key>.digest and the names to build/release/<key>.name (python, nodejs, reporter
-# and chart), which the workflow reads for the build provenance.
+#   $PUBLISH_ROOT/autoinstrumentation-java:<version>, $PUBLISH_ROOT/kubernetes-reporter:<version> and
+#   oci://$PUBLISH_ROOT/charts/impact-ai:<version>.
+# It writes the digests to build/release/<key>.digest and the names to build/release/<key>.name (python, nodejs, java,
+# reporter and chart), which the workflow reads for the build provenance. The Java image is released only with
+# RELEASE_JAVA=1, which the workflow sets once it records the Java image's provenance too (release_images in
+# scripts/lib.sh); it is then published and signed, and its digest is written into the chart's values, but the chart
+# does not inject it yet (images.java has no section of the Instrumentation), and the overhead measurement does not
+# cover it yet.
 #
 # Nothing is pushed until every check has passed:
-#   1. nothing internal in the source and the chart (scripts/check_internal_details.py)
+#   1. nothing internal in the source and the chart (scripts/check_internal_details.py), and the version's dated section
+#      of CHANGELOG.md, which the GitHub release and the chart's Artifact Hub annotations are made from
 #   2. each image, built for each platform: nothing internal in its files, no fixable CRITICAL or HIGH vulnerability
 #      (scan_archive in scripts/lib.sh; accepted findings are named in .trivyignore)
-#   3. the overhead of every runtime and server the images claim, injected and not, within the budget of AE-17 (+1.5 ms of CPU
+#   3. the overhead of every runtime and server the images claim, injected and not, within the overhead budget (+1.5 ms of CPU
 #      per model call, +40 MiB, +2 s to start; scripts/overhead.sh full)
-#   4. a way to sign: the release workflow's identity (keyless cosign, `permissions: id-token: write`), or COSIGN_KEY
+#   4. every cell of the Python qualification says what python/qualification.json says it did (scripts/python-cells.sh
+#      all): the image traces a library only where a cell proves it, so a cell that changed stops the release
+#   5. a way to sign: the release workflow's identity (keyless cosign, `permissions: id-token: write`), or COSIGN_KEY
 # then the images are pushed, the chart is stamped with their digests and the measured overhead (OVERHEAD.md and an
-# annotation of Chart.yaml), checked again, and pushed. Then the three images and the chart are signed by digest, a signed
+# annotation of Chart.yaml), checked again, and pushed. Then the images and the chart are signed by digest, a signed
 # SPDX bill of materials is attached to each image for each platform (cosign attest), and the signatures are verified the
 # way a customer does (scripts/verify-release.sh). The workflow adds the build provenance of GitHub's artifact
 # attestations afterwards, from the digests in build/release/*.digest.
+#
+# A release is made in one place: the release workflow of the public repository, Impact-AI/impact-autoinstrumentation, on a tree that
+# scripts/publish-public.sh put there. A tag in the development repository starts the same workflow, and this script
+# would push the images and the chart under that organisation's name, so it refuses, before it builds anything, to run
+# where GITHUB_REPOSITORY is not the public repository. RELEASE_REHEARSAL=1 lifts that for a rehearsal against a registry of
+# your own, and so does INSECURE_REGISTRY (below), which is a registry on your machine.
 #
 # CONTAINER=docker (CI): buildx with the docker-container driver. The builds that are scanned are exported as archives;
 # the push is the same build again, from the builder's cache, with provenance and an SBOM attached.
@@ -36,7 +50,13 @@ cd "$(dirname "$0")/.."
 # shellcheck source=scripts/lib.sh
 source scripts/lib.sh
 
-: "${REGISTRY:?REGISTRY is required, for example ghcr.io/Impact-AI/impact-ai-k8s}"
+GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-}"
+if [ "${RELEASE_REHEARSAL:-}" != 1 ] && [ -z "${INSECURE_REGISTRY:-}" ] && [ "${GITHUB_REPOSITORY,,}" != "${RELEASE_REPOSITORY,,}" ]; then
+  echo "refusing to release from ${GITHUB_REPOSITORY:-outside GitHub Actions}: a release is made in $RELEASE_REPOSITORY, by its release workflow, on a tree that scripts/publish-public.sh published there (the script commits it and tags it, and the tag starts the workflow). To rehearse a release against a registry of your own, set RELEASE_REHEARSAL=1." >&2
+  exit 1
+fi
+
+: "${REGISTRY:?REGISTRY is required, for example ghcr.io/Impact-AI/impact-autoinstrumentation}"
 : "${VERSION:?VERSION is required, for example v0.3.0}"
 : "${REGISTRY_USER:?REGISTRY_USER is required}"
 : "${REGISTRY_TOKEN:?REGISTRY_TOKEN is required}"
@@ -94,6 +114,14 @@ fi
 echo "== check the source and the chart for internal details"
 python3 scripts/check_internal_details.py --source --chart
 
+# A release says what changed: its section of CHANGELOG.md, which the chart's Artifact Hub annotations and the GitHub
+# release are made from (a rehearsal may do without one).
+if [ "${RELEASE_REHEARSAL:-}" != 1 ]; then
+  echo "== check CHANGELOG.md has a dated section for $number"
+  python3 scripts/release_notes.py "$number" --changes >/dev/null ||
+    { echo "CHANGELOG.md has no dated section for $number (above): a release says what changed" >&2; exit 1; }
+fi
+
 if [ "$CONTAINER" = docker ]; then
   docker buildx inspect impact-release >/dev/null 2>&1 || docker buildx create --name impact-release --driver docker-container >/dev/null
 fi
@@ -148,29 +176,34 @@ push_image() {
   echo "   $name $(cat "$out/$name.digest")"
 }
 
-build_and_scan python python/Dockerfile python
-build_and_scan nodejs nodejs/Dockerfile nodejs
-build_and_scan reporter reporter/Dockerfile reporter
+# python nodejs reporter, and java with RELEASE_JAVA=1; each is built from <key>/Dockerfile in <key>/
+read -r -a images <<<"$(release_images)"
+for name in "${images[@]}"; do
+  build_and_scan "$name" "$name/Dockerfile" "$name"
+done
 
 # The images the overhead is measured on are built from the same Dockerfiles at the same version; nothing is pushed if a
 # workload is over its budget (the report stays in $out/overhead).
 echo "== measure the overhead of the injected workloads"
 VERSION="$number" scripts/overhead.sh full "$out/overhead"
 
-push_image python python/Dockerfile python
-push_image nodejs nodejs/Dockerfile nodejs
-push_image reporter reporter/Dockerfile reporter
+echo "== run every cell of the Python qualification: a cell that no longer says what it did stops the release"
+VERSION="$number" scripts/python-cells.sh all
+
+for name in "${images[@]}"; do
+  push_image "$name" "$name/Dockerfile" "$name"
+done
 
 echo "== stamp and package the chart"
 rm -rf build/chart
 mkdir -p build/chart
 cp -R "chart/$CHART_NAME" "build/chart/$CHART_NAME"
-python3 scripts/stamp_chart.py "build/chart/$CHART_NAME" "$number" \
-  --python "$(cat "$out/python.digest")" --nodejs "$(cat "$out/nodejs.digest")" --reporter "$(cat "$out/reporter.digest")" \
-  --repository "python=$PUBLISH_ROOT/$(published_image python)" \
-  --repository "nodejs=$PUBLISH_ROOT/$(published_image nodejs)" \
-  --repository "reporter=$PUBLISH_ROOT/$(published_image reporter)" \
-  --overhead "$out/overhead/results.json"
+stamp=()
+for name in "${images[@]}"; do
+  stamp+=("--$name" "$(cat "$out/$name.digest")" --repository "$name=$PUBLISH_ROOT/$(published_image "$name")")
+done
+python3 scripts/stamp_chart.py "build/chart/$CHART_NAME" "$number" "${stamp[@]}" --overhead "$out/overhead/results.json" \
+  --changelog CHANGELOG.md
 helm lint "build/chart/$CHART_NAME" -f "build/chart/$CHART_NAME/ci/values.yaml" >/dev/null
 python3 scripts/check_internal_details.py --chart-dir "build/chart/$CHART_NAME"
 helm package "build/chart/$CHART_NAME" --destination "$out"
@@ -194,7 +227,7 @@ else
 fi
 
 echo "== released $VERSION"
-echo "   python   $PUBLISH_ROOT/$(published_image python):$number@$(cat "$out/python.digest")"
-echo "   nodejs   $PUBLISH_ROOT/$(published_image nodejs):$number@$(cat "$out/nodejs.digest")"
-echo "   reporter $PUBLISH_ROOT/$(published_image reporter):$number@$(cat "$out/reporter.digest")"
+for name in "${images[@]}"; do
+  printf '   %-8s %s\n' "$name" "$PUBLISH_ROOT/$(published_image "$name"):$number@$(cat "$out/$name.digest")"
+done
 echo "   chart    oci://$PUBLISH_ROOT/charts/$CHART_NAME --version $number@$(cat "$out/chart.digest")"

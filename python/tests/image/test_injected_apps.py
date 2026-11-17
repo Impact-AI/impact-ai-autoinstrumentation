@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-4 (image side): a Python workload that calls OpenAI, Anthropic or Bedrock Converse is covered by the payload
+"""Coverage (image side): a Python workload that calls OpenAI, Anthropic or Bedrock Converse is covered by the payload
 alone, under uvicorn and gunicorn, on Python 3.11 to 3.14. Prompt and answer arrive on the span (mock providers).
 """
 

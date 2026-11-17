@@ -47,7 +47,7 @@ def build(context: Path, files: dict[str, str]) -> str:
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(text)
     (context / "Containerfile").write_text("FROM scratch\nCOPY files/ /\n")
-    tag = f"localhost/i019-scan-control/{uuid.uuid4().hex[:8]}:1"
+    tag = f"localhost/kit-test-scan-control/{uuid.uuid4().hex[:8]}:1"
     subprocess.run(  # noqa: S603 - the container CLI with test-controlled arguments
         [CONTAINER, "build", "-q", "-f", str(context / "Containerfile"), "-t", tag, str(context)],
         capture_output=True,

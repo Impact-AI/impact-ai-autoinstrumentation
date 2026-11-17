@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: Apache-2.0
+# The CI job of the Datadog harness (make test-datadog), one job per language. Workflows change only through the code
+# owner: apply with `git apply scripts/ci/datadog.patch`.
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 1c593eb..54548ea 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -55,6 +55,27 @@ jobs:
+       - uses: jdx/mise-action@v5
+       - name: End to end on a kind cluster (Kubernetes 1.27), the Kubernetes part of the suite
+         run: make e2e
++  datadog:
++    # Datadog's tracers against the real Datadog Agent (placeholder key, recording backend), one job per language so that
++    # each stays under ten minutes; the relay's decoder reads what the Agent received.
++    runs-on: ubuntu-latest
++    timeout-minutes: 10
++    strategy:
++      fail-fast: false
++      matrix:
++        cell: [python, nodejs, java]
++    steps:
++      - uses: actions/checkout@v7
++      - uses: jdx/mise-action@v5
++      - name: The ${{ matrix.cell }} cell against Datadog Agent 7.84.3
++        run: make test-datadog DATADOG_CELLS=${{ matrix.cell }}
++      - name: The recordings and the Agent's log
++        if: always()
++        uses: actions/upload-artifact@v7
++        with:
++          name: datadog-${{ matrix.cell }}
++          path: build/datadog
++          if-no-files-found: ignore
+   overhead:
+     runs-on: ubuntu-latest
+     timeout-minutes: 25

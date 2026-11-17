@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-11: agents are first-class. The OpenAI Agents SDK, LangChain and LangGraph are covered by the payload alone.
+"""Agents are first-class. The OpenAI Agents SDK, LangChain and LangGraph are covered by the payload alone.
 
 The qualification with mock models (OpenAI chat, and the Responses API the Agents SDK calls). For each framework an
 agent with one tool runs one round of its loop in a real application image, injected the way the Operator injects it,

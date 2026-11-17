@@ -29,6 +29,39 @@ sys.path.insert(0, str(ROOT / "tools"))
 import assemble_payload as assemble  # noqa: E402
 
 SRC = ROOT / "src"
+PYTHON = f"{sys.version_info.major}.{sys.version_info.minor}"
+# What the payload's qualification proves of the AI libraries these tests install, on the Python that runs them.
+PROVEN = (
+    ("openai", "3"),
+    ("anthropic", "1"),
+    ("openai-agents", "0.22"),
+    ("langchain", "1"),
+    ("langchain-core", "1"),
+    ("langgraph", "1"),
+)
+
+
+def qualification_table(*proven: tuple[str, str], python: str = PYTHON, excluded=()) -> dict:
+    """A qualification in which each (library, major) has a passing cell on `python`."""
+    return {
+        "schema": "impact.python.qualification.v1",
+        "cells": [
+            {
+                "python": python,
+                "library": library,
+                "major": major,
+                "version": f"{major}.0",
+                "setting": "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=SPAN_ONLY",
+                "started": True,
+                "traced": True,
+                "content": "span",
+                "steps": None,
+            }
+            for library, major in proven
+        ],
+        "excluded": list(excluded),
+    }
+
 
 FAKE_INSTRUMENTOR = """
 from opentelemetry.instrumentation.instrumentor import BaseInstrumentor
@@ -65,6 +98,7 @@ class Layout:
         (self.root / "_impact_shared").mkdir()
         self.add_library("fakelib")
         self.add_instrumentor("fake", "FakeInstrumentor", library="fakelib")
+        self.qualification: dict | None = qualification_table(*PROVEN)
 
     def add_library(self, name: str, version: str = "1.0") -> None:
         """A library of the application: an importable package and its distribution metadata."""
@@ -114,8 +148,13 @@ class Layout:
         return env
 
     def run(self, code: str, env: dict[str, str], timeout: float = 60) -> subprocess.CompletedProcess:
-        # The registry is generated when the payload is built; do the same for the fake payload.
-        (self.root / "impact_instrumentation" / "_registry.py").write_text(assemble.generate_registry(self.root))
+        # The registry and the qualification are generated when the payload is built; do the same for the fake payload.
+        package = self.root / "impact_instrumentation"
+        (package / "_registry.py").write_text(assemble.generate_registry(self.root))
+        if self.qualification is not None:
+            (package / "_qualification.py").write_text(assemble.generate_qualification(self.qualification))
+        else:
+            (package / "_qualification.py").unlink(missing_ok=True)
         return subprocess.run(  # noqa: S603 - fixed interpreter, test-owned code
             [sys.executable, "-c", code], env=env, capture_output=True, text=True, timeout=timeout, check=False
         )
@@ -146,9 +185,11 @@ USE_LIBRARY = "import fakelib\n" + STATE
 
 
 def decoded(value: dict):
-    """A string, or the list of strings of an array attribute."""
+    """A string, a boolean, or the list of strings of an array attribute."""
     if "arrayValue" in value:
         return [item["stringValue"] for item in value["arrayValue"].get("values", [])]
+    if "boolValue" in value:
+        return value["boolValue"]
     return value["stringValue"]
 
 
@@ -282,7 +323,7 @@ def test_defaults_are_applied_to_the_process_environment(layout, sink):
     assert got["OTEL_PYTHON_EXCLUDED_URLS"] == defaults.DEFAULTS["OTEL_PYTHON_EXCLUDED_URLS"]
 
 
-# --- AE-11: the AI libraries and agent frameworks, found in the environment, never imported -------------------------
+# --- the AI libraries and agent frameworks, found in the environment, never imported -------------------------------
 
 
 def add_agent_instrumentor(layout: Layout, name: str, library: str, constraint: str = "") -> None:
@@ -344,15 +385,155 @@ def test_a_failed_start_still_reports_its_frameworks(layout, sink):
 
 
 def test_a_library_outside_the_supported_range_moves_to_untraced_when_it_is_found_out(layout, sink):
+    # A cell proves anthropic 2, and the instrumentation supports less: that is found out when the application imports
+    # the library (its range is read with `packaging`, which only the process that needs it imports).
+    layout.qualification = qualification_table(("anthropic", "2"))
     layout.add_installed("anthropic-2.4.0")
     layout.add_library("anthropic", "2.4.0")
     add_agent_instrumentor(layout, "anthropic", "anthropic", "<2")
     layout.run("import fakelib, anthropic\n", layout.env(sink))
     assert wait_for(lambda: any("impact.setup.skipped" in r for r in setup_reports(sink)))
     first, skipped = setup_reports(sink)[0], next(r for r in setup_reports(sink) if "impact.setup.skipped" in r)
-    assert first["impact.setup.untraced"] == []  # at start nothing is known about the version range
+    assert first["impact.setup.untraced"] == []  # at start nothing is known about the instrumentation's own range
     assert skipped["impact.setup.frameworks"] == ["anthropic 2.4.0"]
     assert skipped["impact.setup.untraced"] == ["anthropic 2.4.0"]
+    assert (
+        skipped["impact.setup.skipped"]
+        == "anthropic: Impact AI traces anthropic up to 1; this workload runs anthropic 2.4.0"
+    )
+
+
+# --- the qualification: an AI library is armed only where a passing cell proves it ----------------------------------
+
+
+def openai_application(layout: Layout, version: str) -> None:
+    layout.add_installed(f"openai-{version}")
+    layout.add_library("openai", version)
+    add_agent_instrumentor(layout, "openai", "openai")
+
+
+def test_a_version_no_cell_proves_is_not_armed_and_the_first_report_says_what_impact_ai_traces(layout, sink):
+    openai_application(layout, "4.0.0")
+    layout.qualification = qualification_table(("openai", "1"), ("openai", "2"), ("openai", "3"))
+    code = "import json, sys, fakelib, openai\nprint(json.dumps({'patched': 'openai_instr' in sys.modules}))\n"
+    got = parse(layout.run(code, layout.env(sink)))
+    assert wait_for(lambda: has_span(sink, "fake.instrumented"))
+    first = setup_attributes(sink)
+    assert first["impact.setup.instrumentations"] == "fake"
+    assert first["impact.setup.untraced"] == ["openai 4.0.0"]
+    assert first["impact.setup.skipped"] == "openai: Impact AI traces openai 1 to 3; this workload runs openai 4.0.0"
+    # The application imported openai as it would without the kit: its instrumentor was never even loaded.
+    assert got == {"patched": False}
+    assert not has_span(sink, "openai.instrumented")
+
+
+def test_a_version_a_cell_proves_is_armed_and_applied(layout, sink):
+    openai_application(layout, "3.42.1")
+    layout.run("import openai\n", layout.env(sink))
+    assert wait_for(lambda: has_span(sink, "openai.instrumented"))
+    first = setup_attributes(sink)
+    assert first["impact.setup.instrumentations"] == "fake,openai"
+    assert first["impact.setup.untraced"] == []
+    assert "impact.setup.skipped" not in first
+
+
+def test_a_python_no_cell_proves_reads_the_pythons_impact_ai_traces_the_library_on(layout, sink):
+    other = "3.11" if PYTHON != "3.11" else "3.12"
+    openai_application(layout, "3.42.1")
+    layout.qualification = qualification_table(("openai", "3"), python=other)
+    layout.run("import openai\n", layout.env(sink))
+    assert wait_for(lambda: has_span(sink, "impact.setup"))
+    first = setup_attributes(sink)
+    assert first["impact.setup.skipped"] == (
+        f"openai: Impact AI traces openai on Python {other}; this workload runs {PYTHON}"
+    )
+    assert first["impact.setup.untraced"] == ["openai 3.42.1"]
+    assert not has_span(sink, "openai.instrumented")
+
+
+def test_an_excluded_release_is_not_armed(layout, sink):
+    openai_application(layout, "3.43.0")
+    excluded = [{"library": "openai", "version": "3.43.0", "why": "it broke its cell"}]
+    layout.qualification = qualification_table(("openai", "3"), excluded=excluded)
+    layout.run("import openai\n", layout.env(sink))
+    assert wait_for(lambda: has_span(sink, "impact.setup"))
+    assert setup_attributes(sink)["impact.setup.skipped"] == (
+        "openai: Impact AI traces openai 3 except 3.43.0; this workload runs openai 3.43.0"
+    )
+    assert not has_span(sink, "openai.instrumented")
+
+
+def test_the_matrix_s_switch_arms_what_no_cell_proves_and_the_report_still_says_it_is_not_traced(layout, sink):
+    # The qualification matrix finds out what works whatever the file says; the setup report never says traced
+    # without a passing cell, so a workload that sets the switch is not shown as covered.
+    openai_application(layout, "4.0.0")
+    layout.qualification = qualification_table(("openai", "1"), ("openai", "3"))
+    layout.run("import openai\n", layout.env(sink, IMPACT_QUALIFICATION_MATRIX="1"))
+    assert wait_for(lambda: has_span(sink, "openai.instrumented"))
+    first = setup_attributes(sink)
+    assert first["impact.setup.untraced"] == ["openai 4.0.0"]
+    assert first["impact.setup.skipped"] == "openai: Impact AI traces openai 1 to 3; this workload runs openai 4.0.0"
+
+
+def test_the_switch_of_earlier_builds_does_not_bypass_the_qualification(layout, sink):
+    openai_application(layout, "4.0.0")
+    layout.qualification = qualification_table(("openai", "3"))
+    layout.run("import fakelib, openai\n", layout.env(sink, IMPACT_PYTHON_QUALIFICATION="off"))
+    assert wait_for(lambda: has_span(sink, "fake.instrumented"))
+    assert not has_span(sink, "openai.instrumented")
+    assert setup_attributes(sink)["impact.setup.untraced"] == ["openai 4.0.0"]
+
+
+def test_a_payload_whose_qualification_cannot_be_read_traces_no_ai_library_and_says_why(layout, sink):
+    openai_application(layout, "3.42.1")
+    layout.qualification = None
+    result = layout.run("import fakelib, openai\n", layout.env(sink))
+    assert result.returncode == 0, result.stderr
+    assert wait_for(lambda: has_span(sink, "fake.instrumented"))  # what is not an AI library is still traced
+    first = setup_attributes(sink)
+    assert first["impact.setup.state"] == "active"
+    assert first["impact.setup.skipped"] == "openai: Impact AI could not read this image's qualification (ImportError)"
+    assert first["impact.setup.untraced"] == ["openai 3.42.1"]
+    assert not has_span(sink, "openai.instrumented")
+
+
+def test_a_stood_down_workload_lists_a_version_no_cell_proves_as_untraced(layout, sink):
+    layout.add_installed("ddtrace-2.9.1")
+    openai_application(layout, "4.0.0")
+    layout.run(STATE, layout.env(sink))
+    assert wait_for(lambda: has_span(sink, "impact.setup"))
+    attrs = setup_attributes(sink)
+    assert attrs["impact.setup.state"] == "pre-existing"
+    assert attrs["impact.setup.untraced"] == ["openai 4.0.0"]
+
+
+GLOBAL_PROVIDER = """
+import json
+from opentelemetry import trace
+span = trace.get_tracer("the-application").start_span("the-application's own span")
+span.end()
+print(json.dumps({
+    "provider": type(trace.get_tracer_provider()).__name__,
+    "set": trace._TRACER_PROVIDER is not None,
+    "recording": span.is_recording(),
+}))
+"""
+
+
+def test_after_the_ai_libraries_are_imported_the_global_tracer_provider_is_still_opentelemetry_s_default(layout, sink):
+    # The package gives its provider to each instrumentation it applies and never registers it globally, so a
+    # library that makes spans with the global tracer, or the application's own code, sees OpenTelemetry's default and
+    # can still set a provider of its own.
+    for name, version in (("openai", "3.42.1"), ("anthropic", "1.17.0"), ("langchain", "1.4.7")):
+        layout.add_installed(f"{name}-{version}")
+        layout.add_library(name, version)
+        add_agent_instrumentor(layout, name, name)
+    got = parse(layout.run("import fakelib, openai, anthropic, langchain\n" + GLOBAL_PROVIDER, layout.env(sink)))
+    assert wait_for(lambda: has_span(sink, "langchain.instrumented"))
+    assert has_span(sink, "openai.instrumented") and has_span(sink, "anthropic.instrumented")
+    assert got == {"provider": "ProxyTracerProvider", "set": False, "recording": False}
+    assert not has_span(sink, "the-application's own span")
+    assert setup_attributes(sink)["impact.setup.instrumentations"] == "anthropic,fake,langchain,openai"
 
 
 def agents_package(layout: Layout, module: str) -> None:
@@ -410,7 +591,7 @@ def test_a_process_after_the_first_does_not_even_load_the_http_client(layout, si
     assert second["stdlib_http"] is False
 
 
-# --- AE-5: stand down ---------------------------------------------------------------------------------------------
+# --- stand down ---------------------------------------------------------------------------------------------------
 
 
 @pytest.mark.parametrize(
@@ -470,6 +651,159 @@ def test_a_workload_with_its_own_otel_pipeline_in_its_environment_stands_down(la
     assert otel_modules(got) == []
 
 
+# --- the tool beside the package, and the coexistence list ----------------------------------------------------------
+
+TOOL_KEYS = ("impact.setup.tool", "impact.setup.tool.version", "impact.setup.exporter", "impact.setup.alongside")
+
+
+def tool_attributes(attrs: dict) -> dict:
+    return {key: attrs[key] for key in TOOL_KEYS if key in attrs}
+
+
+def ship_list(layout: Layout, *cells: dict) -> None:
+    """The payload's coexistence list: the generic fixture of these cells, on the Python that runs the tests."""
+    table = {"schema": "impact.coexistence.v1", "cells": list(cells)}
+    (layout.root / "impact_instrumentation" / "coexistence.json").write_text(json.dumps(table))
+
+
+def alongside_cell(tool: str, major: str, **answers) -> dict:
+    return {
+        "tool": tool,
+        "mode": "alongside",
+        "python": PYTHON,
+        "major": major,
+        "version": f"{major}.0",
+        "started": True,
+        "traced": True,
+        "same": True,
+        "proof": "python/tests/image/test_example.py",
+        **answers,
+    }
+
+
+def test_a_stood_down_workload_names_the_tool_its_version_and_that_it_did_not_start_beside_it(layout, sink):
+    layout.add_installed("ddtrace-2.9.1")
+    layout.run(STATE, layout.env(sink))
+    assert wait_for(lambda: has_span(sink, "impact.setup"))
+    attrs = setup_attributes(sink)
+    assert attrs["impact.setup.state"] == "pre-existing"
+    assert tool_attributes(attrs) == {
+        "impact.setup.tool": "datadog",
+        "impact.setup.tool.version": "2.9.1",
+        "impact.setup.alongside": False,
+    }
+
+
+def test_a_tool_the_list_proves_runs_alongside_and_the_package_traces_the_workload(layout, sink):
+    layout.add_installed("openlit-1.34.0")
+    ship_list(layout, alongside_cell("openlit", "1"))
+    got = parse(layout.run(USE_LIBRARY, layout.env(sink)))
+    assert wait_for(lambda: has_span(sink, "fake.instrumented"))
+    attrs = setup_attributes(sink)
+    assert attrs["impact.setup.state"] == "active"
+    assert attrs["impact.setup.detail"] == ""
+    assert tool_attributes(attrs) == {
+        "impact.setup.tool": "openlit",
+        "impact.setup.tool.version": "1.34.0",
+        "impact.setup.alongside": True,
+    }
+    assert "opentelemetry.sdk.trace" in got["loaded"]
+
+
+@pytest.mark.parametrize(
+    ("why", "cells"),
+    [
+        ("the shipped list", None),
+        ("another series", [alongside_cell("openlit", "2")]),
+        ("a failed proof", [alongside_cell("openlit", "1", same=False)]),
+        ("another tool", [alongside_cell("langfuse", "1")]),
+    ],
+)
+def test_a_tool_the_list_does_not_prove_keeps_the_stand_down(layout, sink, why, cells):
+    layout.add_installed("openlit-1.34.0")
+    if cells is not None:
+        ship_list(layout, *cells)
+    got = parse(layout.run(USE_LIBRARY, layout.env(sink)))
+    assert wait_for(lambda: has_span(sink, "impact.setup"))
+    attrs = setup_attributes(sink)
+    assert attrs["impact.setup.state"] == "pre-existing", why
+    assert attrs["impact.setup.detail"] == "openlit 1.34.0"
+    assert tool_attributes(attrs)["impact.setup.alongside"] is False
+    assert otel_modules(got) == []
+    assert not has_span(sink, "fake.instrumented")
+
+
+def test_a_list_that_cannot_be_read_keeps_the_stand_down(layout, sink):
+    layout.add_installed("openlit-1.34.0")
+    (layout.root / "impact_instrumentation" / "coexistence.json").write_text("{")
+    layout.run(STATE, layout.env(sink))
+    assert wait_for(lambda: has_span(sink, "impact.setup"))
+    assert setup_attributes(sink)["impact.setup.state"] == "pre-existing"
+
+
+def test_langsmiths_default_tracing_is_named_and_the_package_runs_beside_it(layout, sink):
+    layout.add_installed("langsmith-0.14.17")
+    layout.run(USE_LIBRARY, layout.env(sink, LANGSMITH_TRACING="true", LANGSMITH_API_KEY="lsv2_pt_planted"))
+    assert wait_for(lambda: has_span(sink, "fake.instrumented"))
+    attrs = setup_attributes(sink)
+    assert attrs["impact.setup.state"] == "active"
+    assert tool_attributes(attrs) == {
+        "impact.setup.tool": "langsmith",
+        "impact.setup.tool.version": "0.14.17",
+        "impact.setup.alongside": True,
+    }
+    # Names and a flag: no setting's value is in the report.
+    assert "lsv2_pt_planted" not in json.dumps(attrs)
+
+
+def test_langsmiths_opentelemetry_mode_stands_the_package_down_and_names_its_otlp_exporter(layout, sink):
+    layout.add_installed("langsmith-0.14.17")
+    env = layout.env(sink, LANGSMITH_TRACING="true", LANGSMITH_OTEL_ENABLED="true", LANGSMITH_API_KEY="lsv2_pt_planted")
+    got = parse(layout.run(STATE, env))
+    assert wait_for(lambda: has_span(sink, "impact.setup"))
+    attrs = setup_attributes(sink)
+    assert attrs["impact.setup.state"] == "pre-existing"
+    assert attrs["impact.setup.detail"] == "LANGSMITH_OTEL_ENABLED (set by the workload)"
+    assert tool_attributes(attrs) == {
+        "impact.setup.tool": "langsmith",
+        "impact.setup.tool.version": "0.14.17",
+        "impact.setup.exporter": "otlp-http",
+        "impact.setup.alongside": False,
+    }
+    assert otel_modules(got) == []
+    assert "lsv2_pt_planted" not in json.dumps(attrs)
+
+
+def test_a_workload_with_no_tool_has_no_tool_attributes(layout, sink):
+    layout.add_installed("langsmith-0.14.17")  # the package without tracing switched on is no tool
+    layout.run(STATE, layout.env(sink))
+    assert wait_for(lambda: has_span(sink, "impact.setup"))
+    attrs = setup_attributes(sink)
+    assert attrs["impact.setup.state"] == "active"
+    assert tool_attributes(attrs) == {}
+
+
+def test_a_stood_down_tracer_of_no_known_tool_names_none(layout, sink):
+    layout.add_installed("agentops-0.4.21")
+    layout.run(STATE, layout.env(sink))
+    assert wait_for(lambda: has_span(sink, "impact.setup"))
+    attrs = setup_attributes(sink)
+    assert attrs["impact.setup.state"] == "pre-existing"
+    assert tool_attributes(attrs) == {}
+
+
+def test_langsmith_tracing_beside_a_tracer_of_no_known_tool_names_none(layout, sink):
+    # The unknown tracer owns the workload: LangSmith's default tracing beside it does not make LangSmith the owner.
+    layout.add_installed("langsmith-0.14.17")
+    layout.add_installed("agentops-0.4.21")
+    layout.run(STATE, layout.env(sink, LANGSMITH_TRACING="true"))
+    assert wait_for(lambda: has_span(sink, "impact.setup"))
+    attrs = setup_attributes(sink)
+    assert attrs["impact.setup.state"] == "pre-existing"
+    assert attrs["impact.setup.detail"] == "agentops 0.4.21"
+    assert tool_attributes(attrs) == {}
+
+
 def test_otel_sdk_disabled_means_no_start_and_no_report(layout, sink):
     got = parse(layout.run(USE_LIBRARY, layout.env(sink, OTEL_SDK_DISABLED="true")))
     time.sleep(0.5)
@@ -477,7 +811,7 @@ def test_otel_sdk_disabled_means_no_start_and_no_report(layout, sink):
     assert otel_modules(got) == []
 
 
-# --- AE-7: the application never depends on impact.ai ---------------------------------------------------------------
+# --- the application never depends on impact.ai ---------------------------------------------------------------------
 
 
 def test_an_unreachable_gateway_does_not_delay_or_break_the_application(layout):

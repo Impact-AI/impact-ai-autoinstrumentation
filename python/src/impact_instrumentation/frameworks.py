@@ -3,9 +3,9 @@
 """The AI libraries and agent frameworks found in the application's environment, for the `impact.setup` span (C8).
 
 They are read from the installed distributions that `detect.scan` already listed, a directory listing: nothing of the
-application is imported or run. Each one is either traced by an instrumentation this image ships or it is not;
-`untraced` names the ones the image cannot trace (yet), so that Cover your AI can say what is missing rather than show
-the workload as covered.
+application is imported or run. Each one is either traced by an instrumentation this image ships, where its
+qualification proves it (qualification.py), or it is not; `untraced` names the ones the image cannot trace (yet), so
+that Cover your AI can say what is missing rather than show the workload as covered.
 
 Names are distribution names (PEP 503), as `pip list` prints them: `openai-agents`, not the module `agents`.
 """
@@ -17,8 +17,8 @@ from collections.abc import Collection, Mapping
 
 from impact_instrumentation import defaults
 
-# The wire shape is fixed by the monorepo, which drops an entry that does not fit it: at most 20 entries per list,
-# each "name" or "name version", one space between, name and version at most 64 characters.
+# The wire shape is fixed by the impact.ai service, which drops an entry that does not fit it: at most 20 entries per
+# list, each "name" or "name version", one space between, name and version at most 64 characters.
 MAX_ENTRIES = 20
 MAX_NAME = 64
 MAX_VERSION = 64
@@ -58,7 +58,7 @@ CATALOG: dict[str, Entry] = {
     "phidata": Entry("agent", None),
     "openai": Entry("provider", "openai"),
     "anthropic": Entry("provider", "anthropic"),
-    "google-genai": Entry("provider", None),
+    "google-genai": Entry("provider", "google-genai"),  # the Gemini API and Vertex AI
     "google-generativeai": Entry("provider", None),
     "google-cloud-aiplatform": Entry("provider", None),
     "cohere": Entry("provider", None),
@@ -109,8 +109,9 @@ def survey(
     """The catalogued libraries among `dists` ({normalized name: version}), and which of them the image cannot trace.
 
     available: the instrumentations the payload ships (default: its registry). skipped: those whose library turned
-    out to be outside the supported range, found when the application imported it. Agent frameworks come before provider
-    SDKs, each alphabetically; a list holds at most MAX_ENTRIES of them.
+    out to be outside the range the qualification proves (at start) or the instrumentation supports (when the
+    application imported it). Agent frameworks come before provider SDKs, each alphabetically; a list holds at most
+    MAX_ENTRIES of them.
     """
     shipped_here = shipped() if available is None else available
     off = defaults.disabled_instrumentations(environ)

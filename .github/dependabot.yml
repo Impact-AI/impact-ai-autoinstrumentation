@@ -1,0 +1,76 @@
+# Dependabot here opens security updates only. Version updates of everything the kit builds on are made every week in
+# Impact AI's development repository and come here with a release (CONTRIBUTING.md), so the limit of open version
+# updates is 0. A security update opened here is carried into the development repository and released. This file is
+# written by the release from the development repository's own, with that one change.
+version: 2
+updates:
+  # Base images, pinned by tag and digest: the digest and the patch version move, and a new minor or major version of an
+  # image (Python 3.14 to 3.15, Node.js 22 to 24) is a decision for SUPPORT.md, not an update.
+  - package-ecosystem: docker
+    directories:
+      - /java
+      - /nodejs
+      - /nodejs/tests
+      - /python
+      - /reporter
+      - /testing/apps
+      - /testing/apps/java
+      - /testing/apps/nodejs
+      - /testing/mock
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    groups:
+      base-images:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+
+  # The reporter's Go modules (none beyond the standard library today).
+  - package-ecosystem: gomod
+    directory: /reporter
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    groups:
+      go-modules:
+        patterns:
+          - "*"
+
+  # The npm packages the Node.js image carries (one tree per payload) and the packages of its unit tests.
+  - package-ecosystem: npm
+    directories:
+      - /nodejs/trees/*
+      - /nodejs/tests
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    groups:
+      npm-packages:
+        patterns:
+          - "*"
+
+  # The Python development environment: pyproject.toml and uv.lock.
+  - package-ecosystem: uv
+    directory: /python
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    groups:
+      python-packages:
+        patterns:
+          - "*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    groups:
+      actions:
+        patterns:
+          - "*"

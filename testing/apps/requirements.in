@@ -7,5 +7,5 @@ gunicorn
 packaging  # the application has its own copy: ours is only a fallback
 flask
 openai
-anthropic<2  # the pinned OpenTelemetry GenAI package instruments anthropic >=0.51,<2
+anthropic<3  # the pinned OpenTelemetry GenAI package instruments anthropic >=0.51,<3
 boto3

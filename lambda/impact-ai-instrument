@@ -1,0 +1,29 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+
+# impact.ai on AWS Lambda: the script AWS_LAMBDA_EXEC_WRAPPER names, /opt/impact-ai-instrument. Lambda runs it with the
+# runtime's command as its arguments, and it runs that command. On a Python runtime it first puts the layer's start
+# (impact-ai/lambda/sitecustomize.py) at the front of PYTHONPATH; the start takes it out again before the runtime reads
+# PYTHONPATH, so the function sees the environment it was given.
+#
+# It is the function's one wrapper: it starts no other. Whatever it does not recognise (another runtime, a layer that is
+# not all there) runs exactly as it would without it.
+
+case "$0" in
+  /*) here="${0%/*}" ;;
+  *) here="$(cd -- "$(dirname -- "$0")" 2>/dev/null && pwd)" || exec "$@" ;;
+esac
+start="$here/impact-ai/lambda"
+
+case "${1##*/}" in
+  python3*) ;;
+  *) exec "$@" ;;
+esac
+[ -f "$start/sitecustomize.py" ] && [ -d "$here/impact-ai/python/impact_instrumentation" ] || exec "$@"
+
+if [ -n "${PYTHONPATH+set}" ]; then
+  export PYTHONPATH="$start:$PYTHONPATH"
+else
+  export PYTHONPATH="$start"
+fi
+exec "$@"

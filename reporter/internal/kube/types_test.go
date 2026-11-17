@@ -273,7 +273,7 @@ func TestLenientTime(t *testing.T) {
 	}
 }
 
-// Every type a Kubernetes response is decoded into must be names only (AE-3).
+// Every type a Kubernetes response is decoded into must be names only.
 // The guard walks the types by reflection: no field may carry a value-bearing
 // JSON name, every field must be tagged (an untagged field would be matched by
 // its Go name), and free-form containers (any, RawMessage, plain maps) are not

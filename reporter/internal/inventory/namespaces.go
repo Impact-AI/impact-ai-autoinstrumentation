@@ -4,7 +4,7 @@ package inventory
 
 import "strings"
 
-// systemNamespaces are never listed (AE-2).
+// systemNamespaces are never listed.
 var systemNamespaces = []string{"kube-system", "kube-public", "kube-node-lease"}
 
 // NamespaceFilter decides which namespaces appear in the inventory.

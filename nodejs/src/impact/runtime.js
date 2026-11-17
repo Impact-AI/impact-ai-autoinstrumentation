@@ -23,6 +23,7 @@ const qualification = require('./qualification');
 const otlp = require('./otlp');
 const { ImpactSpanExporter } = require('./exporter');
 const { BoundedBatchSpanProcessor, flushOnExit } = require('./processor');
+const { BusinessContext, propagator } = require('./business-context');
 const { VERSION } = require('./version');
 
 /** The disabled-instrumentations check of the workload: `enabled('express')`. */
@@ -123,13 +124,15 @@ function arm(input) {
   const processor = new BoundedBatchSpanProcessor(exporter, { env, suppress });
   const provider = new (treeRequire(tree.provider.module)[tree.provider.name])({
     resource: resourceFromAttributes(otlp.resourceAttributes(env)),
-    spanProcessors: [processor],
+    // The user, session and use case the application put in baggage, on every span of this provider (business-context.js).
+    spanProcessors: [new BusinessContext(api), processor],
   });
 
   const contextManager = new AsyncLocalStorageContextManager();
   contextManager.enable();
   api.context.setGlobalContextManager(contextManager);
-  api.propagation.setGlobalPropagator(new core.W3CTraceContextPropagator());
+  // Trace context; a caller's baggage only where the workload trusts its callers (business-context.js).
+  api.propagation.setGlobalPropagator(propagator(core, env));
 
   // An ES module is only patched where the matrix proved it: the loader hook is registered for those, and only when it
   // cannot break a library of the application's (see qualification.hook).

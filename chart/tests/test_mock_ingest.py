@@ -975,7 +975,8 @@ def test_the_cover_route_refuses_a_missing_unknown_or_revoked_key_with_a_code(mo
 
 
 def test_a_pasted_key_has_no_install_and_the_cover_route_says_so(mock):
-    # The key the suite's reporter used before AE-14 (require_key) belongs to no install: nothing to cover for it.
+    # The key the suite's reporter used before install tokens (require_key) belongs to no install: nothing to cover
+    # for it.
     mock.control(require_key="the-pasted-key")
     reply = cover(mock, "the-pasted-key")
     assert (reply.status, reply.json) == (403, {"code": "not_an_install_key"})
@@ -1005,13 +1006,15 @@ def test_a_lost_cover_response_is_recorded_and_the_next_poll_answers(mock):
 # --- what the older tests rely on -----------------------------------------------------------------------------------
 
 
-def test_require_key_guards_inventory_and_traces_only(mock):
+def test_require_key_guards_inventory_traces_and_logs_only(mock):
     mock.control(require_key="the-key")
     refused = mock.post("/v1/inventory", snapshot(), bearer="wrong")
     assert (refused.status, refused.json) == (401, {"error": "unauthorized"})
     assert mock.post("/v1/traces", {}, bearer="wrong").status == 401
+    assert mock.post("/v1/logs", {}, bearer="wrong").status == 401
     assert mock.post("/v1/inventory", snapshot(), bearer="the-key").status == 202
     assert mock.post("/v1/traces", {}, bearer="the-key").status == 200
+    assert mock.post("/v1/logs", {}, bearer="the-key").status == 200
     # no key needed for the model providers and a customer's own backend
     assert mock.post("/v1/chat/completions", {"model": "m"}).status == 200
     assert mock.post("/v1/some/other/path", {}).status == 200
@@ -1078,6 +1081,95 @@ def test_the_model_providers_still_answer(mock):
     assert mock.get("/healthz").json == {"ok": True}
 
 
+# --- log events: /v1/logs wants the key /v1/traces wants and is recorded the same way -------------------------------
+
+LOGS_BODY = {
+    "resourceLogs": [
+        {
+            "resource": {"attributes": [{"key": "service.name", "value": {"stringValue": "returns-java"}}]},
+            "scopeLogs": [
+                {
+                    "logRecords": [
+                        {
+                            "eventName": "gen_ai.user.message",
+                            "body": {"kvlistValue": {"values": [{"key": "content", "value": {"stringValue": "hi"}}]}},
+                            "traceId": "5b8efff798038103d269b633813fc60c",
+                            "spanId": "eee19b7ec3c1b174",
+                        }
+                    ]
+                }
+            ],
+        }
+    ]
+}
+
+
+def test_logs_want_the_key_traces_want(mock):
+    mock.control(require_key="the-key")
+    refused = mock.post("/v1/logs", LOGS_BODY, bearer="wrong")
+    assert (refused.status, refused.json) == (401, {"error": "unauthorized"})
+    assert mock.post("/v1/logs", LOGS_BODY).status == 401, "no key at all"
+    assert mock.post("/v1/logs", LOGS_BODY, bearer="the-key").status == 200
+    # the same answer on both routes, for the same bearers
+    for bearer in ("wrong", "the-key", ""):
+        assert mock.post("/v1/logs", {}, bearer=bearer).status == mock.post("/v1/traces", {}, bearer=bearer).status
+
+
+def test_an_issued_key_is_admitted_on_logs_and_a_revoked_one_is_refused(mock):
+    key, answer = issued_key(mock)
+    mock.control(require_key="the-key-the-tests-installed-with")
+    assert mock.post("/v1/logs", LOGS_BODY, bearer=key).status == 200
+    assert mock.post("/v1/logs", LOGS_BODY, bearer="the-key-the-tests-installed-with").status == 200
+    assert mock.post("/v1/logs", LOGS_BODY, bearer="a-key-nobody-issued").status == 401
+    assert mock.post("/_keys/revoke", {"key_id": answer["keyId"]}).status == 200
+    assert mock.post("/v1/logs", LOGS_BODY, bearer=key).status == 401
+
+
+def test_without_require_key_logs_are_open_until_the_first_key_is_issued(mock):
+    assert mock.post("/v1/logs", LOGS_BODY, bearer="whatever").status == 200  # the container tests rely on this
+    key, _ = issued_key(mock)
+    assert mock.post("/v1/logs", LOGS_BODY, bearer="whatever").status == 401
+    assert mock.post("/v1/logs", LOGS_BODY, bearer=key).status == 200
+    mock.reset()
+    assert mock.post("/v1/logs", LOGS_BODY, bearer="whatever").status == 200, "a reset forgets the keys"
+
+
+def test_a_log_request_is_recorded_with_its_headers_and_its_body_whatever_its_encoding(mock):
+    mock.post("/v1/logs", LOGS_BODY, bearer="k", headers={"Content-Type": "application/json"})
+    zipped = gzip.compress(json.dumps(LOGS_BODY).encode())
+    mock.post("/v1/logs", zipped, bearer="k", headers={"Content-Type": "application/json", "Content-Encoding": "gzip"})
+    protobuf = bytes([0x0A, 0x00])  # an ExportLogsServiceRequest with one empty ResourceLogs: not JSON
+    mock.post("/v1/logs", protobuf, bearer="k", headers={"Content-Type": "application/x-protobuf"})
+    first, second, third = mock.requests("/v1/logs")
+    assert (first["method"], first["path"], first["status"]) == ("POST", "/v1/logs", 200)
+    assert first["json"] == LOGS_BODY and second["json"] == LOGS_BODY, "JSON, identity or gzip, is parsed for the tests"
+    assert second["headers"]["Content-Encoding"] == "gzip" and first["headers"]["Authorization"] == "Bearer k"
+    assert third["json"] is None and base64.b64decode(third["body_b64"]) == protobuf
+    assert json.loads(base64.b64decode(first["body_b64"])) == LOGS_BODY
+    # recorded beside the spans, in order, and told apart by path
+    mock.post("/v1/traces", {"resourceSpans": []})
+    assert [(r["seq"], r["path"]) for r in mock.requests()] == [
+        (1, "/v1/logs"),
+        (2, "/v1/logs"),
+        (3, "/v1/logs"),
+        (4, "/v1/traces"),
+    ]
+    assert [r["seq"] for r in mock.requests("/v1/logs")] == [1, 2, 3]
+
+
+def test_rules_answer_logs_as_they_answer_traces_and_for_their_own_path_only(mock):
+    mock.control(rules=[{"path": "/v1/logs", "status": 503, "retry_after": 1, "times": 2}])
+    first, second, third = (mock.post("/v1/logs", LOGS_BODY) for _ in range(3))
+    assert (first.status, first.headers["retry-after"]) == (503, "1")
+    assert second.status == 503 and third.status == 200
+    mock.control(rules=[{"path": "/v1/logs", "status": 404}])
+    assert mock.post("/v1/traces", {}).status == 200, "a rule is for its path only"
+    assert mock.post("/v1/logs", LOGS_BODY).status == 404
+    mock.control(rules=[{"path": "/v1/logs", "status": 503}], require_key="the-key")
+    assert mock.post("/v1/logs", LOGS_BODY, bearer="wrong").status == 401, "the key check comes before a rule"
+    assert mock.post("/v1/logs", LOGS_BODY, bearer="the-key").status == 503
+
+
 # --- reset ----------------------------------------------------------------------------------------------------------
 
 
@@ -1094,7 +1186,7 @@ def test_a_reset_forgets_requests_rules_keys_tokens_events_and_the_cover_list(mo
     assert mock.mint()["id"].startswith("itk_")
 
 
-# --- what the real exchange also does (capabilities/ai-coverage/go/exchange.go) -------------------------------------
+# --- what the real exchange of the impact.ai service also does ------------------------------------------------------
 
 
 def test_a_replay_is_only_for_the_product_the_token_is_for(mock):
@@ -1177,9 +1269,9 @@ def test_a_content_type_with_parameters_and_an_identity_encoding_are_fine(mock):
 
 # --- the shared vectors of the exchange (testing/mock/exchange-vectors.json) ----------------------------------
 #
-# A byte-for-byte copy of capabilities/ai-coverage/tests/fixtures/exchange-vectors.json of the monorepo, whose intake
-# reads the same file: every way the body of the exchange may be wrong, and the Authorization headers that are no
-# install token. The mock must read each of them as the real exchange does. To refresh it, copy the file over.
+# A byte-for-byte copy of the shared test vectors of the impact.ai service, whose intake reads the same file: every way
+# the body of the exchange may be wrong, and the Authorization headers that are no install token. The mock must read
+# each of them as the real exchange does. To refresh it, copy the file over.
 
 VECTORS = json.loads((SERVER.parent / "exchange-vectors.json").read_text())
 

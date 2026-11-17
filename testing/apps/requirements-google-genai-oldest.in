@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# The Gemini workload (app_google_genai.py) at the floor of opentelemetry-instrumentation-google-genai (>=1.32.0): the
+# qualification's range of google-genai runs from this cell to the one of requirements-google-genai.txt.
+fastapi==0.162.0  # as in requirements.txt
+uvicorn==0.54.0
+google-genai==1.32.0

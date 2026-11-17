@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# Langfuse's OpenTelemetry-based Python SDK (v3 and later) with its OpenAI drop-in.
+langfuse==5.2.0
+openai==3.46.0

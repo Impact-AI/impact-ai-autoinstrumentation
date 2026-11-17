@@ -31,10 +31,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/inventory"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kube"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kubesecret"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/sender"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/inventory"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kube"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kubesecret"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/sender"
 )
 
 const (

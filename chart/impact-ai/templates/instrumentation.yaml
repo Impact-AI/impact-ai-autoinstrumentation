@@ -3,7 +3,7 @@
 {{- /*
 The Operator injects this image into pods annotated instrumentation.opentelemetry.io/inject-python: "<namespace>/impact"
 (inject-nodejs for the Node.js image, once the release has one).
-Only what the package needs is set: where the gateway is, and nothing else. The Operator would also add OTEL_TRACES_EXPORTER,
+Only what the package needs is set: where the gateway is, and the pod's trust in its callers' baggage (_helpers.tpl). The Operator would also add OTEL_TRACES_EXPORTER,
 OTEL_METRICS_EXPORTER, OTEL_LOGS_EXPORTER, OTEL_EXPORTER_OTLP_PROTOCOL and OTEL_SERVICE_NAME to a workload that has not
 set them. The package ignores them, and another tracer in the workload may obey them (ddtrace 4 exports OTLP to
 localhost:4318 when it sees OTEL_TRACES_EXPORTER=otlp). The Operator adds a default only when the variable is not

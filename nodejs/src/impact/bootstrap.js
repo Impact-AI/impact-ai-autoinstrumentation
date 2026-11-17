@@ -9,6 +9,7 @@
 const path = require('path');
 const trees = require('./trees');
 const defaults = require('./defaults');
+const coexistence = require('./coexistence');
 const detect = require('./detect');
 const frameworks = require('./frameworks');
 const plan = require('./plan');
@@ -56,6 +57,15 @@ function survey(packages, traced) {
   }
 }
 
+// The tool beside the package; a problem naming it must not cost the stand-down or the report.
+function toolOf(findings, packages, env) {
+  try {
+    return detect.toolOf(findings, packages, env);
+  } catch (error) {
+    return null;
+  }
+}
+
 function start(options) {
   const settings = options || {};
   const env = settings.env || process.env;
@@ -97,9 +107,12 @@ function start(options) {
       cache: settings.cache || require.cache,
       globalState: settings.globalState || { 'opentelemetry.js.api.1': globalThis[Symbol.for('opentelemetry.js.api.1')] },
     });
-    if (findings.length) {
+    // The tool beside the package, by name: the package starts next to it only where the coexistence list proves that;
+    // any other tracer keeps the stand-down.
+    const tool = toolOf(findings, packages, env);
+    if (findings.length && !coexistence.alongside(findings, tool, nodeMajor, settings.coexistence)) {
       const detail = detect.describe(findings);
-      setupReport.report('pre-existing', detail, env, root, found);
+      setupReport.report('pre-existing', detail, env, root, Object.assign({}, found, coexistence.attributes(tool, false)));
       return outcome('pre-existing', detail);
     }
 
@@ -111,7 +124,8 @@ function start(options) {
         'impact.setup.instrumentations': armed.armed.join(','),
         'impact.setup.node.tree': tree.name,
       },
-      survey(packages, armed.traced)
+      survey(packages, armed.traced),
+      coexistence.attributes(tool, true)
     );
     const skipped = plan.skippedText(decisions, armed.skipped);
     if (skipped) extra['impact.setup.skipped'] = skipped;

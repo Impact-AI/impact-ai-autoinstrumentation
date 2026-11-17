@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# The OpenInference cell, as Dynatrace's OpenInference guide installs it: the OpenAI instrumentor and the SDK with its
+# OTLP/HTTP protobuf exporter, plus OpenInference's own tracer for agent, tool and retriever spans.
+opentelemetry-sdk==1.45.2
+opentelemetry-exporter-otlp-proto-http==1.45.2
+openinference-instrumentation==0.1.75
+openinference-instrumentation-openai==0.1.69
+openai==3.46.0

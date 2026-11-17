@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# The LangSmith fixture (app_langsmith.py): LangChain and LangGraph at the versions requirements-agents.txt tests, with
+# LangSmith's OpenTelemetry extra, which its OpenTelemetry mode needs (langchain-core already depends on langsmith).
+-r requirements.in
+openai==3.42.1  # as in requirements.txt
+langsmith[otel]==0.14.17
+langgraph==1.2.19
+langchain==1.4.7
+langchain-openai==1.6.7
+langchain-core==1.6.13

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-14 the one-time install token, and the kit's part of AE-16 (connected within a minute).
+"""The one-time install token, and the kit's part of a cluster connected within a minute.
 
 The command Cover your AI shows carries a single-use token that is valid for 15 minutes, never an ingest key. A Helm
 hook trades it inside the cluster for the install's own key, which only a Secret of the cluster holds. Against the mock
@@ -160,7 +160,7 @@ def refused_command(world, token: str, code: str):
     return output
 
 
-def test_ae14_a_token_used_before_is_refused_before_anything_is_installed(world):
+def test_a_token_used_before_is_refused_before_anything_is_installed(world):
     refused_command(world, world.mock.token(state="used"), "token_used")
     namespaced, cluster = settled_leftovers()
     # Helm applies the namespace and crds/ before any hook; the kit's own objects, the hook's included, are not there.
@@ -171,20 +171,20 @@ def test_ae14_a_token_used_before_is_refused_before_anything_is_installed(world)
     assert release["info"]["status"] == "failed"
 
 
-def test_ae14_a_token_that_has_expired_is_refused_and_a_fresh_command_goes_on_from_there(world):
+def test_a_token_that_has_expired_is_refused_and_a_fresh_command_goes_on_from_there(world):
     # The next command is an upgrade of the failed one (`helm upgrade --install` treats it so): the hook runs as
     # pre-upgrade, which is what the customer's second attempt does.
     refused_command(world, world.mock.token(expires_in=-60), "token_expired")
     assert settled_leftovers() == ([], [])
 
 
-def test_ae14_a_token_of_another_product_is_refused(world):
+def test_a_token_of_another_product_is_refused(world):
     refused_command(world, world.mock.token(product="prod_someone_else"), "token_wrong_product")
     assert settled_leftovers() == ([], [])
     assert key_secret() is None
 
 
-def test_ae14_a_refused_install_is_removed_with_helm_uninstall_at_once():
+def test_a_refused_install_is_removed_with_helm_uninstall_at_once():
     # The pre-delete hook of a release whose key was never made must not wait for a Secret that does not exist.
     started = time.monotonic()
     result = helm("uninstall", RELEASE, "-n", NAMESPACE, "--wait", check=False, timeout=400)
@@ -220,7 +220,7 @@ def installed(world):
     }
 
 
-def test_ae14_a_lost_answer_costs_one_token_and_stores_one_key(world, installed):
+def test_a_lost_answer_costs_one_token_and_stores_one_key(world, installed):
     token = installed["token"]
     sent = world.mock.exchanges(installed["mark"])
     assert len(sent) == 2, [r.get("status") for r in sent]
@@ -234,7 +234,7 @@ def test_ae14_a_lost_answer_costs_one_token_and_stores_one_key(world, installed)
     assert fingerprint(token) == key_secret()["metadata"]["annotations"]["impact.ai/token"]
 
 
-def test_ae14_the_key_was_made_in_the_cluster_and_impact_ai_got_only_its_hash(world, installed):
+def test_the_key_was_made_in_the_cluster_and_impact_ai_got_only_its_hash(world, installed):
     secret = key_secret()
     key = key_of(secret)
     assert KEY_SHAPE.match(key), "impact_<environment>_<43 characters>, as a key impact.ai makes itself"
@@ -251,7 +251,7 @@ def test_ae14_the_key_was_made_in_the_cluster_and_impact_ai_got_only_its_hash(wo
         assert request["json"]["productId"] == PRODUCT and request["json"]["cluster"]["uid"] == world.cluster_uid
 
 
-def test_ae14_the_key_is_in_no_manifest_no_pod_spec_no_event_no_log_and_no_release_record(installed):
+def test_the_key_is_in_no_manifest_no_pod_spec_no_event_no_log_and_no_release_record(installed):
     key = key_of(key_secret())
     token = installed["token"]
     said = {
@@ -273,7 +273,7 @@ def test_ae14_the_key_is_in_no_manifest_no_pod_spec_no_event_no_log_and_no_relea
     assert token in said["helm"]
 
 
-def test_ae14_the_hook_leaves_none_of_its_objects_behind(installed):
+def test_the_hook_leaves_none_of_its_objects_behind(installed):
     namespaced, cluster = leftovers()
     names = {name for _, name in namespaced}
     assert not {"impact-ai-exchange", "impact-ai-install-token"} & names
@@ -282,7 +282,7 @@ def test_ae14_the_hook_leaves_none_of_its_objects_behind(installed):
     assert not [c for c in cluster if "exchange" in c[1]]
 
 
-def test_ae14_the_kit_is_up_and_reporting_with_the_key_the_cluster_made(world, installed):
+def test_the_kit_is_up_and_reporting_with_the_key_the_cluster_made(world, installed):
     names = {d["metadata"]["name"] for d in get("-n", NAMESPACE, "deployments")["items"]}
     assert names == {"impact-ai-operator", "impact-ai-gateway", "impact-ai-reporter", "impact-ai-cover"}
 
@@ -296,7 +296,7 @@ def test_ae14_the_kit_is_up_and_reporting_with_the_key_the_cluster_made(world, i
     assert snapshots[0]["json"]["reporter"]["mode"] == "inject"
 
 
-def test_ae16_the_first_snapshot_arrives_within_45_seconds_of_helm_returning(world, installed):
+def test_the_first_snapshot_arrives_within_45_seconds_of_helm_returning(world, installed):
     # Pod start and the first POST. Image pull time is out of it: the kit's images are loaded into the cluster, and the
     # upstream ones are pulled while `--wait` waits.
     first = min(r["time"] for r in world.mock.requests("/v1/inventory", installed["mark"]) if r.get("status") == 202)
@@ -316,7 +316,7 @@ def kit_pods() -> dict[str, str]:
     }
 
 
-def test_ae14_the_same_command_again_changes_nothing_and_calls_nobody(world, installed):
+def test_the_same_command_again_changes_nothing_and_calls_nobody(world, installed):
     before, secret = kit_pods(), key_secret()
     mark = world.mock.last_seq()
     # What `helm upgrade --reuse-values` hands the hook, twice in a row: Helm makes the Secret of the key only when the
@@ -332,7 +332,7 @@ def test_ae14_the_same_command_again_changes_nothing_and_calls_nobody(world, ins
     assert kit_pods() == before, "nothing restarted"
 
 
-def test_ae14_a_refused_fresh_command_leaves_the_working_key_and_the_pods_alone(world, installed):
+def test_a_refused_fresh_command_leaves_the_working_key_and_the_pods_alone(world, installed):
     before, secret = kit_pods(), key_secret()
     result = install_with_token(world.mock.token(expires_in=-1), extra=FAST_POLL, check=False)
     assert result.returncode != 0 and SENTENCES["token_expired"] in result.stdout + result.stderr
@@ -343,7 +343,7 @@ def test_ae14_a_refused_fresh_command_leaves_the_working_key_and_the_pods_alone(
     assert json.loads(helm("status", RELEASE, "-n", NAMESPACE, "-o", "json").stdout)["info"]["status"] == "failed"
 
 
-def test_ae14_a_fresh_command_after_the_key_was_revoked_replaces_it_and_the_cluster_reports_again(world, installed):
+def test_a_fresh_command_after_the_key_was_revoked_replaces_it_and_the_cluster_reports_again(world, installed):
     old_key, before = key_of(key_secret()), kit_pods()
     world.mock.revoke_keys()
     mark = world.mock.last_seq()

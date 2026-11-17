@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""Find out whether the workload already has a tracer of its own (AE-5: stand down).
+"""Find out whether the workload already has a tracer of its own (stand down).
 
 This runs from sitecustomize, before any application code. It therefore reads directory listings, the command line
 and environment variable names only: it never imports a candidate package and uses the standard library alone.
@@ -32,6 +32,11 @@ TRACER_DISTRIBUTIONS = frozenset(
         "azure-monitor-opentelemetry",
         "honeycomb-opentelemetry",
         "openinference-instrumentation",
+        "elastic-opentelemetry",
+        "arize-otel",
+        # Impact AI's own SDK: an application that uses it sends its traces itself, so the package does not trace
+        # the same calls a second time.
+        "impact",
     }
 )
 
@@ -97,7 +102,58 @@ EXPORTER_PREFIXES = ("OTEL_EXPORTER_ZIPKIN_", "OTEL_EXPORTER_JAEGER_")
 
 KIT_ENDPOINT = "IMPACT_OTLP_ENDPOINT"
 
+# LangSmith: its default tracing uses callbacks and wrappers and leaves the OpenTelemetry provider alone, so the package
+# starts beside it. Its OpenTelemetry mode makes the SDK own the process's provider and export OTLP itself, and then the
+# workload owns its tracing. The SDK reads each setting under both prefixes, LANGSMITH_ first; TRACING_MODE (langsmith,
+# otel or hybrid) decides when it is set, else OTEL_ONLY or OTEL_ENABLED switch the mode on ("true" or "1"). The values
+# are read here and never leave the process: a finding names the setting.
+LANGSMITH_PREFIXES = ("LANGSMITH_", "LANGCHAIN_")
+LANGSMITH_OTEL_MODES = frozenset({"otel", "hybrid"})
+LANGSMITH_OTEL_SWITCHES = ("OTEL_ONLY", "OTEL_ENABLED")
+
 _INFO_SUFFIXES = (".dist-info", ".egg-info")
+
+# The tool a finding shows, by the source ids impact.ai's service knows, and the distribution whose version is the
+# tool's. A finding of no tool here (an OpenLLMetry or OpenInference instrumentation on its own, which several tools
+# start) names none: impact.ai reads the workload as owned by another tracer.
+TOOLS = {
+    "ddtrace": "datadog",
+    "ddtrace-run": "datadog",
+    "traceloop-sdk": "traceloop",
+    "langfuse": "langfuse",
+    "openlit": "openlit",
+    "logfire": "logfire",
+    "arize-phoenix-otel": "phoenix",
+    "arize-otel": "arize-ax",
+    "newrelic": "newrelic",
+    "newrelic-admin": "newrelic",
+    "splunk-opentelemetry": "splunk-otel",
+    "splunk-py-trace": "splunk-otel",
+    "honeycomb-opentelemetry": "honeycomb",
+    "elastic-opentelemetry": "elastic-edot",
+    "opentelemetry-instrument": "opentelemetry",
+}
+TOOL_DISTRIBUTIONS = {
+    "datadog": "ddtrace",
+    "traceloop": "traceloop-sdk",
+    "langfuse": "langfuse",
+    "openlit": "openlit",
+    "logfire": "logfire",
+    "phoenix": "arize-phoenix-otel",
+    "arize-ax": "arize-otel",
+    "newrelic": "newrelic",
+    "splunk-otel": "splunk-opentelemetry",
+    "honeycomb": "honeycomb-opentelemetry",
+    "elastic-edot": "elastic-opentelemetry",
+    "opentelemetry": "opentelemetry-sdk",
+    "langsmith": "langsmith",
+}
+# The exporter kind of an OpenTelemetry SDK's traces, from OTEL_TRACES_EXPORTER and the OTLP protocol it reads. Only
+# these words leave the process, never a setting's value.
+TRACES_EXPORTERS = frozenset({"zipkin", "console"})
+OTLP_PROTOCOLS = {"grpc": "otlp-grpc", "http/protobuf": "otlp-http", "http/json": "otlp-http"}
+LANGSMITH_EXPORTER = "otlp-http"  # LangSmith's OpenTelemetry mode exports OTLP over HTTP, whatever else is set
+MAX_TOOL_TEXT = 64
 
 
 class Finding(namedtuple("Finding", ["kind", "name", "version"], defaults=[None])):
@@ -246,6 +302,95 @@ def _environment(environ: Mapping[str, str], app_has_otel_sdk: bool) -> list[Fin
     return found
 
 
+def _langsmith_setting(environ: Mapping[str, str], name: str) -> tuple[str, str] | None:
+    """(variable, value) of a LangSmith setting as its SDK reads it: the first prefix whose value is not blank."""
+    for prefix in LANGSMITH_PREFIXES:
+        value = environ.get(prefix + name)
+        if value is not None and value.strip():
+            return prefix + name, value.strip()
+    return None
+
+
+def _langsmith_otel_mode(environ: Mapping[str, str]) -> list[Finding]:
+    """LangSmith's OpenTelemetry mode, switched on in the environment: the setting that switched it on."""
+    mode = _langsmith_setting(environ, "TRACING_MODE")
+    if mode is not None:
+        return [Finding("environment", mode[0])] if mode[1].lower() in LANGSMITH_OTEL_MODES else []
+    for name in LANGSMITH_OTEL_SWITCHES:
+        switch = _langsmith_setting(environ, name)
+        if switch is not None and (switch[1].lower() == "true" or switch[1] == "1"):
+            return [Finding("environment", switch[0])]
+    return []
+
+
+def _langsmith_tracing(environ: Mapping[str, str]) -> bool:
+    """LangSmith's tracing is switched on in the environment, as its SDK reads it: TRACING_V2, else TRACING, each under
+    LANGSMITH_ then LANGCHAIN_, equal to "true"."""
+    for name in ("TRACING_V2", "TRACING"):
+        for prefix in LANGSMITH_PREFIXES:
+            value = environ.get(prefix + name)
+            if value is not None:
+                return value == "true"
+    return False
+
+
+class Tool(namedtuple("Tool", ["id", "version", "exporter"], defaults=[None, None])):
+    """The tool beside the package, as the setup report names it: its id, its version, and the kind of exporter its
+    provider uses when the names and settings show it. Never a setting's value."""
+
+    __slots__ = ()
+
+
+def finding_tool(finding: Finding) -> str | None:
+    """The tool id a finding shows, or None."""
+    if finding.kind == "environment":
+        if finding.name.startswith(LANGSMITH_PREFIXES):
+            return "langsmith"
+        return "opentelemetry" if finding.name.startswith("OTEL_") else None
+    return TOOLS.get(finding.name)  # a launcher, a distribution, or a module by its distribution's name
+
+
+def _printable_word(text: str | None) -> str | None:
+    """The text when it is a name or version impact.ai keeps (a letter or digit first, then letters, digits and ._+!-,
+    at most 64 characters); else None. (No `re`: this runs in every process.)"""
+    if not text or len(text) > MAX_TOOL_TEXT or not text[0].isascii() or not text[0].isalnum():
+        return None
+    return text if all(c.isascii() and (c.isalnum() or c in "._+!-") for c in text) else None
+
+
+def _otel_exporter(environ: Mapping[str, str]) -> str | None:
+    """The kind of exporter an OpenTelemetry SDK configured by the environment sends its traces with, or None."""
+    names = [n.strip().lower() for n in (environ.get("OTEL_TRACES_EXPORTER") or "").split(",") if n.strip()]
+    if names and names[0] in TRACES_EXPORTERS:
+        return names[0]
+    if names and names[0] != "otlp":
+        return None
+    if any(environ.get(n) for n in environ if n.startswith("OTEL_EXPORTER_ZIPKIN_")):
+        return "zipkin"
+    protocol = environ.get("OTEL_EXPORTER_OTLP_TRACES_PROTOCOL") or environ.get("OTEL_EXPORTER_OTLP_PROTOCOL") or ""
+    return OTLP_PROTOCOLS.get(protocol.strip().lower())
+
+
+def tool(findings: Sequence[Finding], dists: Mapping[str, str | None], environ: Mapping[str, str]) -> Tool | None:
+    """The tool the setup report names: that of the first finding which shows one (a LangSmith setting only when the
+    langsmith package is installed), else, when there is no finding at all, LangSmith when its default tracing is on (it
+    leaves the OpenTelemetry provider alone, so it is no finding), else None. A tracer of no known tool is named only in
+    the detail: LangSmith's tracing beside it does not make LangSmith its owner."""
+    installed = "langsmith" in dists
+    found = next((t for t in map(finding_tool, findings) if t and (t != "langsmith" or installed)), None)
+    if found is None:
+        if not findings and installed and _langsmith_tracing(environ):
+            return Tool("langsmith", _printable_word(dists["langsmith"]))
+        return None
+    version = _printable_word(dists.get(TOOL_DISTRIBUTIONS.get(found, "")))
+    exporter = None
+    if found == "langsmith":
+        exporter = LANGSMITH_EXPORTER
+    elif found == "opentelemetry":
+        exporter = _otel_exporter(environ)
+    return Tool(found, version, exporter)
+
+
 def find_foreign(
     *,
     environ: Mapping[str, str],
@@ -268,4 +413,5 @@ def find_foreign(
         if label not in seen:
             findings.append(Finding("module", label))
     findings += _environment(environ, "opentelemetry-sdk" in dists)
+    findings += _langsmith_otel_mode(environ)
     return sorted(findings, key=lambda f: f.order)

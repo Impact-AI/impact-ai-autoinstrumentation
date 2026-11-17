@@ -1,0 +1,1691 @@
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "impact.source.decoder",
+            "value": {
+              "stringValue": "newrelic/1"
+            }
+          },
+          {
+            "key": "impact.source.id",
+            "value": {
+              "stringValue": "newrelic"
+            }
+          },
+          {
+            "key": "impact.source.route",
+            "value": {
+              "stringValue": "relay"
+            }
+          },
+          {
+            "key": "telemetry.sdk.language",
+            "value": {
+              "stringValue": "nodejs"
+            }
+          },
+          {
+            "key": "telemetry.sdk.name",
+            "value": {
+              "stringValue": "newrelic"
+            }
+          },
+          {
+            "key": "telemetry.sdk.version",
+            "value": {
+              "stringValue": "14.11.0"
+            }
+          }
+        ]
+      },
+      "scopeSpans": [
+        {
+          "scope": {
+            "name": "newrelic",
+            "version": "14.11.0"
+          },
+          "spans": [
+            {
+              "attributes": [
+                {
+                  "key": "newrelic.category",
+                  "value": {
+                    "stringValue": "generic"
+                  }
+                },
+                {
+                  "key": "newrelic.priority",
+                  "value": {
+                    "intValue": "3"
+                  }
+                },
+                {
+                  "key": "newrelic.sampled",
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                {
+                  "key": "newrelic.transactionId",
+                  "value": {
+                    "stringValue": "2cba25444b90487c"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355126508751",
+              "kind": 1,
+              "name": "Llm/completion/OpenAI/create",
+              "parentSpanId": "599c9c73c631c9e1",
+              "spanId": "cf1ed2a1d51f0fb8",
+              "startTimeUnixNano": "1794240355123000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "code.column.number",
+                  "value": {
+                    "intValue": "62"
+                  }
+                },
+                {
+                  "key": "code.file.path",
+                  "value": {
+                    "stringValue": "/tmp/newrelic-app/node/app.cjs"
+                  }
+                },
+                {
+                  "key": "code.function.name",
+                  "value": {
+                    "stringValue": "(anonymous)"
+                  }
+                },
+                {
+                  "key": "code.line.number",
+                  "value": {
+                    "intValue": "101"
+                  }
+                },
+                {
+                  "key": "newrelic.category",
+                  "value": {
+                    "stringValue": "generic"
+                  }
+                },
+                {
+                  "key": "newrelic.nr.entryPoint",
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                {
+                  "key": "newrelic.priority",
+                  "value": {
+                    "intValue": "3"
+                  }
+                },
+                {
+                  "key": "newrelic.sampled",
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                {
+                  "key": "newrelic.transaction.name",
+                  "value": {
+                    "stringValue": "OtherTransaction/Nodejs/support-assistant"
+                  }
+                },
+                {
+                  "key": "newrelic.transactionId",
+                  "value": {
+                    "stringValue": "2cba25444b90487c"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355135779524",
+              "kind": 2,
+              "name": "OtherTransaction/Nodejs/support-assistant",
+              "spanId": "a37c7aed0e2881d5",
+              "startTimeUnixNano": "1794240355034000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "newrelic.category",
+                  "value": {
+                    "stringValue": "generic"
+                  }
+                },
+                {
+                  "key": "newrelic.priority",
+                  "value": {
+                    "intValue": "3"
+                  }
+                },
+                {
+                  "key": "newrelic.sampled",
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                {
+                  "key": "newrelic.subcomponent",
+                  "value": {
+                    "stringValue": "{\"type\": \"APM-AI_AGENT\", \"name\": support}"
+                  }
+                },
+                {
+                  "key": "newrelic.transactionId",
+                  "value": {
+                    "stringValue": "2cba25444b90487c"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355134654610",
+              "kind": 1,
+              "name": "Llm/agent/LangGraph/stream/support",
+              "parentSpanId": "a37c7aed0e2881d5",
+              "spanId": "15494f7039a5de45",
+              "startTimeUnixNano": "1794240355048000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "newrelic.category",
+                  "value": {
+                    "stringValue": "generic"
+                  }
+                },
+                {
+                  "key": "newrelic.priority",
+                  "value": {
+                    "intValue": "3"
+                  }
+                },
+                {
+                  "key": "newrelic.sampled",
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                {
+                  "key": "newrelic.transactionId",
+                  "value": {
+                    "stringValue": "2cba25444b90487c"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355134796528",
+              "kind": 1,
+              "name": "Llm/chain/LangChain/stream",
+              "parentSpanId": "15494f7039a5de45",
+              "spanId": "0769505704c52c74",
+              "startTimeUnixNano": "1794240355049000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "newrelic.category",
+                  "value": {
+                    "stringValue": "generic"
+                  }
+                },
+                {
+                  "key": "newrelic.priority",
+                  "value": {
+                    "intValue": "3"
+                  }
+                },
+                {
+                  "key": "newrelic.sampled",
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                {
+                  "key": "newrelic.transactionId",
+                  "value": {
+                    "stringValue": "2cba25444b90487c"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355070148119",
+              "kind": 1,
+              "name": "Llm/chain/LangChain/invoke",
+              "parentSpanId": "0769505704c52c74",
+              "spanId": "b1c20f64b457d802",
+              "startTimeUnixNano": "1794240355060000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "newrelic.category",
+                  "value": {
+                    "stringValue": "generic"
+                  }
+                },
+                {
+                  "key": "newrelic.priority",
+                  "value": {
+                    "intValue": "3"
+                  }
+                },
+                {
+                  "key": "newrelic.sampled",
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                {
+                  "key": "newrelic.transactionId",
+                  "value": {
+                    "stringValue": "2cba25444b90487c"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355104689355",
+              "kind": 1,
+              "name": "Llm/chain/LangChain/invoke",
+              "parentSpanId": "0769505704c52c74",
+              "spanId": "d806c21eafd07d93",
+              "startTimeUnixNano": "1794240355075000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "newrelic.category",
+                  "value": {
+                    "stringValue": "generic"
+                  }
+                },
+                {
+                  "key": "newrelic.priority",
+                  "value": {
+                    "intValue": "3"
+                  }
+                },
+                {
+                  "key": "newrelic.sampled",
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                {
+                  "key": "newrelic.transactionId",
+                  "value": {
+                    "stringValue": "2cba25444b90487c"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355098791611",
+              "kind": 1,
+              "name": "Llm/completion/OpenAI/create",
+              "parentSpanId": "d806c21eafd07d93",
+              "spanId": "4cf11076040b6fce",
+              "startTimeUnixNano": "1794240355088000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "newrelic.category",
+                  "value": {
+                    "stringValue": "generic"
+                  }
+                },
+                {
+                  "key": "newrelic.priority",
+                  "value": {
+                    "intValue": "3"
+                  }
+                },
+                {
+                  "key": "newrelic.sampled",
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                {
+                  "key": "newrelic.transactionId",
+                  "value": {
+                    "stringValue": "2cba25444b90487c"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355112513226",
+              "kind": 1,
+              "name": "Llm/chain/LangChain/invoke",
+              "parentSpanId": "0769505704c52c74",
+              "spanId": "8931b843ae94d743",
+              "startTimeUnixNano": "1794240355107000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "newrelic.category",
+                  "value": {
+                    "stringValue": "generic"
+                  }
+                },
+                {
+                  "key": "newrelic.priority",
+                  "value": {
+                    "intValue": "3"
+                  }
+                },
+                {
+                  "key": "newrelic.sampled",
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                {
+                  "key": "newrelic.subcomponent",
+                  "value": {
+                    "stringValue": "{\"type\":\"APM-AI_TOOL\",\"name\":\"get_order\"}"
+                  }
+                },
+                {
+                  "key": "newrelic.transactionId",
+                  "value": {
+                    "stringValue": "2cba25444b90487c"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355111335200",
+              "kind": 1,
+              "name": "Llm/tool/LangChain/get_order",
+              "parentSpanId": "8931b843ae94d743",
+              "spanId": "35efc824eb2c92e0",
+              "startTimeUnixNano": "1794240355108000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "newrelic.category",
+                  "value": {
+                    "stringValue": "generic"
+                  }
+                },
+                {
+                  "key": "newrelic.priority",
+                  "value": {
+                    "intValue": "3"
+                  }
+                },
+                {
+                  "key": "newrelic.sampled",
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                {
+                  "key": "newrelic.transactionId",
+                  "value": {
+                    "stringValue": "2cba25444b90487c"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355110342481",
+              "kind": 1,
+              "name": "Llm/vectorstore/LangChain/similaritySearch",
+              "parentSpanId": "35efc824eb2c92e0",
+              "spanId": "a72074f328d8c0c9",
+              "startTimeUnixNano": "1794240355110000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "newrelic.category",
+                  "value": {
+                    "stringValue": "generic"
+                  }
+                },
+                {
+                  "key": "newrelic.priority",
+                  "value": {
+                    "intValue": "3"
+                  }
+                },
+                {
+                  "key": "newrelic.sampled",
+                  "value": {
+                    "boolValue": true
+                  }
+                },
+                {
+                  "key": "newrelic.transactionId",
+                  "value": {
+                    "stringValue": "2cba25444b90487c"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355130400251",
+              "kind": 1,
+              "name": "Llm/chain/LangChain/invoke",
+              "parentSpanId": "0769505704c52c74",
+              "spanId": "599c9c73c631c9e1",
+              "startTimeUnixNano": "1794240355113000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "impact.source.decoder",
+            "value": {
+              "stringValue": "newrelic/1"
+            }
+          },
+          {
+            "key": "impact.source.id",
+            "value": {
+              "stringValue": "newrelic"
+            }
+          },
+          {
+            "key": "impact.source.route",
+            "value": {
+              "stringValue": "relay"
+            }
+          },
+          {
+            "key": "telemetry.sdk.language",
+            "value": {
+              "stringValue": "nodejs"
+            }
+          },
+          {
+            "key": "telemetry.sdk.name",
+            "value": {
+              "stringValue": "newrelic"
+            }
+          },
+          {
+            "key": "telemetry.sdk.version",
+            "value": {
+              "stringValue": "14.11.0"
+            }
+          }
+        ]
+      },
+      "scopeSpans": [
+        {
+          "scope": {
+            "name": "newrelic",
+            "version": "14.11.0"
+          },
+          "spans": [
+            {
+              "attributes": [
+                {
+                  "key": "gen_ai.agent.name",
+                  "value": {
+                    "stringValue": "support"
+                  }
+                },
+                {
+                  "key": "gen_ai.operation.name",
+                  "value": {
+                    "stringValue": "invoke_agent"
+                  }
+                },
+                {
+                  "key": "newrelic.event.id",
+                  "value": {
+                    "stringValue": "a97d51a4e579b15c68462648b6250476"
+                  }
+                },
+                {
+                  "key": "newrelic.event.type",
+                  "value": {
+                    "stringValue": "LlmAgent"
+                  }
+                },
+                {
+                  "key": "newrelic.ingest_source",
+                  "value": {
+                    "stringValue": "Node"
+                  }
+                },
+                {
+                  "key": "newrelic.vendor",
+                  "value": {
+                    "stringValue": "langgraph"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355135000000",
+              "kind": 1,
+              "name": "invoke_agent support",
+              "parentSpanId": "15494f7039a5de45",
+              "spanId": "4c2d50ed19f0d03f",
+              "startTimeUnixNano": "1794240355135000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "newrelic.appName",
+                  "value": {
+                    "stringValue": "support-assistant"
+                  }
+                },
+                {
+                  "key": "newrelic.content.input.messages",
+                  "value": {
+                    "stringValue": "[{\"role\":\"user\",\"parts\":[{\"type\":\"text\",\"content\":\"Where is order 1042? CONTENT-CANARY\"}]}]"
+                  }
+                },
+                {
+                  "key": "newrelic.content.output.messages",
+                  "value": {
+                    "stringValue": "[{\"role\":\"assistant\",\"parts\":[{\"type\":\"text\",\"content\":\"Order 1042 has shipped. CONTENT-CANARY\"}]}]"
+                  }
+                },
+                {
+                  "key": "newrelic.event.id",
+                  "value": {
+                    "stringValue": "7c63247745c190814ecd46eed88deba7"
+                  }
+                },
+                {
+                  "key": "newrelic.event.type",
+                  "value": {
+                    "stringValue": "LlmChatCompletionSummary"
+                  }
+                },
+                {
+                  "key": "newrelic.ingest_source",
+                  "value": {
+                    "stringValue": "Node"
+                  }
+                },
+                {
+                  "key": "newrelic.langchainMeta",
+                  "value": {
+                    "stringValue": "{\"lc_agent_name\":\"support\",\"ls_integration\":\"langchain_create_agent\"}"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.lc_agent_name",
+                  "value": {
+                    "stringValue": "support"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.ls_integration",
+                  "value": {
+                    "stringValue": "langchain_create_agent"
+                  }
+                },
+                {
+                  "key": "newrelic.response.number_of_messages",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "newrelic.tags",
+                  "value": {
+                    "stringValue": ""
+                  }
+                },
+                {
+                  "key": "newrelic.vendor",
+                  "value": {
+                    "stringValue": "langchain"
+                  }
+                },
+                {
+                  "key": "newrelic.virtual_llm",
+                  "value": {
+                    "boolValue": true
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355134796528",
+              "kind": 1,
+              "name": "chain",
+              "parentSpanId": "0769505704c52c74",
+              "spanId": "4ca532a48efca0d0",
+              "startTimeUnixNano": "1794240355049000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "newrelic.appName",
+                  "value": {
+                    "stringValue": "support-assistant"
+                  }
+                },
+                {
+                  "key": "newrelic.content.input.messages",
+                  "value": {
+                    "stringValue": "[{\"role\":\"user\",\"parts\":[{\"type\":\"text\",\"content\":\"Where is order 1042? CONTENT-CANARY\"}]}]"
+                  }
+                },
+                {
+                  "key": "newrelic.content.output.messages",
+                  "value": {
+                    "stringValue": "[{\"role\":\"assistant\",\"parts\":[{\"type\":\"text\",\"content\":\"[{\\\"lg_name\\\":\\\"Command\\\",\\\"update\\\":{\\\"messages\\\":[{\\\"lc\\\":1,\\\"type\\\":\\\"constructor\\\",\\\"id\\\":[\\\"langchain_core\\\",\\\"messages\\\",\\\"AIMessage\\\"],\\\"kwargs\\\":{\\\"id\\\":\\\"chatcmpl-2\\\",\\\"name\\\":\\\"support\\\",\\\"content\\\":\\\"Order 1042 has shipped. CONTENT-CANARY\\\",\\\"additional_kwargs\\\":{},\\\"response_metadata\\\":{\\\"tokenUsage\\\":{\\\"promptTokens\\\":300,\\\"completionTokens\\\":80,\\\"totalTokens\\\":380},\\\"finish_reason\\\":\\\"stop\\\",\\\"model_provider\\\":\\\"openai\\\",\\\"model_name\\\":\\\"gpt-4o-2024-08-06\\\",\\\"usage\\\":{\\\"prompt_tokens\\\":300,\\\"completion_tokens\\\":80,\\\"total_tokens\\\":380}},\\\"type\\\":\\\"ai\\\",\\\"tool_calls\\\":[],\\\"invalid_tool_calls\\\":[],\\\"usage_metadata\\\":{\\\"output_tokens\\\":80,\\\"input_tokens\\\":300,\\\"total_tokens\\\":380,\\\"input_token_details\\\":{},\\\"output_token_details\\\":{}}}}]},\\\"goto\\\":[]}]\"}]}]"
+                  }
+                },
+                {
+                  "key": "newrelic.event.id",
+                  "value": {
+                    "stringValue": "5c247ba935414ea36e5c0a0e12de0293"
+                  }
+                },
+                {
+                  "key": "newrelic.event.type",
+                  "value": {
+                    "stringValue": "LlmChatCompletionSummary"
+                  }
+                },
+                {
+                  "key": "newrelic.ingest_source",
+                  "value": {
+                    "stringValue": "Node"
+                  }
+                },
+                {
+                  "key": "newrelic.langchainMeta",
+                  "value": {
+                    "stringValue": "{\"checkpoint_ns\":\"model_request:4d365025-79ac-5cf7-b6cb-0823d7f7b36d\",\"langgraph_checkpoint_ns\":\"model_request:4d365025-79ac-5cf7-b6cb-0823d7f7b36d\",\"langgraph_node\":\"model_request\",\"langgraph_path\":[\"__pregel_pull\",\"model_request\"],\"langgraph_step\":3,\"langgraph_triggers\":[\"branch:to:model_request\"],\"lc_agent_name\":\"support\",\"ls_integration\":\"langchain_create_agent\"}"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.checkpoint_ns",
+                  "value": {
+                    "stringValue": "model_request:4d365025-79ac-5cf7-b6cb-0823d7f7b36d"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_checkpoint_ns",
+                  "value": {
+                    "stringValue": "model_request:4d365025-79ac-5cf7-b6cb-0823d7f7b36d"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_node",
+                  "value": {
+                    "stringValue": "model_request"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_path",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "__pregel_pull"
+                        },
+                        {
+                          "stringValue": "model_request"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_step",
+                  "value": {
+                    "intValue": "3"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_triggers",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "branch:to:model_request"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.lc_agent_name",
+                  "value": {
+                    "stringValue": "support"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.ls_integration",
+                  "value": {
+                    "stringValue": "langchain_create_agent"
+                  }
+                },
+                {
+                  "key": "newrelic.response.number_of_messages",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "newrelic.tags",
+                  "value": {
+                    "stringValue": ""
+                  }
+                },
+                {
+                  "key": "newrelic.vendor",
+                  "value": {
+                    "stringValue": "langchain"
+                  }
+                },
+                {
+                  "key": "newrelic.virtual_llm",
+                  "value": {
+                    "boolValue": true
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355130400251",
+              "kind": 1,
+              "name": "chain",
+              "parentSpanId": "599c9c73c631c9e1",
+              "spanId": "b83a255f19a45a41",
+              "startTimeUnixNano": "1794240355113000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "gen_ai.input.messages",
+                  "value": {
+                    "stringValue": "[{\"role\":\"user\",\"parts\":[{\"type\":\"text\",\"content\":\"Where is order 1042? CONTENT-CANARY\"}]},{\"role\":\"tool\",\"parts\":[{\"type\":\"tool_call_response\",\"response\":\"{\\\"status\\\":\\\"shipped\\\",\\\"note\\\":\\\"CONTENT-CANARY\\\"}\"}]}]"
+                  }
+                },
+                {
+                  "key": "gen_ai.operation.name",
+                  "value": {
+                    "stringValue": "chat"
+                  }
+                },
+                {
+                  "key": "gen_ai.output.messages",
+                  "value": {
+                    "stringValue": "[{\"role\":\"assistant\",\"parts\":[{\"type\":\"text\",\"content\":\"Order 1042 has shipped. CONTENT-CANARY\"}],\"finish_reason\":\"stop\"}]"
+                  }
+                },
+                {
+                  "key": "gen_ai.provider.name",
+                  "value": {
+                    "stringValue": "openai"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.model",
+                  "value": {
+                    "stringValue": "gpt-4o"
+                  }
+                },
+                {
+                  "key": "gen_ai.response.finish_reasons",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "stop"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "key": "gen_ai.response.model",
+                  "value": {
+                    "stringValue": "gpt-4o-2024-08-06"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.input_tokens",
+                  "value": {
+                    "intValue": "300"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.output_tokens",
+                  "value": {
+                    "intValue": "80"
+                  }
+                },
+                {
+                  "key": "newrelic.event.id",
+                  "value": {
+                    "stringValue": "fe67f21bdc339c0995f8896fed49df49"
+                  }
+                },
+                {
+                  "key": "newrelic.event.type",
+                  "value": {
+                    "stringValue": "LlmChatCompletionSummary"
+                  }
+                },
+                {
+                  "key": "newrelic.ingest_source",
+                  "value": {
+                    "stringValue": "Node"
+                  }
+                },
+                {
+                  "key": "newrelic.request_id",
+                  "value": {
+                    "stringValue": "req_chatcmpl-2"
+                  }
+                },
+                {
+                  "key": "newrelic.response.headers.llmVersion",
+                  "value": {
+                    "stringValue": "2020-10-01"
+                  }
+                },
+                {
+                  "key": "newrelic.response.number_of_messages",
+                  "value": {
+                    "intValue": "4"
+                  }
+                },
+                {
+                  "key": "newrelic.response.usage.total_tokens",
+                  "value": {
+                    "intValue": "380"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355126508751",
+              "kind": 3,
+              "name": "chat gpt-4o",
+              "parentSpanId": "cf1ed2a1d51f0fb8",
+              "spanId": "8bcd0383e7685abe",
+              "startTimeUnixNano": "1794240355123000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "newrelic.appName",
+                  "value": {
+                    "stringValue": "support-assistant"
+                  }
+                },
+                {
+                  "key": "newrelic.content.input.messages",
+                  "value": {
+                    "stringValue": "[{\"role\":\"user\",\"parts\":[{\"type\":\"text\",\"content\":\"{\\\"lg_tool_call\\\":{\\\"name\\\":\\\"get_order\\\",\\\"args\\\":{\\\"order_id\\\":\\\"1042 CONTENT-CANARY\\\"},\\\"type\\\":\\\"tool_call\\\",\\\"id\\\":\\\"call_1\\\"}}\"}]}]"
+                  }
+                },
+                {
+                  "key": "newrelic.content.output.messages",
+                  "value": {
+                    "stringValue": "[{\"role\":\"tool\",\"parts\":[{\"type\":\"tool_call_response\",\"response\":\"{\\\"status\\\":\\\"shipped\\\",\\\"note\\\":\\\"CONTENT-CANARY\\\"}\"}]}]"
+                  }
+                },
+                {
+                  "key": "newrelic.event.id",
+                  "value": {
+                    "stringValue": "04df2d0a35e08f337f31509ce0a0dd54"
+                  }
+                },
+                {
+                  "key": "newrelic.event.type",
+                  "value": {
+                    "stringValue": "LlmChatCompletionSummary"
+                  }
+                },
+                {
+                  "key": "newrelic.ingest_source",
+                  "value": {
+                    "stringValue": "Node"
+                  }
+                },
+                {
+                  "key": "newrelic.langchainMeta",
+                  "value": {
+                    "stringValue": "{\"checkpoint_ns\":\"tools:fadab96c-8060-5dbc-808f-78d16d12d787\",\"langgraph_checkpoint_ns\":\"tools:fadab96c-8060-5dbc-808f-78d16d12d787\",\"langgraph_node\":\"tools\",\"langgraph_path\":[\"__pregel_push\",0,false],\"langgraph_step\":2,\"langgraph_triggers\":[\"__pregel_push\"],\"lc_agent_name\":\"support\",\"ls_integration\":\"langchain_create_agent\"}"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.checkpoint_ns",
+                  "value": {
+                    "stringValue": "tools:fadab96c-8060-5dbc-808f-78d16d12d787"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_checkpoint_ns",
+                  "value": {
+                    "stringValue": "tools:fadab96c-8060-5dbc-808f-78d16d12d787"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_node",
+                  "value": {
+                    "stringValue": "tools"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_path",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "__pregel_push"
+                        },
+                        {
+                          "intValue": "0"
+                        },
+                        {
+                          "boolValue": false
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_step",
+                  "value": {
+                    "intValue": "2"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_triggers",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "__pregel_push"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.lc_agent_name",
+                  "value": {
+                    "stringValue": "support"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.ls_integration",
+                  "value": {
+                    "stringValue": "langchain_create_agent"
+                  }
+                },
+                {
+                  "key": "newrelic.response.number_of_messages",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "newrelic.tags",
+                  "value": {
+                    "stringValue": ""
+                  }
+                },
+                {
+                  "key": "newrelic.vendor",
+                  "value": {
+                    "stringValue": "langchain"
+                  }
+                },
+                {
+                  "key": "newrelic.virtual_llm",
+                  "value": {
+                    "boolValue": true
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355112513226",
+              "kind": 1,
+              "name": "chain",
+              "parentSpanId": "8931b843ae94d743",
+              "spanId": "6a67f92132ab8cd1",
+              "startTimeUnixNano": "1794240355107000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "gen_ai.operation.name",
+                  "value": {
+                    "stringValue": "execute_tool"
+                  }
+                },
+                {
+                  "key": "gen_ai.tool.call.arguments",
+                  "value": {
+                    "stringValue": "{\"order_id\":\"1042 CONTENT-CANARY\"}"
+                  }
+                },
+                {
+                  "key": "gen_ai.tool.call.id",
+                  "value": {
+                    "stringValue": "call_1"
+                  }
+                },
+                {
+                  "key": "gen_ai.tool.call.result",
+                  "value": {
+                    "stringValue": "{\"status\":\"shipped\",\"note\":\"CONTENT-CANARY\"}"
+                  }
+                },
+                {
+                  "key": "gen_ai.tool.name",
+                  "value": {
+                    "stringValue": "get_order"
+                  }
+                },
+                {
+                  "key": "newrelic.agent_name",
+                  "value": {
+                    "stringValue": "support"
+                  }
+                },
+                {
+                  "key": "newrelic.description",
+                  "value": {
+                    "stringValue": "Look up an order and what the help centre says about shipping."
+                  }
+                },
+                {
+                  "key": "newrelic.event.id",
+                  "value": {
+                    "stringValue": "51c4822602bc6f465420880e294008ff"
+                  }
+                },
+                {
+                  "key": "newrelic.event.type",
+                  "value": {
+                    "stringValue": "LlmTool"
+                  }
+                },
+                {
+                  "key": "newrelic.ingest_source",
+                  "value": {
+                    "stringValue": "Node"
+                  }
+                },
+                {
+                  "key": "newrelic.langchainMeta",
+                  "value": {
+                    "stringValue": "{\"checkpoint_ns\":\"tools:fadab96c-8060-5dbc-808f-78d16d12d787\",\"langgraph_checkpoint_ns\":\"tools:fadab96c-8060-5dbc-808f-78d16d12d787\",\"langgraph_node\":\"tools\",\"langgraph_path\":[\"__pregel_push\",0,false],\"langgraph_step\":2,\"langgraph_triggers\":[\"__pregel_push\"],\"lc_agent_name\":\"support\",\"ls_integration\":\"langchain_create_agent\",\"versions\":{\"@langchain/core\":\"1.3.5\"}}"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.checkpoint_ns",
+                  "value": {
+                    "stringValue": "tools:fadab96c-8060-5dbc-808f-78d16d12d787"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_checkpoint_ns",
+                  "value": {
+                    "stringValue": "tools:fadab96c-8060-5dbc-808f-78d16d12d787"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_node",
+                  "value": {
+                    "stringValue": "tools"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_path",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "__pregel_push"
+                        },
+                        {
+                          "intValue": "0"
+                        },
+                        {
+                          "boolValue": false
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_step",
+                  "value": {
+                    "intValue": "2"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_triggers",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "__pregel_push"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.lc_agent_name",
+                  "value": {
+                    "stringValue": "support"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.ls_integration",
+                  "value": {
+                    "stringValue": "langchain_create_agent"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.versions",
+                  "value": {
+                    "stringValue": "{\"@langchain/core\":\"1.3.5\"}"
+                  }
+                },
+                {
+                  "key": "newrelic.tags",
+                  "value": {
+                    "stringValue": ""
+                  }
+                },
+                {
+                  "key": "newrelic.vendor",
+                  "value": {
+                    "stringValue": "langchain"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355111000000",
+              "kind": 1,
+              "name": "execute_tool get_order",
+              "parentSpanId": "35efc824eb2c92e0",
+              "spanId": "a363f236db5fc1bd",
+              "startTimeUnixNano": "1794240355111000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "gen_ai.operation.name",
+                  "value": {
+                    "stringValue": "retrieval"
+                  }
+                },
+                {
+                  "key": "gen_ai.retrieval.documents",
+                  "value": {
+                    "stringValue": "[{\"id\":\"kb-112\"},{\"id\":\"kb-407\"},{\"id\":\"kb-019\"}]"
+                  }
+                },
+                {
+                  "key": "gen_ai.retrieval.query.text",
+                  "value": {
+                    "stringValue": "When does an order ship? CONTENT-CANARY"
+                  }
+                },
+                {
+                  "key": "gen_ai.retrieval.top_k",
+                  "value": {
+                    "intValue": "5"
+                  }
+                },
+                {
+                  "key": "newrelic.appName",
+                  "value": {
+                    "stringValue": "support-assistant"
+                  }
+                },
+                {
+                  "key": "newrelic.content.retrieval.documents",
+                  "value": {
+                    "stringValue": "[{\"content\":\"Orders ship within two days. CONTENT-CANARY\",\"id\":\"kb-112\"},{\"content\":\"Tracking numbers arrive by e-mail. CONTENT-CANARY\",\"id\":\"kb-407\"},{\"content\":\"Returns are free for thirty days. CONTENT-CANARY\",\"id\":\"kb-019\"}]"
+                  }
+                },
+                {
+                  "key": "newrelic.event.id",
+                  "value": {
+                    "stringValue": "2dba1944d1823fa9ce1be0644272fcbb"
+                  }
+                },
+                {
+                  "key": "newrelic.event.type",
+                  "value": {
+                    "stringValue": "LlmVectorSearch"
+                  }
+                },
+                {
+                  "key": "newrelic.ingest_source",
+                  "value": {
+                    "stringValue": "Node"
+                  }
+                },
+                {
+                  "key": "newrelic.response.number_of_documents",
+                  "value": {
+                    "intValue": "3"
+                  }
+                },
+                {
+                  "key": "newrelic.vendor",
+                  "value": {
+                    "stringValue": "langchain"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355110342481",
+              "kind": 3,
+              "name": "retrieval",
+              "parentSpanId": "a72074f328d8c0c9",
+              "spanId": "f5155955f81ef28e",
+              "startTimeUnixNano": "1794240355110000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "newrelic.appName",
+                  "value": {
+                    "stringValue": "support-assistant"
+                  }
+                },
+                {
+                  "key": "newrelic.content.input.messages",
+                  "value": {
+                    "stringValue": "[{\"role\":\"user\",\"parts\":[{\"type\":\"text\",\"content\":\"Where is order 1042? CONTENT-CANARY\"}]}]"
+                  }
+                },
+                {
+                  "key": "newrelic.content.output.messages",
+                  "value": {
+                    "stringValue": "[{\"role\":\"assistant\",\"parts\":[{\"type\":\"text\",\"content\":\"[{\\\"lg_name\\\":\\\"Command\\\",\\\"update\\\":{\\\"messages\\\":[{\\\"lc\\\":1,\\\"type\\\":\\\"constructor\\\",\\\"id\\\":[\\\"langchain_core\\\",\\\"messages\\\",\\\"AIMessage\\\"],\\\"kwargs\\\":{\\\"id\\\":\\\"chatcmpl-1\\\",\\\"name\\\":\\\"support\\\",\\\"content\\\":\\\"\\\",\\\"additional_kwargs\\\":{\\\"tool_calls\\\":[{\\\"id\\\":\\\"call_1\\\",\\\"type\\\":\\\"function\\\",\\\"function\\\":{\\\"name\\\":\\\"get_order\\\",\\\"arguments\\\":\\\"{\\\\\\\"order_id\\\\\\\":\\\\\\\"1042 CONTENT-CANARY\\\\\\\"}\\\"}}]},\\\"response_metadata\\\":{\\\"tokenUsage\\\":{\\\"promptTokens\\\":120,\\\"completionTokens\\\":20,\\\"totalTokens\\\":140},\\\"finish_reason\\\":\\\"tool_calls\\\",\\\"model_provider\\\":\\\"openai\\\",\\\"model_name\\\":\\\"gpt-4o-2024-08-06\\\",\\\"usage\\\":{\\\"prompt_tokens\\\":120,\\\"completion_tokens\\\":20,\\\"total_tokens\\\":140}},\\\"type\\\":\\\"ai\\\",\\\"tool_calls\\\":[{\\\"name\\\":\\\"get_order\\\",\\\"args\\\":{\\\"order_id\\\":\\\"1042 CONTENT-CANARY\\\"},\\\"type\\\":\\\"tool_call\\\",\\\"id\\\":\\\"call_1\\\"}],\\\"invalid_tool_calls\\\":[],\\\"usage_metadata\\\":{\\\"output_tokens\\\":20,\\\"input_tokens\\\":120,\\\"total_tokens\\\":140,\\\"input_token_details\\\":{},\\\"output_token_details\\\":{}}}}]},\\\"goto\\\":[]}]\"}]}]"
+                  }
+                },
+                {
+                  "key": "newrelic.event.id",
+                  "value": {
+                    "stringValue": "a5917dc755b55fed06a527ed022fb6a2"
+                  }
+                },
+                {
+                  "key": "newrelic.event.type",
+                  "value": {
+                    "stringValue": "LlmChatCompletionSummary"
+                  }
+                },
+                {
+                  "key": "newrelic.ingest_source",
+                  "value": {
+                    "stringValue": "Node"
+                  }
+                },
+                {
+                  "key": "newrelic.langchainMeta",
+                  "value": {
+                    "stringValue": "{\"checkpoint_ns\":\"model_request:b111d891-3e81-5187-9347-5d6615e95320\",\"langgraph_checkpoint_ns\":\"model_request:b111d891-3e81-5187-9347-5d6615e95320\",\"langgraph_node\":\"model_request\",\"langgraph_path\":[\"__pregel_pull\",\"model_request\"],\"langgraph_step\":1,\"langgraph_triggers\":[\"branch:to:model_request\"],\"lc_agent_name\":\"support\",\"ls_integration\":\"langchain_create_agent\"}"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.checkpoint_ns",
+                  "value": {
+                    "stringValue": "model_request:b111d891-3e81-5187-9347-5d6615e95320"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_checkpoint_ns",
+                  "value": {
+                    "stringValue": "model_request:b111d891-3e81-5187-9347-5d6615e95320"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_node",
+                  "value": {
+                    "stringValue": "model_request"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_path",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "__pregel_pull"
+                        },
+                        {
+                          "stringValue": "model_request"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_step",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_triggers",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "branch:to:model_request"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.lc_agent_name",
+                  "value": {
+                    "stringValue": "support"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.ls_integration",
+                  "value": {
+                    "stringValue": "langchain_create_agent"
+                  }
+                },
+                {
+                  "key": "newrelic.response.number_of_messages",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "newrelic.tags",
+                  "value": {
+                    "stringValue": ""
+                  }
+                },
+                {
+                  "key": "newrelic.vendor",
+                  "value": {
+                    "stringValue": "langchain"
+                  }
+                },
+                {
+                  "key": "newrelic.virtual_llm",
+                  "value": {
+                    "boolValue": true
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355104689355",
+              "kind": 1,
+              "name": "chain",
+              "parentSpanId": "d806c21eafd07d93",
+              "spanId": "136544c2e8d5ef28",
+              "startTimeUnixNano": "1794240355075000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "newrelic.appName",
+                  "value": {
+                    "stringValue": "support-assistant"
+                  }
+                },
+                {
+                  "key": "newrelic.content.output.messages",
+                  "value": {
+                    "stringValue": "[{\"role\":\"user\",\"parts\":[{\"type\":\"text\",\"content\":\"Where is order 1042? CONTENT-CANARY\"}]},{\"role\":\"user\",\"parts\":[{\"type\":\"text\",\"content\":\"Where is order 1042? CONTENT-CANARY\"}]}]"
+                  }
+                },
+                {
+                  "key": "newrelic.event.id",
+                  "value": {
+                    "stringValue": "e3981dcc4ebdc032d40a4af2feae8ac8"
+                  }
+                },
+                {
+                  "key": "newrelic.event.type",
+                  "value": {
+                    "stringValue": "LlmChatCompletionSummary"
+                  }
+                },
+                {
+                  "key": "newrelic.ingest_source",
+                  "value": {
+                    "stringValue": "Node"
+                  }
+                },
+                {
+                  "key": "newrelic.langchainMeta",
+                  "value": {
+                    "stringValue": "{\"checkpoint_ns\":\"__start__:c86eb7c1-81b7-5737-83e4-b5e451f6f094\",\"langgraph_checkpoint_ns\":\"__start__:c86eb7c1-81b7-5737-83e4-b5e451f6f094\",\"langgraph_node\":\"__start__\",\"langgraph_path\":[\"__pregel_pull\",\"__start__\"],\"langgraph_step\":0,\"langgraph_triggers\":[\"__start__\"],\"lc_agent_name\":\"support\",\"ls_integration\":\"langchain_create_agent\"}"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.checkpoint_ns",
+                  "value": {
+                    "stringValue": "__start__:c86eb7c1-81b7-5737-83e4-b5e451f6f094"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_checkpoint_ns",
+                  "value": {
+                    "stringValue": "__start__:c86eb7c1-81b7-5737-83e4-b5e451f6f094"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_node",
+                  "value": {
+                    "stringValue": "__start__"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_path",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "__pregel_pull"
+                        },
+                        {
+                          "stringValue": "__start__"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_step",
+                  "value": {
+                    "intValue": "0"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.langgraph_triggers",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "__start__"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.lc_agent_name",
+                  "value": {
+                    "stringValue": "support"
+                  }
+                },
+                {
+                  "key": "newrelic.metadata.ls_integration",
+                  "value": {
+                    "stringValue": "langchain_create_agent"
+                  }
+                },
+                {
+                  "key": "newrelic.response.number_of_messages",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "newrelic.tags",
+                  "value": {
+                    "stringValue": "langsmith:hidden"
+                  }
+                },
+                {
+                  "key": "newrelic.vendor",
+                  "value": {
+                    "stringValue": "langchain"
+                  }
+                },
+                {
+                  "key": "newrelic.virtual_llm",
+                  "value": {
+                    "boolValue": true
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355070148119",
+              "kind": 1,
+              "name": "chain",
+              "parentSpanId": "b1c20f64b457d802",
+              "spanId": "1444ec941a7de702",
+              "startTimeUnixNano": "1794240355060000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "gen_ai.input.messages",
+                  "value": {
+                    "stringValue": "[{\"role\":\"user\",\"parts\":[{\"type\":\"text\",\"content\":\"Where is order 1042? CONTENT-CANARY\"}]}]"
+                  }
+                },
+                {
+                  "key": "gen_ai.operation.name",
+                  "value": {
+                    "stringValue": "chat"
+                  }
+                },
+                {
+                  "key": "gen_ai.provider.name",
+                  "value": {
+                    "stringValue": "openai"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.model",
+                  "value": {
+                    "stringValue": "gpt-4o"
+                  }
+                },
+                {
+                  "key": "gen_ai.response.finish_reasons",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "tool_calls"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "key": "gen_ai.response.model",
+                  "value": {
+                    "stringValue": "gpt-4o-2024-08-06"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.input_tokens",
+                  "value": {
+                    "intValue": "120"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.output_tokens",
+                  "value": {
+                    "intValue": "20"
+                  }
+                },
+                {
+                  "key": "newrelic.event.id",
+                  "value": {
+                    "stringValue": "16e10217b860296f16b13370c9e174ce"
+                  }
+                },
+                {
+                  "key": "newrelic.event.type",
+                  "value": {
+                    "stringValue": "LlmChatCompletionSummary"
+                  }
+                },
+                {
+                  "key": "newrelic.ingest_source",
+                  "value": {
+                    "stringValue": "Node"
+                  }
+                },
+                {
+                  "key": "newrelic.request_id",
+                  "value": {
+                    "stringValue": "req_chatcmpl-1"
+                  }
+                },
+                {
+                  "key": "newrelic.response.headers.llmVersion",
+                  "value": {
+                    "stringValue": "2020-10-01"
+                  }
+                },
+                {
+                  "key": "newrelic.response.number_of_messages",
+                  "value": {
+                    "intValue": "2"
+                  }
+                },
+                {
+                  "key": "newrelic.response.usage.total_tokens",
+                  "value": {
+                    "intValue": "140"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794240355098791611",
+              "kind": 3,
+              "name": "chat gpt-4o",
+              "parentSpanId": "4cf11076040b6fce",
+              "spanId": "0e56355345ae6aee",
+              "startTimeUnixNano": "1794240355088000000",
+              "traceId": "ada29d0e409f7227ee685a067ddc63a6"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

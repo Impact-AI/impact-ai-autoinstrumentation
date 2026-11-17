@@ -47,7 +47,7 @@ class Network:
 
     @classmethod
     def create(cls) -> Network:
-        name = f"i019-{uuid.uuid4().hex[:8]}"
+        name = f"kit-test-{uuid.uuid4().hex[:8]}"
         run("network", "create", name)
         return cls(name)
 
@@ -75,7 +75,7 @@ class Container:
         name: str | None = None,
         extra_args: list[str] | None = None,
     ) -> Container:
-        name = name or f"i019-{uuid.uuid4().hex[:8]}"
+        name = name or f"kit-test-{uuid.uuid4().hex[:8]}"
         args = ["run", "-d", "--name", name, "--network", network.name, "--network-alias", name]
         if publish:
             args += ["-p", f"127.0.0.1::{publish}"]
@@ -96,6 +96,10 @@ class Container:
     def _published(self, internal: int) -> int:
         out = run("port", self.name, f"{internal}/tcp").stdout.strip().splitlines()[0]
         return int(out.rsplit(":", 1)[1])
+
+    def published(self, internal: int) -> int:
+        """The port on 127.0.0.1 that a port published with `-p 127.0.0.1::<internal>` was given."""
+        return self._published(internal)
 
     @property
     def url(self) -> str:
@@ -217,6 +221,16 @@ def attributes(items: list[dict]) -> dict:
     return {item["key"]: attribute_value(item["value"]) for item in items}
 
 
+def anyvalue(value):
+    """An OTLP AnyValue as Python: scalars as they are, arrays as lists and key-value lists as dicts."""
+    kind = value.WhichOneof("value")
+    if kind == "array_value":
+        return [anyvalue(item) for item in value.array_value.values]
+    if kind == "kvlist_value":
+        return {item.key: anyvalue(item.value) for item in value.kvlist_value.values}
+    return getattr(value, kind) if kind else None
+
+
 def protobuf_spans(mock: Mock, path: str = "/v1/traces") -> list[dict]:
     """Spans a customer's own OpenTelemetry exporter sent (OTLP/HTTP protobuf), as dicts with attributes by key."""
     import gzip
@@ -231,6 +245,7 @@ def protobuf_spans(mock: Mock, path: str = "/v1/traces") -> list[dict]:
         request = ExportTraceServiceRequest()
         request.ParseFromString(raw)
         for resource_spans in request.resource_spans:
+            resource = {a.key: anyvalue(a.value) for a in resource_spans.resource.attributes}
             for scope_spans in resource_spans.scope_spans:
                 for span in scope_spans.spans:
                     out.append(
@@ -239,6 +254,43 @@ def protobuf_spans(mock: Mock, path: str = "/v1/traces") -> list[dict]:
                             "kind": span.kind,
                             "scope": scope_spans.scope.name,
                             "attrs": {a.key: a.value.string_value or a.value.int_value for a in span.attributes},
+                            "resource": resource,
+                        }
+                    )
+    return out
+
+
+def protobuf_logs(mock: Mock, path: str = "/v1/logs") -> list[dict]:
+    """Log records that arrived on `path` (OTLP/HTTP protobuf, identity or gzip), oldest first, each with the attributes
+    of the resource it came with, typed attributes and body, and the status the mock answered its request with (a
+    request that was refused is here too: a retry shows as the same records again)."""
+    import gzip
+
+    from opentelemetry.proto.collector.logs.v1.logs_service_pb2 import ExportLogsServiceRequest
+
+    out = []
+    for record in mock.requests(path):
+        raw = Mock.body(record)
+        if record["headers"].get("Content-Encoding") == "gzip":
+            raw = gzip.decompress(raw)
+        request = ExportLogsServiceRequest()
+        request.ParseFromString(raw)
+        for resource_logs in request.resource_logs:
+            resource = {a.key: anyvalue(a.value) for a in resource_logs.resource.attributes}
+            for scope_logs in resource_logs.scope_logs:
+                for log in scope_logs.log_records:
+                    out.append(
+                        {
+                            "event_name": log.event_name,
+                            "body": anyvalue(log.body),
+                            "attrs": {a.key: anyvalue(a.value) for a in log.attributes},
+                            "resource": resource,
+                            "scope": scope_logs.scope.name,
+                            "trace_id": log.trace_id.hex(),
+                            "span_id": log.span_id.hex(),
+                            "time": log.time_unix_nano,
+                            "severity": log.severity_text,
+                            "status": record.get("status"),
                         }
                     )
     return out

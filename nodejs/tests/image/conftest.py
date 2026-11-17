@@ -39,7 +39,7 @@ def network():
 def _mocks(network):
     require_images(MOCK_IMAGE)
     started = [
-        Container.start(MOCK_IMAGE, network=network, publish=8080, name=f"i019-mock-{uuid.uuid4().hex[:6]}")
+        Container.start(MOCK_IMAGE, network=network, publish=8080, name=f"kit-test-mock-{uuid.uuid4().hex[:6]}")
         for _ in range(2)
     ]
     yield [Mock(c) for c in started]
@@ -65,7 +65,7 @@ def theirs(_mocks):
 def payload():
     """The volume the image's own init command fills, as the Operator's init container does."""
     require_images(IMAGE)
-    name = f"i019-payload-nodejs-{uuid.uuid4().hex[:6]}"
+    name = f"kit-test-payload-nodejs-{uuid.uuid4().hex[:6]}"
     run("volume", "create", name)
     # A new volume belongs to root and is not writable by the image's user; a Kubernetes emptyDir is (mode 1777).
     run("run", "--rm", "--user", "0", "-v", f"{name}:{MOUNT}", IMAGE, "chmod", "1777", MOUNT)

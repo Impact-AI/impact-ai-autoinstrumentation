@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: Apache-2.0
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/Impact-AI/impact-autoinstrumentation/security/advisories/new
+    about: Privately, never as a public issue. SECURITY.md has the e-mail address too.
+  - name: Support for your Impact AI account
+    url: https://github.com/Impact-AI/impact-autoinstrumentation/blob/main/SUPPORT.md
+    about: Where to ask about your account, product or data, and what this repository supports.

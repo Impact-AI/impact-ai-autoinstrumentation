@@ -21,8 +21,8 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kubesecret"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/sender"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kubesecret"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/sender"
 )
 
 const (
@@ -209,7 +209,7 @@ func success(replayed bool) string {
 	return fmt.Sprintf(`{"installId":"ins_0123","keyId":"pk_0123","productId":%q,"autoCover":true,"clusterName":"kind-e2e","replayed":%t}`, productID, replayed)
 }
 
-// messages are the fixed sentences of the real exchange (capabilities/ai-coverage/go/exchange.go), word for word: the
+// messages are the fixed sentences of the real exchange, word for word: the
 // chart prints the one that came with the refusal.
 var messages = map[string]string{
 	"malformed_request":   "The install request is not valid. Update the chart and run the install command again.",

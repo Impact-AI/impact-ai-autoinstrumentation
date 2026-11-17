@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-5: the workload starts a tracer of its own and is annotated anyway. The package does not start, the workload's
-own spans reach its own endpoint as before, and the setup report says what was found."""
+"""Stand down: the workload starts a tracer of its own and is annotated anyway. The package does not start, the
+workload's own spans reach its own endpoint as before, and the setup report says what was found."""
 
 from __future__ import annotations
 
@@ -18,11 +18,15 @@ def setup_reports(mock):
     return [s for s in mock.spans() if s["name"] == "impact.setup"]
 
 
-def assert_stood_down(app, mock, detail_starts_with: str) -> None:
+def assert_stood_down(app, mock, detail_starts_with: str, tool: str, exporter: str | None = None) -> None:
     wait_until(lambda: setup_reports(mock), timeout=30, message=lambda: f"the setup report\n{app.logs()}")
     (report,) = setup_reports(mock)
     assert report["attrs"]["impact.setup.state"] == "pre-existing"
     assert report["attrs"]["impact.setup.detail"].startswith(detail_starts_with), report["attrs"]
+    # It names the tool it found and its exporter kind when the settings show it, and that it did not start beside it.
+    assert report["attrs"]["impact.setup.tool"] == tool, report["attrs"]
+    assert report["attrs"].get("impact.setup.exporter") == exporter, report["attrs"]
+    assert report["attrs"]["impact.setup.alongside"] is False
     # A stood-down workload still says which AI libraries it has: Cover your AI shows them next to who owns the tracing.
     frameworks = report["attrs"]["impact.setup.frameworks"]
     assert any(entry.startswith("openai ") for entry in frameworks) and any(
@@ -54,7 +58,7 @@ def test_an_entry_point_that_runs_opentelemetry_instrument(start_app, mock, thei
     )
     wait_ready(app)
     assert http("POST", f"{app.url}/chat/openai", {"prompt": "hi there"})[1] == {"answer": "Hello from the stub."}
-    assert_stood_down(app, mock, "opentelemetry-instrument (launcher)")
+    assert_stood_down(app, mock, "opentelemetry-instrument (launcher)", "opentelemetry", "otlp-http")
     wait_until(
         lambda: any(s["name"] == "POST /chat/openai" for s in protobuf_spans(theirs)),
         timeout=30,
@@ -73,7 +77,7 @@ def test_datadog_started_in_code(start_app, mock, theirs):
     )
     wait_ready(app)
     assert http("POST", f"{app.url}/chat/openai", {"prompt": "hi there"})[1] == {"answer": "Hello from the stub."}
-    assert_stood_down(app, mock, "ddtrace ")
+    assert_stood_down(app, mock, "ddtrace ", "datadog")
     wait_until(
         lambda: [r for r in theirs.requests() if r["path"].startswith("/v0.")],
         timeout=30,
@@ -92,7 +96,7 @@ def test_traceloop_started_in_code(start_app, mock, theirs):
     )
     wait_ready(app)
     assert http("POST", f"{app.url}/chat/openai", {"prompt": "hi there"})[1] == {"answer": "Hello from the stub."}
-    assert_stood_down(app, mock, "traceloop-sdk ")
+    assert_stood_down(app, mock, "traceloop-sdk ", "traceloop")
     wait_until(
         lambda: any("openai" in s["name"] for s in protobuf_spans(theirs)),
         timeout=30,
@@ -114,7 +118,7 @@ def test_an_opentelemetry_pipeline_started_in_code(start_app, mock, theirs):
     )
     wait_ready(app)
     assert http("POST", f"{app.url}/chat/openai", {"prompt": "hi there"})[1] == {"answer": "Hello from the stub."}
-    assert_stood_down(app, mock, "OTEL_EXPORTER_OTLP_ENDPOINT")
+    assert_stood_down(app, mock, "OTEL_EXPORTER_OTLP_ENDPOINT", "opentelemetry", "otlp-http")
     wait_until(
         lambda: any(s["name"].startswith("POST /chat/openai") for s in protobuf_spans(theirs)),
         timeout=30,

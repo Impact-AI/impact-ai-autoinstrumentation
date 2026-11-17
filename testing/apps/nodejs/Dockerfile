@@ -6,9 +6,9 @@
 # base images are pinned by digest. Each directory of /apps is an application of its own, with its own node_modules from a
 # lock file: /apps/openai-5/openai.cjs, /apps/anthropic-1/anthropic.mjs, /apps/express/express.cjs, ...
 ARG NODE=22
-FROM docker.io/library/node:22-slim@sha256:4b150b48b4116e2a22f2c39cc27025fbf4f153e2078fd3b14d159fdb5c7279da AS node22
-FROM docker.io/library/node:24-slim@sha256:c86ecead9e55a5210ac1727de38a4ca840bf03dcaf34dc9749addbf383b1920c AS node24
-FROM docker.io/library/node:26-slim@sha256:e4db4c914bf8ad241bd24804fc25d272d89bad97e68cdc8a1414862790a02c39 AS node26
+FROM docker.io/library/node:22-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d AS node22
+FROM docker.io/library/node:24-slim@sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9 AS node24
+FROM docker.io/library/node:26-slim@sha256:5adad64f9a1fca2d51972caa65983634c8a774eb300d72b20f7f2a0f60368072 AS node26
 
 FROM node${NODE} AS app
 WORKDIR /apps
@@ -23,6 +23,8 @@ RUN --mount=type=cache,target=/root/.npm \
         anthropic-*) cp /src/anthropic.cjs /src/anthropic.mjs "$dir" ;; \
         express) cp /src/express.cjs "$dir" ;; \
         own-otel) cp /src/openai.cjs /src/own-otel.cjs "$dir" ;; \
+        langsmith) cp /src/langsmith.cjs "$dir" ;; \
+        context) cp /src/context.cjs "$dir" ;; \
       esac; \
     done
 EXPOSE 8000

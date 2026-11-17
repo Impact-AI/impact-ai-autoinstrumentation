@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# Elastic's distribution of OpenTelemetry for Python with its OpenAI instrumentation.
+elastic-opentelemetry==1.19.0
+elastic-opentelemetry-instrumentation-openai==1.2.0
+openai==3.46.0

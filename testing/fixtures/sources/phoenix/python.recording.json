@@ -1,0 +1,101 @@
+{
+  "how": "canonical.py phoenix (testing/apps/otel_tools) against the kit's recording mock as the tool's backend and provider.py as the model provider",
+  "packages": {
+    "arize-phoenix-otel": "0.17.3",
+    "openai": "3.46.0",
+    "openinference-instrumentation-openai": "0.1.69"
+  },
+  "recorded": "2026-11-09",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/v1/traces",
+      "query": "",
+      "headers": {
+        "Host": "127.0.0.1:57651",
+        "user-agent": "OTel-OTLP-Exporter-Python/1.45.2",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "content-type": "application/x-protobuf",
+        "authorization": "Bearer planted-phoenix-key",
+        "Content-Length": "2323"
+      },
+      "contentType": "application/x-protobuf",
+      "contentEncoding": "",
+      "bodyBase64": "CpASCqECCiIKFnRlbGVtZXRyeS5zZGsubGFuZ3VhZ2USCAoGcHl0aG9uCiUKEnRlbGVtZXRyeS5zZGsubmFtZRIPCg1vcGVudGVsZW1ldHJ5CiEKFXRlbGVtZXRyeS5zZGsudmVyc2lvbhIICgYxLjQ1LjIKPQoTc2VydmljZS5pbnN0YW5jZS5pZBImCiRlMmRkY2RhNi01MjNmLTQ5ZGItYmM3Yy0xZTMyZDFlM2FiNTkKGgoPc2VydmljZS52ZXJzaW9uEgcKBTQuMi4wCiMKDHNlcnZpY2UubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudAoxChpvcGVuaW5mZXJlbmNlLnByb2plY3QubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudBLpDwouCiRvcGVuaW5mZXJlbmNlLmluc3RydW1lbnRhdGlvbi5vcGVuYWkSBjAuMS42ORK2DwoQvB5gni2R/Lz6rjCEzbRvFBIIeHNA87NKzSQiCMsdF9nv6AosKg5DaGF0Q29tcGxldGlvbjABORdgylsDbOYYQbRDtVwDbOYYShYKCmxsbS5zeXN0ZW0SCAoGb3BlbmFpStYCCgtpbnB1dC52YWx1ZRLGAgrDAnsibW9kZWwiOiAiZ3B0LTRvIiwgIm1lc3NhZ2VzIjogW3sicm9sZSI6ICJ1c2VyIiwgImNvbnRlbnQiOiAiV2hlcmUgaXMgb3JkZXIgMTA0Mj8gQ09OVEVOVC1DQU5BUlkifV0sICJ0b29scyI6IFt7InR5cGUiOiAiZnVuY3Rpb24iLCAiZnVuY3Rpb24iOiB7Im5hbWUiOiAiZ2V0X29yZGVyIiwgImRlc2NyaXB0aW9uIjogIkxvb2sgdXAgYW4gb3JkZXIgYnkgaXRzIGlkLiIsICJwYXJhbWV0ZXJzIjogeyJ0eXBlIjogIm9iamVjdCIsICJwcm9wZXJ0aWVzIjogeyJvcmRlcl9pZCI6IHsidHlwZSI6ICJzdHJpbmcifX0sICJyZXF1aXJlZCI6IFsib3JkZXJfaWQiXX19fV19SiUKD2lucHV0Lm1pbWVfdHlwZRISChBhcHBsaWNhdGlvbi9qc29uSvEDCgxvdXRwdXQudmFsdWUS4AMK3QN7ImlkIjoiY2hhdGNtcGwtY2Fub25pY2FsLTEiLCJjaG9pY2VzIjpbeyJmaW5pc2hfcmVhc29uIjoidG9vbF9jYWxscyIsImluZGV4IjowLCJsb2dwcm9icyI6bnVsbCwibWVzc2FnZSI6eyJjb250ZW50IjpudWxsLCJyZWZ1c2FsIjpudWxsLCJyb2xlIjoiYXNzaXN0YW50IiwidG9vbF9jYWxscyI6W3siaWQiOiJjYWxsXzEiLCJmdW5jdGlvbiI6eyJhcmd1bWVudHMiOiJ7XCJvcmRlcl9pZFwiOlwiMTA0MiBDT05URU5ULUNBTkFSWVwifSIsIm5hbWUiOiJnZXRfb3JkZXIifSwidHlwZSI6ImZ1bmN0aW9uIn1dfX1dLCJjcmVhdGVkIjoxNzYyNjQ2NDAwLCJtb2RlbCI6ImdwdC00by0yMDI0LTA4LTA2Iiwib2JqZWN0IjoiY2hhdC5jb21wbGV0aW9uIiwic3lzdGVtX2ZpbmdlcnByaW50IjoiZnBfY2Fub25pY2FsIiwidXNhZ2UiOnsiY29tcGxldGlvbl90b2tlbnMiOjIwLCJwcm9tcHRfdG9rZW5zIjoxMjAsInRvdGFsX3Rva2VucyI6MTQwfX1KJgoQb3V0cHV0Lm1pbWVfdHlwZRISChBhcHBsaWNhdGlvbi9qc29uSvUBChxsbG0udG9vbHMuMC50b29sLmpzb25fc2NoZW1hEtQBCtEBeyJ0eXBlIjogImZ1bmN0aW9uIiwgImZ1bmN0aW9uIjogeyJuYW1lIjogImdldF9vcmRlciIsICJkZXNjcmlwdGlvbiI6ICJMb29rIHVwIGFuIG9yZGVyIGJ5IGl0cyBpZC4iLCAicGFyYW1ldGVycyI6IHsidHlwZSI6ICJvYmplY3QiLCAicHJvcGVydGllcyI6IHsib3JkZXJfaWQiOiB7InR5cGUiOiAic3RyaW5nIn19LCAicmVxdWlyZWQiOiBbIm9yZGVyX2lkIl19fX1KMgoZbGxtLmludm9jYXRpb25fcGFyYW1ldGVycxIVChN7Im1vZGVsIjogImdwdC00byJ9SisKIWxsbS5pbnB1dF9tZXNzYWdlcy4wLm1lc3NhZ2Uucm9sZRIGCgR1c2VySk0KJGxsbS5pbnB1dF9tZXNzYWdlcy4wLm1lc3NhZ2UuY29udGVudBIlCiNXaGVyZSBpcyBvcmRlciAxMDQyPyBDT05URU5ULUNBTkFSWUolCg5sbG0ubW9kZWxfbmFtZRITChFncHQtNG8tMjAyNC0wOC0wNkocChVsbG0udG9rZW5fY291bnQudG90YWwSAxiMAUocChZsbG0udG9rZW5fY291bnQucHJvbXB0EgIYeEogChpsbG0udG9rZW5fY291bnQuY29tcGxldGlvbhICGBRKMQoibGxtLm91dHB1dF9tZXNzYWdlcy4wLm1lc3NhZ2Uucm9sZRILCglhc3Npc3RhbnRKQwo3bGxtLm91dHB1dF9tZXNzYWdlcy4wLm1lc3NhZ2UudG9vbF9jYWxscy4wLnRvb2xfY2FsbC5pZBIICgZjYWxsXzFKUQpCbGxtLm91dHB1dF9tZXNzYWdlcy4wLm1lc3NhZ2UudG9vbF9jYWxscy4wLnRvb2xfY2FsbC5mdW5jdGlvbi5uYW1lEgsKCWdldF9vcmRlckpvCkdsbG0ub3V0cHV0X21lc3NhZ2VzLjAubWVzc2FnZS50b29sX2NhbGxzLjAudG9vbF9jYWxsLmZ1bmN0aW9uLmFyZ3VtZW50cxIkCiJ7Im9yZGVyX2lkIjoiMTA0MiBDT05URU5ULUNBTkFSWSJ9SiEKEWxsbS5maW5pc2hfcmVhc29uEgwKCnRvb2xfY2FsbHNKIAoXb3BlbmluZmVyZW5jZS5zcGFuLmtpbmQSBQoDTExNegIYAYUBAAEAAA=="
+    },
+    {
+      "method": "POST",
+      "path": "/v1/traces",
+      "query": "",
+      "headers": {
+        "Host": "127.0.0.1:57651",
+        "user-agent": "OTel-OTLP-Exporter-Python/1.45.2",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "content-type": "application/x-protobuf",
+        "authorization": "Bearer planted-phoenix-key",
+        "Content-Length": "787"
+      },
+      "contentType": "application/x-protobuf",
+      "contentEncoding": "",
+      "bodyBase64": "CpAGCqECCiIKFnRlbGVtZXRyeS5zZGsubGFuZ3VhZ2USCAoGcHl0aG9uCiUKEnRlbGVtZXRyeS5zZGsubmFtZRIPCg1vcGVudGVsZW1ldHJ5CiEKFXRlbGVtZXRyeS5zZGsudmVyc2lvbhIICgYxLjQ1LjIKPQoTc2VydmljZS5pbnN0YW5jZS5pZBImCiRlMmRkY2RhNi01MjNmLTQ5ZGItYmM3Yy0xZTMyZDFlM2FiNTkKGgoPc2VydmljZS52ZXJzaW9uEgcKBTQuMi4wCiMKDHNlcnZpY2UubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudAoxChpvcGVuaW5mZXJlbmNlLnByb2plY3QubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudBLpAwoKCghfX21haW5fXxLaAwoQvB5gni2R/Lz6rjCEzbRvFBIICsf4MxHt5nwiCMsdF9nv6AosKglnZXRfb3JkZXIwATnP+xVdA2zmGEG0ahhdA2zmGEpICgtpbnB1dC52YWx1ZRI5Cjd7ImFyZ3VtZW50cyI6ICJ7XCJvcmRlcl9pZFwiOlwiMTA0MiBDT05URU5ULUNBTkFSWVwifSJ9SiUKD2lucHV0Lm1pbWVfdHlwZRISChBhcHBsaWNhdGlvbi9qc29uShgKCXRvb2wubmFtZRILCglnZXRfb3JkZXJKeQoPdG9vbC5wYXJhbWV0ZXJzEmYKZHsidHlwZSI6ICJvYmplY3QiLCAidGl0bGUiOiAiZ2V0X29yZGVyIiwgInByb3BlcnRpZXMiOiB7ImFyZ3VtZW50cyI6IHt9fSwgInJlcXVpcmVkIjogWyJhcmd1bWVudHMiXX1KPgoMb3V0cHV0LnZhbHVlEi4KLHsic3RhdHVzIjoic2hpcHBlZCIsIm5vdGUiOiJDT05URU5ULUNBTkFSWSJ9SiAKEG91dHB1dC5taW1lX3R5cGUSDAoKdGV4dC9wbGFpbkohChdvcGVuaW5mZXJlbmNlLnNwYW4ua2luZBIGCgRUT09MegIYAYUBAAEAAA=="
+    },
+    {
+      "method": "POST",
+      "path": "/v1/traces",
+      "query": "",
+      "headers": {
+        "Host": "127.0.0.1:57651",
+        "user-agent": "OTel-OTLP-Exporter-Python/1.45.2",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "content-type": "application/x-protobuf",
+        "authorization": "Bearer planted-phoenix-key",
+        "Content-Length": "1092"
+      },
+      "contentType": "application/x-protobuf",
+      "contentEncoding": "",
+      "bodyBase64": "CsEICqECCiIKFnRlbGVtZXRyeS5zZGsubGFuZ3VhZ2USCAoGcHl0aG9uCiUKEnRlbGVtZXRyeS5zZGsubmFtZRIPCg1vcGVudGVsZW1ldHJ5CiEKFXRlbGVtZXRyeS5zZGsudmVyc2lvbhIICgYxLjQ1LjIKPQoTc2VydmljZS5pbnN0YW5jZS5pZBImCiRlMmRkY2RhNi01MjNmLTQ5ZGItYmM3Yy0xZTMyZDFlM2FiNTkKGgoPc2VydmljZS52ZXJzaW9uEgcKBTQuMi4wCiMKDHNlcnZpY2UubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudAoxChpvcGVuaW5mZXJlbmNlLnByb2plY3QubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudBKaBgoKCghfX21haW5fXxKLBgoQvB5gni2R/Lz6rjCEzbRvFBIIWnbMhtzlLG4iCMsdF9nv6AosKgtoZWxwLWNlbnRyZTABObAx2F8DbOYYQXcT218DbOYYSjgKC2lucHV0LnZhbHVlEikKJ1doZW4gZG9lcyBhbiBvcmRlciBzaGlwPyBDT05URU5ULUNBTkFSWUofCg9pbnB1dC5taW1lX3R5cGUSDAoKdGV4dC9wbGFpbkpXCiZyZXRyaWV2YWwuZG9jdW1lbnRzLjAuZG9jdW1lbnQuY29udGVudBItCitPcmRlcnMgc2hpcCB3aXRoaW4gdHdvIGRheXMuIENPTlRFTlQtQ0FOQVJZSi0KIXJldHJpZXZhbC5kb2N1bWVudHMuMC5kb2N1bWVudC5pZBIICgZrYi0xMTJKMQokcmV0cmlldmFsLmRvY3VtZW50cy4wLmRvY3VtZW50LnNjb3JlEgkhH4XrUbge7T9KXQomcmV0cmlldmFsLmRvY3VtZW50cy4xLmRvY3VtZW50LmNvbnRlbnQSMwoxVHJhY2tpbmcgbnVtYmVycyBhcnJpdmUgYnkgZS1tYWlsLiBDT05URU5ULUNBTkFSWUotCiFyZXRyaWV2YWwuZG9jdW1lbnRzLjEuZG9jdW1lbnQuaWQSCAoGa2ItNDA3SjEKJHJldHJpZXZhbC5kb2N1bWVudHMuMS5kb2N1bWVudC5zY29yZRIJIVyPwvUoXOc/SlkKJnJldHJpZXZhbC5kb2N1bWVudHMuMi5kb2N1bWVudC5jb250ZW50Ei8KLVdlZWtlbmQgb3JkZXJzIHNoaXAgb24gTW9uZGF5LiBDT05URU5ULUNBTkFSWUotCiFyZXRyaWV2YWwuZG9jdW1lbnRzLjIuZG9jdW1lbnQuaWQSCAoGa2ItMDE5SjEKJHJldHJpZXZhbC5kb2N1bWVudHMuMi5kb2N1bWVudC5zY29yZRIJIaRwPQrXo+A/SiYKF29wZW5pbmZlcmVuY2Uuc3Bhbi5raW5kEgsKCVJFVFJJRVZFUnoAhQEAAQAA"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/traces",
+      "query": "",
+      "headers": {
+        "Host": "127.0.0.1:57651",
+        "user-agent": "OTel-OTLP-Exporter-Python/1.45.2",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "content-type": "application/x-protobuf",
+        "authorization": "Bearer planted-phoenix-key",
+        "Content-Length": "2827"
+      },
+      "contentType": "application/x-protobuf",
+      "contentEncoding": "",
+      "bodyBase64": "CogWCqECCiIKFnRlbGVtZXRyeS5zZGsubGFuZ3VhZ2USCAoGcHl0aG9uCiUKEnRlbGVtZXRyeS5zZGsubmFtZRIPCg1vcGVudGVsZW1ldHJ5CiEKFXRlbGVtZXRyeS5zZGsudmVyc2lvbhIICgYxLjQ1LjIKPQoTc2VydmljZS5pbnN0YW5jZS5pZBImCiRlMmRkY2RhNi01MjNmLTQ5ZGItYmM3Yy0xZTMyZDFlM2FiNTkKGgoPc2VydmljZS52ZXJzaW9uEgcKBTQuMi4wCiMKDHNlcnZpY2UubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudAoxChpvcGVuaW5mZXJlbmNlLnByb2plY3QubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudBLhEwouCiRvcGVuaW5mZXJlbmNlLmluc3RydW1lbnRhdGlvbi5vcGVuYWkSBjAuMS42ORKuEwoQvB5gni2R/Lz6rjCEzbRvFBII5tohxIw2G4AiCMsdF9nv6AosKg5DaGF0Q29tcGxldGlvbjABOfk7jmIDbOYYQReBv2IDbOYYShYKCmxsbS5zeXN0ZW0SCAoGb3BlbmFpSv0ECgtpbnB1dC52YWx1ZRLtBArqBHsibW9kZWwiOiAiZ3B0LTRvIiwgIm1lc3NhZ2VzIjogW3sicm9sZSI6ICJ1c2VyIiwgImNvbnRlbnQiOiAiV2hlcmUgaXMgb3JkZXIgMTA0Mj8gQ09OVEVOVC1DQU5BUlkifSwgeyJyb2xlIjogImFzc2lzdGFudCIsICJjb250ZW50IjogbnVsbCwgInRvb2xfY2FsbHMiOiBbeyJpZCI6ICJjYWxsXzEiLCAidHlwZSI6ICJmdW5jdGlvbiIsICJmdW5jdGlvbiI6IHsibmFtZSI6ICJnZXRfb3JkZXIiLCAiYXJndW1lbnRzIjogIntcIm9yZGVyX2lkXCI6XCIxMDQyIENPTlRFTlQtQ0FOQVJZXCJ9In19XX0sIHsicm9sZSI6ICJ0b29sIiwgInRvb2xfY2FsbF9pZCI6ICJjYWxsXzEiLCAiY29udGVudCI6ICJ7XCJzdGF0dXNcIjpcInNoaXBwZWRcIixcIm5vdGVcIjpcIkNPTlRFTlQtQ0FOQVJZXCJ9In1dLCAidG9vbHMiOiBbeyJ0eXBlIjogImZ1bmN0aW9uIiwgImZ1bmN0aW9uIjogeyJuYW1lIjogImdldF9vcmRlciIsICJkZXNjcmlwdGlvbiI6ICJMb29rIHVwIGFuIG9yZGVyIGJ5IGl0cyBpZC4iLCAicGFyYW1ldGVycyI6IHsidHlwZSI6ICJvYmplY3QiLCAicHJvcGVydGllcyI6IHsib3JkZXJfaWQiOiB7InR5cGUiOiAic3RyaW5nIn19LCAicmVxdWlyZWQiOiBbIm9yZGVyX2lkIl19fX1dfUolCg9pbnB1dC5taW1lX3R5cGUSEgoQYXBwbGljYXRpb24vanNvbkqJAwoMb3V0cHV0LnZhbHVlEvgCCvUCeyJpZCI6ImNoYXRjbXBsLWNhbm9uaWNhbC0yIiwiY2hvaWNlcyI6W3siZmluaXNoX3JlYXNvbiI6InN0b3AiLCJpbmRleCI6MCwibG9ncHJvYnMiOm51bGwsIm1lc3NhZ2UiOnsiY29udGVudCI6Ik9yZGVyIDEwNDIgaGFzIHNoaXBwZWQuIENPTlRFTlQtQ0FOQVJZIiwicmVmdXNhbCI6bnVsbCwicm9sZSI6ImFzc2lzdGFudCJ9fV0sImNyZWF0ZWQiOjE3NjI2NDY0MDAsIm1vZGVsIjoiZ3B0LTRvLTIwMjQtMDgtMDYiLCJvYmplY3QiOiJjaGF0LmNvbXBsZXRpb24iLCJzeXN0ZW1fZmluZ2VycHJpbnQiOiJmcF9jYW5vbmljYWwiLCJ1c2FnZSI6eyJjb21wbGV0aW9uX3Rva2VucyI6ODAsInByb21wdF90b2tlbnMiOjMwMCwidG90YWxfdG9rZW5zIjozODB9fUomChBvdXRwdXQubWltZV90eXBlEhIKEGFwcGxpY2F0aW9uL2pzb25K9QEKHGxsbS50b29scy4wLnRvb2wuanNvbl9zY2hlbWES1AEK0QF7InR5cGUiOiAiZnVuY3Rpb24iLCAiZnVuY3Rpb24iOiB7Im5hbWUiOiAiZ2V0X29yZGVyIiwgImRlc2NyaXB0aW9uIjogIkxvb2sgdXAgYW4gb3JkZXIgYnkgaXRzIGlkLiIsICJwYXJhbWV0ZXJzIjogeyJ0eXBlIjogIm9iamVjdCIsICJwcm9wZXJ0aWVzIjogeyJvcmRlcl9pZCI6IHsidHlwZSI6ICJzdHJpbmcifX0sICJyZXF1aXJlZCI6IFsib3JkZXJfaWQiXX19fUoyChlsbG0uaW52b2NhdGlvbl9wYXJhbWV0ZXJzEhUKE3sibW9kZWwiOiAiZ3B0LTRvIn1KKwohbGxtLmlucHV0X21lc3NhZ2VzLjAubWVzc2FnZS5yb2xlEgYKBHVzZXJKTQokbGxtLmlucHV0X21lc3NhZ2VzLjAubWVzc2FnZS5jb250ZW50EiUKI1doZXJlIGlzIG9yZGVyIDEwNDI/IENPTlRFTlQtQ0FOQVJZSjAKIWxsbS5pbnB1dF9tZXNzYWdlcy4xLm1lc3NhZ2Uucm9sZRILCglhc3Npc3RhbnRKQgo2bGxtLmlucHV0X21lc3NhZ2VzLjEubWVzc2FnZS50b29sX2NhbGxzLjAudG9vbF9jYWxsLmlkEggKBmNhbGxfMUpQCkFsbG0uaW5wdXRfbWVzc2FnZXMuMS5tZXNzYWdlLnRvb2xfY2FsbHMuMC50b29sX2NhbGwuZnVuY3Rpb24ubmFtZRILCglnZXRfb3JkZXJKbgpGbGxtLmlucHV0X21lc3NhZ2VzLjEubWVzc2FnZS50b29sX2NhbGxzLjAudG9vbF9jYWxsLmZ1bmN0aW9uLmFyZ3VtZW50cxIkCiJ7Im9yZGVyX2lkIjoiMTA0MiBDT05URU5ULUNBTkFSWSJ9SisKIWxsbS5pbnB1dF9tZXNzYWdlcy4yLm1lc3NhZ2Uucm9sZRIGCgR0b29sSjUKKWxsbS5pbnB1dF9tZXNzYWdlcy4yLm1lc3NhZ2UudG9vbF9jYWxsX2lkEggKBmNhbGxfMUpWCiRsbG0uaW5wdXRfbWVzc2FnZXMuMi5tZXNzYWdlLmNvbnRlbnQSLgoseyJzdGF0dXMiOiJzaGlwcGVkIiwibm90ZSI6IkNPTlRFTlQtQ0FOQVJZIn1KJQoObGxtLm1vZGVsX25hbWUSEwoRZ3B0LTRvLTIwMjQtMDgtMDZKHAoVbGxtLnRva2VuX2NvdW50LnRvdGFsEgMY/AJKHQoWbGxtLnRva2VuX2NvdW50LnByb21wdBIDGKwCSiAKGmxsbS50b2tlbl9jb3VudC5jb21wbGV0aW9uEgIYUEoxCiJsbG0ub3V0cHV0X21lc3NhZ2VzLjAubWVzc2FnZS5yb2xlEgsKCWFzc2lzdGFudEpRCiVsbG0ub3V0cHV0X21lc3NhZ2VzLjAubWVzc2FnZS5jb250ZW50EigKJk9yZGVyIDEwNDIgaGFzIHNoaXBwZWQuIENPTlRFTlQtQ0FOQVJZShsKEWxsbS5maW5pc2hfcmVhc29uEgYKBHN0b3BKIAoXb3BlbmluZmVyZW5jZS5zcGFuLmtpbmQSBQoDTExNegIYAYUBAAEAAA=="
+    },
+    {
+      "method": "POST",
+      "path": "/v1/traces",
+      "query": "",
+      "headers": {
+        "Host": "127.0.0.1:57651",
+        "user-agent": "OTel-OTLP-Exporter-Python/1.45.2",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "content-type": "application/x-protobuf",
+        "authorization": "Bearer planted-phoenix-key",
+        "Content-Length": "593"
+      },
+      "contentType": "application/x-protobuf",
+      "contentEncoding": "",
+      "bodyBase64": "Cs4ECqECCiIKFnRlbGVtZXRyeS5zZGsubGFuZ3VhZ2USCAoGcHl0aG9uCiUKEnRlbGVtZXRyeS5zZGsubmFtZRIPCg1vcGVudGVsZW1ldHJ5CiEKFXRlbGVtZXRyeS5zZGsudmVyc2lvbhIICgYxLjQ1LjIKPQoTc2VydmljZS5pbnN0YW5jZS5pZBImCiRlMmRkY2RhNi01MjNmLTQ5ZGItYmM3Yy0xZTMyZDFlM2FiNTkKGgoPc2VydmljZS52ZXJzaW9uEgcKBTQuMi4wCiMKDHNlcnZpY2UubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudAoxChpvcGVuaW5mZXJlbmNlLnByb2plY3QubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudBKnAgoKCghfX21haW5fXxKYAgoQvB5gni2R/Lz6rjCEzbRvFBIIyx0X2e/oCiwqB3N1cHBvcnQwATltCp1GA2zmGEH/AcllA2zmGEoTCgtpbnB1dC52YWx1ZRIECgJ7fUolCg9pbnB1dC5taW1lX3R5cGUSEgoQYXBwbGljYXRpb24vanNvbkoXCgphZ2VudC5uYW1lEgkKB3N1cHBvcnRKOAoMb3V0cHV0LnZhbHVlEigKJk9yZGVyIDEwNDIgaGFzIHNoaXBwZWQuIENPTlRFTlQtQ0FOQVJZSiAKEG91dHB1dC5taW1lX3R5cGUSDAoKdGV4dC9wbGFpbkoiChdvcGVuaW5mZXJlbmNlLnNwYW4ua2luZBIHCgVBR0VOVHoCGAGFAQABAAA="
+    }
+  ]
+}

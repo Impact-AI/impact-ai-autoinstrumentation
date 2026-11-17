@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# The oldest fixture (scripts/qualify_python.py, the cells of fixture "oldest"): the oldest series of each AI library the
+# image traced before its qualification existed, at the floor of its instrumentation's range, so that the qualification's
+# range runs from these cells to the ones of the other fixtures. app_asgi.py and app_agents.py both run on it.
+-r requirements.in
+openai<2  # the 1.x series; openai-agents 0.3 needs 1.107 or later
+anthropic==0.51.0  # the instrumentation's floor; 0.x is ranged by minor
+openai-agents==0.3.3  # the instrumentation's floor
+langchain>=0.3.22,<0.4  # the instrumentation's floor is 0.3.22: the newest 0.3 release
+langchain-openai<0.4
+langchain-core>=0.3.49,<0.4  # the instrumentation's other floor (an application without langchain)
+langgraph<0.3  # the oldest LangGraph series on a langchain-core the instrumentation takes

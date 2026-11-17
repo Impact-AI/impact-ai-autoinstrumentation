@@ -4,12 +4,12 @@
 # Fixture workloads for the image and end-to-end tests: Python web apps that call model providers and carry no
 # tracing of their own. Base images are pinned by digest; PYTHON selects the stage.
 ARG PYTHON=3.13
-FROM ghcr.io/astral-sh/uv:0.13.6@sha256:af22a52f5eafef3d78e551599d405c02df61919d18028f0cea8eda93bc9986d0 AS uv
+FROM ghcr.io/astral-sh/uv:0.13.7@sha256:96f40d3904aad8d0bd010539001d36c8e2188b981e1334471a90c4a1d93bb490 AS uv
 FROM docker.io/library/python:3.11-slim@sha256:db20d8506e2f15b6db39b40b6015ca46bae855dec6dd326d462cfe79ae972893 AS py3.11
 FROM docker.io/library/python:3.12-slim@sha256:b18b261e1b4974b4f321451ad5251ded85abb22c2b8b262da527dda1d031ab30 AS py3.12
 FROM docker.io/library/python:3.13-slim@sha256:ae14d4ce8771606477a81446e7ef429edd6762305fc50c84507c1041fa8285d1 AS py3.13
 FROM docker.io/library/python:3.14-slim@sha256:930e1abba7c4e8f96ed93e8012c35d174d7732752731bbd5e8e757d7ec6f3966 AS py3.14
-FROM docker.io/library/python:3.12-alpine@sha256:e6dae589c1c05976188fd3bd019afd091445fc533ed2ea29001beddc7368a9c8 AS py3.12-alpine
+FROM docker.io/library/python:3.12-alpine@sha256:e064671ca452259bab50e8e2c7bd896e39e9a343bb06ca25234adf6fe18d0fc7 AS py3.12-alpine
 
 FROM py${PYTHON} AS app
 COPY --from=uv /uv /usr/local/bin/uv
@@ -22,6 +22,11 @@ COPY --chmod=0644 ${REQUIREMENTS} /tmp/requirements.txt
 # The download cache is a build mount, not a layer: the images stay small and the builds of one job share the wheels.
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install --system --link-mode=copy --compile-bytecode -r /tmp/requirements.txt ${EXTRA_PACKAGES}
+# UPGRADE (names, space separated) upgrades those libraries to their newest releases, unpinned: only the weekly run of
+# the Python qualification on the newest releases (scripts/python-cells.sh newest) sets it.
+ARG UPGRADE=""
+RUN --mount=type=cache,target=/root/.cache/uv \
+    if [ -n "${UPGRADE}" ]; then uv pip install --system --link-mode=copy --compile-bytecode --upgrade ${UPGRADE}; fi
 # STUB_DISTRIBUTIONS (name-version, space separated) puts empty distribution metadata for libraries the image cannot trace
 # in site-packages. The setup report reads installed distributions and never imports them, which is all a test of it
 # needs from CrewAI or LlamaIndex, whose real trees run to hundreds of megabytes.

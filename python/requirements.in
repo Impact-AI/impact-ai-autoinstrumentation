@@ -12,7 +12,7 @@ opentelemetry-util-http==0.66b2
 # Content on the span (qualification of 2026-11-03): OpenTelemetry GenAI packages for OpenAI and Anthropic,
 # OpenLLMetry's package for Bedrock Converse (botocore's instrumentation puts content in logs only).
 #
-# Agents (AE-11): the OpenAI Agents SDK and LangChain / LangGraph. The packages of one release are tested together and
+# Agents: the OpenAI Agents SDK and LangChain / LangGraph. The packages of one release are tested together and
 # one util-genai serves them all, so they move together. 1.3b0 and not the 1.1 pins of the PyPI `impact` 1.2.0rc7:
 # with genai-langchain 1.1b1 a LangChain agent is an invoke_workflow, and each model call gets two chat spans; with
 # 1.3b0 it is an invoke_agent with its gen_ai.agent.name, one chat span per call, and the Agents SDK's tool span has
@@ -22,7 +22,10 @@ opentelemetry-instrumentation-genai-openai==1.3b0
 opentelemetry-instrumentation-genai-anthropic==1.3b0
 opentelemetry-instrumentation-genai-openai-agents==1.3b0
 opentelemetry-instrumentation-genai-langchain==1.3b0
-opentelemetry-instrumentation-bedrock==0.62.4
+# Google's SDK, google-genai, in the Gemini API and in Vertex AI mode: the package of the same release, on the same
+# util-genai, with content on the span under the same SPAN_ONLY.
+opentelemetry-instrumentation-google-genai==1.3b0
+opentelemetry-instrumentation-bedrock==0.63.0
 
 # Request roots for ASGI and WSGI frameworks
 opentelemetry-instrumentation-asgi==0.66b2

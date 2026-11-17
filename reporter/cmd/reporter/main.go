@@ -22,13 +22,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/injector"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/inventory"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kube"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kubesecret"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/loop"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/notice"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/sender"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/injector"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/inventory"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kube"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kubesecret"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/loop"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/notice"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/sender"
 )
 
 // version is set at build time: -ldflags "-X main.version=v0.1.0".
@@ -106,14 +106,17 @@ func kubeConfig(cfg Config, getenv func(string) string) (kube.Config, error) {
 // run is main without the process: it returns the exit code. 0 is a clean exit,
 // 1 a runtime failure and 2 a usage error.
 func run(ctx context.Context, args []string, getenv func(string) string, stdout, stderr io.Writer, d deps) int {
-	// Two more commands share the binary and the image: the install token exchange (a Helm pre-install and pre-upgrade
-	// hook) and the cover pod (automatic coverage). Everything else is the reporter itself.
+	// Three more commands share the binary and the image: the install token exchange (a Helm pre-install and pre-upgrade
+	// hook), the cover pod (automatic coverage) and the forward-first gateway of switched workloads. Everything else is
+	// the reporter itself.
 	if len(args) > 0 {
 		switch args[0] {
 		case "exchange":
 			return runExchange(ctx, args[1:], getenv, stdout, stderr, d)
 		case "cover":
 			return runCover(ctx, args[1:], getenv, stdout, stderr, d)
+		case "forward":
+			return runForward(ctx, args[1:], getenv, stdout, stderr, d)
 		}
 	}
 	cfg, err := ParseConfig(args, getenv, stderr)

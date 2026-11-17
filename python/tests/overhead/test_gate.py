@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""The gate of AE-17, without containers: the budget, the paired median, the re-run, and what the report makes of
+"""The overhead gate, without containers: the budget, the paired median, the re-run, and what the report makes of
 them."""
 
 from __future__ import annotations

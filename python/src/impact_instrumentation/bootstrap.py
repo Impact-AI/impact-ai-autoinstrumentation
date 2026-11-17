@@ -13,7 +13,7 @@ import sys
 from collections import namedtuple
 from collections.abc import MutableMapping
 
-from impact_instrumentation import defaults, detect, frameworks, setup_report
+from impact_instrumentation import coexistence, defaults, detect, frameworks, setup_report
 
 SHARED_DIR = "_impact_shared"
 AUTO_INSTRUMENTATION = os.path.join("opentelemetry", "instrumentation", "auto_instrumentation")
@@ -63,11 +63,30 @@ NO_FRAMEWORKS = {"impact.setup.frameworks": [], "impact.setup.untraced": []}
 
 
 def _survey(dists: dict, environ: MutableMapping[str, str], skipped=()) -> dict:
-    """The setup span's framework attributes; a problem in the catalogue must not cost the report."""
+    """The setup span's framework attributes; a problem in the catalogue must not cost the report.
+
+    A library the image's qualification does not prove for this workload is untraced, in every report: the image would
+    not trace it, whether the package starts or stands down."""
     try:
-        return frameworks.survey(dists, environ=environ, skipped=skipped).attributes()
+        from impact_instrumentation import qualification
+
+        unproven, _ = qualification.screen(frameworks.shipped(), dists)
+        return frameworks.survey(dists, environ=environ, skipped=set(skipped) | unproven).attributes()
     except Exception:  # noqa: BLE001
         return {key: [] for key in NO_FRAMEWORKS}
+
+
+def _tool(findings: list, dists: dict, environ: MutableMapping[str, str]):
+    """The tool beside the package; a problem naming it must not cost the stand-down or the report."""
+    try:
+        return detect.tool(findings, dists, environ)
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _skipped(reasons: dict[str, str]) -> str:
+    """impact.setup.skipped: `instrumentation: why`, one after the other, by name."""
+    return "; ".join(f"{name}: {why}" for name, why in sorted(reasons.items()))
 
 
 def _failed(
@@ -120,24 +139,38 @@ def start(
             own_roots=own,
             scan=scan,
         )
-        if findings:
+        # The tool beside the package, by name: the package starts next to it only where the coexistence list
+        # proves that; any other tracer keeps the stand-down.
+        tool = _tool(findings, scan.dists, env)
+        if findings and not coexistence.alongside(findings, tool):
             detail = detect.describe(findings)
             _restore(own, env, path)
-            setup_report.report("pre-existing", detail, environ=env, root=root, extra=found)
+            extra = {**found, **coexistence.attributes(tool, False)}
+            setup_report.report("pre-existing", detail, environ=env, root=root, extra=extra)
             return Outcome("pre-existing", detail)
+        beside = coexistence.attributes(tool, True)
 
         applied = defaults.apply(env)
         shared = os.path.join(root, SHARED_DIR)
         if os.path.isdir(shared) and not any(_same(p, shared) for p in path if p):
             path.append(shared)  # last: the application's own copies of wrapt, packaging, ... win
-        from impact_instrumentation import runtime
+        from impact_instrumentation import qualification, runtime
 
         specs = runtime.plan(scan=scan, environ=env)
+        # An AI library is armed only where a passing cell of the image's qualification proves it for this workload;
+        # the others start as they would without the kit, and the report says what Impact AI traces instead.
+        unproven, reasons = qualification.screen([spec.name for spec in specs], scan.dists)
+        if not qualification.arms_unproven(env):
+            specs = [spec for spec in specs if spec.name not in unproven]
 
         def on_skipped(armed: list[str], skipped: dict[str, str]) -> None:
             # The version range is checked when the application imports the library; what is outside it is untraced.
-            extra = {"impact.setup.instrumentations": ",".join(armed), **_survey(scan.dists, env, set(skipped))}
-            extra["impact.setup.skipped"] = "; ".join(f"{n}: {why}" for n, why in sorted(skipped.items()))
+            extra = {
+                "impact.setup.instrumentations": ",".join(armed),
+                **_survey(scan.dists, env, unproven | set(skipped)),
+                **beside,
+            }
+            extra["impact.setup.skipped"] = _skipped({**reasons, **skipped})
             setup_report.report("active", "", environ=env, root=root, extra=extra)
 
         runtime.arm(
@@ -147,9 +180,10 @@ def start(
             on_skipped=on_skipped,
         )
         names = ",".join(spec.name for spec in specs)
-        setup_report.report(
-            "active", "", environ=env, root=root, extra={"impact.setup.instrumentations": names, **found}
-        )
+        extra = {"impact.setup.instrumentations": names, **found, **beside}
+        if reasons:
+            extra["impact.setup.skipped"] = _skipped(reasons)
+        setup_report.report("active", "", environ=env, root=root, extra=extra)
         return Outcome("active", names)
     except Exception as exc:  # noqa: BLE001 - the application must start whatever happens here
         return _failed(exc, env, path, root, own, applied, found)

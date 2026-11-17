@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-15 automatic coverage, the uninstall that undoes it (AE-8), and the Node.js part of AE-20: what `helm template`
+"""Automatic coverage, the uninstall that undoes it, and the chart's part of Node.js coverage: what `helm template`
 produces, without a cluster.
 
 The cover pod adds the injection annotation to the pods of the workloads impact.ai lists, as they are created: no
@@ -20,7 +20,17 @@ from pathlib import Path
 
 import pytest
 import yaml
-from test_chart import CHART, CI_VALUES, find, helm, kinds, pod_specs, unknown_fields
+from test_chart import (
+    CHART,
+    CI_VALUES,
+    find,
+    helm,
+    kinds,
+    language_switches,
+    operator_languages,
+    pod_specs,
+    unknown_fields,
+)
 from test_chart_exchange import TOKEN, render, token_install
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -452,7 +462,7 @@ def test_the_reporter_adds_the_marker_and_the_labels_only_when_the_cover_pod_or_
     assert "--cover-fields" in reporter_args(cover("operator.install=false"))
 
 
-# --- the uninstall that undoes it (AE-8) -------------------------------------------------------------------------
+# --- the uninstall that undoes it -------------------------------------------------------------------------------
 
 
 def uninstall_args(documents: list) -> list[str]:
@@ -586,7 +596,7 @@ def test_the_hook_objects_of_the_covered_uninstall_all_go_when_it_is_done():
         )
 
 
-# --- Node.js (AE-20, the chart's part) ------------------------------------------------------------------------------
+# --- Node.js (the chart's part) ------------------------------------------------------------------------------------
 
 
 def operator_args(documents: list) -> list[str]:
@@ -594,11 +604,9 @@ def operator_args(documents: list) -> list[str]:
 
 
 def test_the_operator_injects_node_and_python_and_nothing_else():
-    args = operator_args(render())
-    assert "--enable-nodejs-instrumentation=true" in args
-    for language in ("java", "dotnet", "apache-httpd"):
-        assert f"--enable-{language}-instrumentation=false" in args
-    assert not [a for a in args if a.startswith(("--enable-go", "--enable-nginx"))]
+    switches = language_switches(operator_args(render()))
+    assert {language for language, value in switches.items() if value == "true"} == {"python", "nodejs"}
+    assert set(switches) == operator_languages(), "every language the Operator can inject is switched by name"
 
 
 def test_the_node_image_is_in_the_instrumentation_once_the_release_has_one():
@@ -615,8 +623,9 @@ def test_node_gets_the_gateway_and_the_operators_defaults_are_suppressed_as_for_
     spec = find(render(*NODEJS), "Instrumentation")["spec"]
     python, nodejs = ({e["name"]: e for e in spec[language]["env"]} for language in ("python", "nodejs"))
     assert nodejs["IMPACT_OTLP_ENDPOINT"] == python["IMPACT_OTLP_ENDPOINT"]
+    assert nodejs["IMPACT_TRUST_CALLER_BAGGAGE"] == python["IMPACT_TRUST_CALLER_BAGGAGE"]
     assert set(nodejs) == set(python)
-    for name in set(nodejs) - {"IMPACT_OTLP_ENDPOINT"}:
+    for name in set(nodejs) - {"IMPACT_OTLP_ENDPOINT", "IMPACT_TRUST_CALLER_BAGGAGE"}:
         ref = nodejs[name]["valueFrom"]["configMapKeyRef"]
         assert ref["optional"] is True and "value" not in nodejs[name]
 

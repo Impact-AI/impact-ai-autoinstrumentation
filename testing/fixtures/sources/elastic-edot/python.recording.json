@@ -1,0 +1,29 @@
+{
+  "how": "canonical.py elastic-edot (testing/apps/otel_tools) under opentelemetry-instrument against the kit's recording mock as the tool's backend and provider.py as the model provider",
+  "packages": {
+    "elastic-opentelemetry": "1.19.0",
+    "elastic-opentelemetry-instrumentation-openai": "1.2.0",
+    "openai": "3.46.0"
+  },
+  "recorded": "2026-11-09",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/v1/traces",
+      "query": "",
+      "headers": {
+        "Host": "127.0.0.1:52747",
+        "user-agent": "elastic-otlp-http-python/1.19.0 OTel-OTLP-Exporter-Python/1.45.2",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "content-type": "application/x-protobuf",
+        "authorization": "ApiKey planted-elastic-key",
+        "Content-Length": "2520"
+      },
+      "contentType": "application/x-protobuf",
+      "contentEncoding": "",
+      "bodyBase64": "CtUTCu8ECiIKFnRlbGVtZXRyeS5zZGsubGFuZ3VhZ2USCAoGcHl0aG9uCiUKEnRlbGVtZXRyeS5zZGsubmFtZRIPCg1vcGVudGVsZW1ldHJ5CiEKFXRlbGVtZXRyeS5zZGsudmVyc2lvbhIICgYxLjQ1LjIKUgobcHJvY2Vzcy5ydW50aW1lLmRlc2NyaXB0aW9uEjMKMTMuMTIuMyAobWFpbiwgTWFyIDIzIDIwMjYsIDE5OjA0OjMyKSBbR0NDIDEzLjMuMF0KIQoUcHJvY2Vzcy5ydW50aW1lLm5hbWUSCQoHY3B5dGhvbgojChdwcm9jZXNzLnJ1bnRpbWUudmVyc2lvbhIICgYzLjEyLjMKEgoHb3MudHlwZRIHCgVsaW51eAokCgpvcy52ZXJzaW9uEhYKFDYuMTIuMTEzK2RlYjEzLWFtZDY0CiIKFXRlbGVtZXRyeS5kaXN0cm8ubmFtZRIJCgdlbGFzdGljCiQKGHRlbGVtZXRyeS5kaXN0cm8udmVyc2lvbhIICgYxLjE5LjAKPQoTc2VydmljZS5pbnN0YW5jZS5pZBImCiRmMDFlNDE3Yi00N2JhLTQ3NzMtODRhMS0zZmRhODNlYWViZmIKUgoMY29udGFpbmVyLmlkEkIKQG9wZW5zaGVsbC1zYW5kYm94LTFlNWM0YjQ5LThkZjgtNDVlMC04ZmYwLWQ4ZGU5ODE0MjMyMS13b3Jrc3BhY2UKIgoWdGVsZW1ldHJ5LmF1dG8udmVyc2lvbhIICgYwLjY2YjIKKAoMc2VydmljZS5uYW1lEhgKFnVua25vd25fc2VydmljZTpweXRob24SwQcKLQokb3BlbnRlbGVtZXRyeS5pbnN0cnVtZW50YXRpb24ub3BlbmFpEgUxLjIuMBK0AwoQ63NPeOa4fmVfPsL9jB5ETRIINFz8l1x/Pi0iCJRPZLrjjJk1KgtjaGF0IGdwdC00bzADOXUdgkf1beYYQfOeXEj1beYYSh8KFWdlbl9haS5vcGVyYXRpb24ubmFtZRIGCgRjaGF0ShkKDWdlbl9haS5zeXN0ZW0SCAoGb3BlbmFpSiAKFGdlbl9haS5yZXF1ZXN0Lm1vZGVsEggKBmdwdC00b0odCg5zZXJ2ZXIuYWRkcmVzcxILCgkxMjcuMC4wLjFKEwoLc2VydmVyLnBvcnQSBBivxwNKLAoSZ2VuX2FpLnJlc3BvbnNlLmlkEhYKFGNoYXRjbXBsLWNhbm9uaWNhbC0xSiwKFWdlbl9haS5yZXNwb25zZS5tb2RlbBITChFncHQtNG8tMjAyNC0wOC0wNkoyCh5nZW5fYWkucmVzcG9uc2UuZmluaXNoX3JlYXNvbnMSECoOCgwKCnRvb2xfY2FsbHNKHwoZZ2VuX2FpLnVzYWdlLmlucHV0X3Rva2VucxICGHhKIAoaZ2VuX2FpLnVzYWdlLm91dHB1dF90b2tlbnMSAhgUegCFAQABAAASrwMKEOtzT3jmuH5lXz7C/YweRE0SCNJZNUzyckAKIgiUT2S644yZNSoLY2hhdCBncHQtNG8wAzl8s2BI9W3mGEF+xkFL9W3mGEofChVnZW5fYWkub3BlcmF0aW9uLm5hbWUSBgoEY2hhdEoZCg1nZW5fYWkuc3lzdGVtEggKBm9wZW5haUogChRnZW5fYWkucmVxdWVzdC5tb2RlbBIICgZncHQtNG9KHQoOc2VydmVyLmFkZHJlc3MSCwoJMTI3LjAuMC4xShMKC3NlcnZlci5wb3J0EgQYr8cDSiwKEmdlbl9haS5yZXNwb25zZS5pZBIWChRjaGF0Y21wbC1jYW5vbmljYWwtMkosChVnZW5fYWkucmVzcG9uc2UubW9kZWwSEwoRZ3B0LTRvLTIwMjQtMDgtMDZKLAoeZ2VuX2FpLnJlc3BvbnNlLmZpbmlzaF9yZWFzb25zEgoqCAoGCgRzdG9wSiAKGWdlbl9haS51c2FnZS5pbnB1dF90b2tlbnMSAxisAkogChpnZW5fYWkudXNhZ2Uub3V0cHV0X3Rva2VucxICGFB6AIUBAAEAABonaHR0cHM6Ly9vcGVudGVsZW1ldHJ5LmlvL3NjaGVtYXMvMS4zMS4wEpwHChMKEXN1cHBvcnQtYXNzaXN0YW50EtQCChDrc0945rh+ZV8+wv2MHkRNEghcu4y1e76N5iIIlE9kuuOMmTUqFmV4ZWN1dGVfdG9vbCBnZXRfb3JkZXIwATlZCl5I9W3mGEF9vV5I9W3mGEonChVnZW5fYWkub3BlcmF0aW9uLm5hbWUSDgoMZXhlY3V0ZV90b29sSh8KEGdlbl9haS50b29sLm5hbWUSCwoJZ2V0X29yZGVySh8KE2dlbl9haS50b29sLmNhbGwuaWQSCAoGY2FsbF8xSkIKGmdlbl9haS50b29sLmNhbGwuYXJndW1lbnRzEiQKInsib3JkZXJfaWQiOiIxMDQyIENPTlRFTlQtQ0FOQVJZIn1KSQoXZ2VuX2FpLnRvb2wuY2FsbC5yZXN1bHQSLgoseyJzdGF0dXMiOiJzaGlwcGVkIiwibm90ZSI6IkNPTlRFTlQtQ0FOQVJZIn16AIUBAAEAABKTAwoQ63NPeOa4fmVfPsL9jB5ETRIIJiFJf4GZJN0iCJRPZLrjjJk1KhVyZXRyaWV2YWwgaGVscC1jZW50cmUwATkae19I9W3mGEGakV9I9W3mGEokChVnZW5fYWkub3BlcmF0aW9uLm5hbWUSCwoJcmV0cmlldmFsSiYKFWdlbl9haS5kYXRhX3NvdXJjZS5pZBINCgtoZWxwLWNlbnRyZUoaChRnZW5fYWkucmVxdWVzdC50b3BfaxICGAVKSAobZ2VuX2FpLnJldHJpZXZhbC5xdWVyeS50ZXh0EikKJ1doZW4gZG9lcyBhbiBvcmRlciBzaGlwPyBDT05URU5ULUNBTkFSWUqDAQoaZ2VuX2FpLnJldHJpZXZhbC5kb2N1bWVudHMSZQpjW3siaWQiOiAia2ItMTEyIiwgInNjb3JlIjogMC45MX0sIHsiaWQiOiAia2ItNDA3IiwgInNjb3JlIjogMC43M30sIHsiaWQiOiAia2ItMDE5IiwgInNjb3JlIjogMC41Mn1degCFAQABAAASlwEKEOtzT3jmuH5lXz7C/YweRE0SCJRPZLrjjJk1KhRpbnZva2VfYWdlbnQgc3VwcG9ydDABOc5xbkf1beYYQQ5oQkv1beYYSicKFWdlbl9haS5vcGVyYXRpb24ubmFtZRIOCgxpbnZva2VfYWdlbnRKHgoRZ2VuX2FpLmFnZW50Lm5hbWUSCQoHc3VwcG9ydHoAhQEAAQAA"
+    }
+  ]
+}

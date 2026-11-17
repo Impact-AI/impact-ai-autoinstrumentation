@@ -2,8 +2,8 @@
 
 """The wire shape of the setup span's two lists, pinned.
 
-The monorepo stores `impact.setup.frameworks` and `impact.setup.untraced` and drops an entry that does not have exactly
-this shape, so it is checked on the JSON that is sent, not on the Python that builds it:
+The impact.ai service stores `impact.setup.frameworks` and `impact.setup.untraced` and drops an entry that does not
+have exactly this shape, so it is checked on the JSON that is sent, not on the Python that builds it:
 
 * OTLP string arrays: `arrayValue` of `stringValue`, never one joined string;
 * an entry is `name` or `name version`, one space between, name <= 64 characters and version <= 64 characters;
@@ -19,26 +19,30 @@ import re
 
 import pytest
 from test_bootstrap import (  # noqa: F401 - the real-interpreter fixtures
+    PROVEN,
     STATE,
     add_agent_instrumentor,
     layout,
+    qualification_table,
     setup_reports,
     sink,
     wait_for,
 )
 
-from impact_instrumentation import bootstrap, frameworks, setup_report
+from impact_instrumentation import bootstrap, coexistence, detect, frameworks, qualification, setup_report
 
 LISTS = ("impact.setup.frameworks", "impact.setup.untraced")
 IMAGE = frozenset({"openai", "anthropic", "openai_agents", "langchain"})  # what the image traces
+QUALIFIED = qualification_table(*PROVEN)  # and what its qualification proves of it, on this Python
 ENTRY = re.compile(r"^\S{1,64}( \S{1,64})?$")
 MAX_ENTRIES = 20
 
 
 @pytest.fixture(autouse=True)
 def the_image_traces_what_it_ships(monkeypatch):
-    # A source tree has no generated registry; the payload has one that lists these.
+    # A source tree has no generated registry and no qualification; the payload has both, and they say these.
     monkeypatch.setattr(frameworks, "shipped", lambda: IMAGE)
+    monkeypatch.setattr(qualification, "load", lambda: QUALIFIED)
 
 
 def setup_span(payload: dict) -> dict:
@@ -203,3 +207,73 @@ def test_a_stood_down_start_with_nothing_to_list_still_sends_both_empty(layout, 
     assert wait_for(lambda: any(s["name"] == "impact.setup" for s in sink.spans()))
     wire = raw_lists(next(s for s in sink.spans() if s["name"] == "impact.setup"))
     assert wire == {key: {"arrayValue": {"values": []}} for key in LISTS}
+
+
+# --- the tool beside the package -------------------------------------------------------------------------------------
+# The service keeps `impact.setup.tool`, `impact.setup.tool.version` and `impact.setup.exporter` only as strings of
+# these shapes, and `impact.setup.alongside` only as a boolean (a string "true" says nothing); it drops anything else.
+
+TOOL_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
+TOOL_VERSION = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._+!-]{0,63}$")
+EXPORTER_KIND = re.compile(r"^[a-z][a-z0-9-]{0,31}$")
+# The tool ids impact.ai's service knows; a report names no other.
+KNOWN_TOOLS = {
+    "arize-ax",
+    "braintrust",
+    "datadog",
+    "dynatrace",
+    "elastic-edot",
+    "grafana-alloy",
+    "honeycomb",
+    "langfuse",
+    "langsmith",
+    "litellm",
+    "logfire",
+    "newrelic",
+    "openlit",
+    "opentelemetry",
+    "phoenix",
+    "portkey",
+    "splunk-otel",
+    "traceloop",
+    "zipkin",
+}
+
+
+def wire(tool, started: bool) -> dict[str, dict]:
+    """The report's tool attributes as the gateway receives them."""
+    payload = setup_report.build("pre-existing", "x", environ={}, extra=coexistence.attributes(tool, started))
+    keys = ("impact.setup.tool", "impact.setup.tool.version", "impact.setup.exporter", "impact.setup.alongside")
+    return {a["key"]: a["value"] for a in setup_span(json.loads(json.dumps(payload)))["attributes"] if a["key"] in keys}
+
+
+def test_the_tool_fields_are_strings_of_the_shapes_the_service_keeps_and_alongside_is_a_boolean():
+    tool = detect.Tool("langsmith", "0.14.17", "otlp-http")
+    assert wire(tool, False) == {
+        "impact.setup.tool": {"stringValue": "langsmith"},
+        "impact.setup.tool.version": {"stringValue": "0.14.17"},
+        "impact.setup.exporter": {"stringValue": "otlp-http"},
+        "impact.setup.alongside": {"boolValue": False},
+    }
+    assert wire(tool, True)["impact.setup.alongside"] == {"boolValue": True}
+    # A report that names no tool has none of the four.
+    assert wire(None, True) == {}
+
+
+def test_every_tool_the_package_can_name_is_one_the_service_knows():
+    named = set(detect.TOOLS.values()) | set(detect.TOOL_DISTRIBUTIONS)
+    assert named <= KNOWN_TOOLS
+    assert all(TOOL_ID.match(tool) for tool in named)
+
+
+def test_every_exporter_kind_the_package_can_name_has_the_shape_the_service_keeps():
+    kinds = set(detect.TRACES_EXPORTERS) | set(detect.OTLP_PROTOCOLS.values()) | {detect.LANGSMITH_EXPORTER, "zipkin"}
+    assert all(EXPORTER_KIND.match(kind) for kind in kinds)
+
+
+@pytest.mark.parametrize("version", ["0.14.17", "1.0.0rc1", "2.0.0+local.1", "1!2.0", "4.16.1.post1"])
+def test_a_version_the_package_names_has_the_shape_the_service_keeps(version):
+    findings = [detect.Finding("distribution", "ddtrace", version)]
+    tool = detect.tool(findings, {"ddtrace": version}, {})
+    assert tool.version == version
+    assert TOOL_VERSION.match(tool.version)

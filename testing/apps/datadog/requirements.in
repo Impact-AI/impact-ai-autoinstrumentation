@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+# The Python cell: Datadog's tracer at its pinned version and the provider SDKs the recordings call.
+ddtrace==4.16.3
+openai==2.8.1
+anthropic==0.75.0
+boto3==1.41.5

@@ -39,11 +39,24 @@ type List struct {
 	Version   int64   `json:"version"`
 	Automatic bool    `json:"automatic"`
 	Workloads []Entry `json:"workloads"`
+
+	// Skipped counts the entries ParseList left out because this kit does not inject their language;
+	// SkippedLanguages counts them by language. Neither is on the wire.
+	Skipped          int            `json:"-"`
+	SkippedLanguages map[string]int `json:"-"`
 }
+
+// A language this kit does not know is named in SkippedLanguages when it looks like a language name; the first
+// maxSkippedLanguages such names are kept and the rest are counted under otherLanguages, so the log stays small.
+const (
+	maxSkippedLanguages = 8
+	otherLanguages      = "other"
+)
 
 var (
 	kinds        = map[string]bool{"Deployment": true, "StatefulSet": true, "DaemonSet": true, "CronJob": true, "Job": true}
 	languages    = map[string]bool{"python": true, "node": true}
+	languageName = regexp.MustCompile(`^[a-z][a-z0-9]{0,15}$`)
 	dnsLabel     = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
 	dnsSubdomain = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`)
 )
@@ -56,8 +69,8 @@ func (e Entry) validate() error {
 		return fmt.Errorf("kind %q is not Deployment, StatefulSet, DaemonSet, CronJob or Job", e.Kind)
 	case len(e.Name) > 253 || !dnsSubdomain.MatchString(e.Name):
 		return errors.New("name is not a DNS subdomain")
-	case !languages[e.Lang]:
-		return fmt.Errorf("lang %q is not python or node", e.Lang)
+	case !languageName.MatchString(e.Lang):
+		return errors.New("lang is not a language name")
 	case e.Container != "" && (len(e.Container) > 63 || !dnsLabel.MatchString(e.Container)):
 		return errors.New("container is not a DNS label")
 	}
@@ -66,7 +79,10 @@ func (e Entry) validate() error {
 
 // ParseList reads and checks a list. One bad thing refuses the whole list, so that the caller keeps the last good one:
 // a body over 1 MiB, anything but the schema impact.cover.v1, a negative version, more than 2,000 entries, or an entry
-// that is not a workload kind, a language and valid names. Fields it does not know are ignored.
+// that is not a workload kind, a language name and valid names. Fields it does not know are ignored.
+//
+// An entry in a language this kit does not inject (a newer impact.ai may list java or dotnet) is valid but left out
+// and counted in Skipped, so that a newer list never stops the coverage of the languages this kit knows.
 func ParseList(data []byte) (List, error) {
 	if len(data) > MaxListBytes {
 		return List{}, fmt.Errorf("the list is %d bytes, over the limit of %d", len(data), MaxListBytes)
@@ -84,12 +100,32 @@ func ParseList(data []byte) (List, error) {
 	if len(list.Workloads) > MaxEntries {
 		return List{}, fmt.Errorf("the list has %d workloads, over the limit of %d", len(list.Workloads), MaxEntries)
 	}
+	known := list.Workloads[:0:0]
 	for i, e := range list.Workloads {
 		if err := e.validate(); err != nil {
 			return List{}, fmt.Errorf("workload %d: %w", i, err)
 		}
+		if languages[e.Lang] {
+			known = append(known, e)
+			continue
+		}
+		list.skip(e.Lang)
+	}
+	if list.Skipped > 0 {
+		list.Workloads = known
 	}
 	return list, nil
+}
+
+func (l *List) skip(lang string) {
+	if l.SkippedLanguages == nil {
+		l.SkippedLanguages = map[string]int{}
+	}
+	l.Skipped++
+	if _, named := l.SkippedLanguages[lang]; !named && len(l.SkippedLanguages) >= maxSkippedLanguages {
+		lang = otherLanguages
+	}
+	l.SkippedLanguages[lang]++
 }
 
 type workloadKey struct{ namespace, kind, name string }
@@ -98,6 +134,7 @@ type workloadKey struct{ namespace, kind, name string }
 type index struct {
 	version   int64
 	automatic bool
+	skipped   int
 	entries   map[workloadKey]Entry
 }
 
@@ -113,11 +150,13 @@ type Info struct {
 	Automatic bool
 	// Workloads is how many workloads are covered: none while automatic coverage is off.
 	Workloads int
+	// Skipped is how many entries the list had in languages this kit does not inject.
+	Skipped int
 }
 
 // Set replaces the list. With automatic coverage off the Store keeps the version and finds nothing.
 func (s *Store) Set(list List) {
-	idx := &index{version: list.Version, automatic: list.Automatic, entries: map[workloadKey]Entry{}}
+	idx := &index{version: list.Version, automatic: list.Automatic, skipped: list.Skipped, entries: map[workloadKey]Entry{}}
 	if list.Automatic {
 		for _, e := range list.Workloads {
 			idx.entries[workloadKey{e.Namespace, e.Kind, e.Name}] = e
@@ -151,5 +190,5 @@ func (s *Store) Info() Info {
 	if idx == nil {
 		return Info{}
 	}
-	return Info{Loaded: true, Version: idx.version, Automatic: idx.automatic, Workloads: len(idx.entries)}
+	return Info{Loaded: true, Version: idx.version, Automatic: idx.automatic, Workloads: len(idx.entries), Skipped: idx.skipped}
 }

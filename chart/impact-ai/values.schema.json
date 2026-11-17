@@ -79,7 +79,7 @@
         },
         "arn": {
           "type": "string",
-          "description": "The cloud provider's own ID of the cluster, such as the EKS ARN, which is added to every span as cloud.resource_id; the default is empty, and you set it when Cover your AI gives it to you or you want spans tied to the cloud resource.",
+          "description": "The cloud provider's own ID of the cluster, such as the EKS ARN, which is added to every span and log event as cloud.resource_id; the default is empty, and you set it when Cover your AI gives it to you or you want them tied to the cloud resource.",
           "maxLength": 2048,
           "pattern": "^\\S*$"
         }
@@ -87,7 +87,7 @@
     },
     "cloud": {
       "type": "object",
-      "description": "The cloud this cluster runs in, which gives spans an account and a region on nodes that block the instance metadata service; every value is optional, the default is empty, and you set them only on such nodes.",
+      "description": "The cloud this cluster runs in, which gives spans and log events an account and a region on nodes that block the instance metadata service; every value is optional, the default is empty, and you set them only on such nodes.",
       "properties": {
         "provider": {
           "type": "string",
@@ -235,6 +235,28 @@
               "pattern": "^(sha256:[a-f0-9]{64})?$"
             }
           }
+        },
+        "java": {
+          "type": "object",
+          "description": "The image of the Java instrumentation, which a release publishes only when its workflow sets RELEASE_JAVA=1 and the Instrumentation does not inject yet; the defaults are empty in the repository and such a release writes its own, so you set them only to test a build.",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "Where the image of the Java instrumentation is pulled from; the default is ghcr.io/impact-ai/autoinstrumentation-java, and you change it only to use your own copy (global.imageRegistry is simpler for a mirror)."
+            },
+            "tag": {
+              "type": [
+                "string",
+                "number"
+              ],
+              "description": "The tag of the image of the Java instrumentation; the default is empty, and the release writes its own version, and you change it only to pin another build."
+            },
+            "digest": {
+              "type": "string",
+              "description": "The sha256 digest of the image of the Java instrumentation; the default is empty, and the release writes its own, and you change it only to a digest you have verified.",
+              "pattern": "^(sha256:[a-f0-9]{64})?$"
+            }
+          }
         }
       }
     },
@@ -244,7 +266,7 @@
       "properties": {
         "imageRegistry": {
           "type": "string",
-          "description": "A registry host that replaces the host of every image the kit and the Operator run, such as registry.example.com/mirror, except the Operator's unused --collector-image argument; the default is empty, which pulls from ghcr.io, and you set it to pull from your own mirror."
+          "description": "A registry host that replaces the host of every image the kit and the Operator run or name in their arguments, such as registry.example.com/mirror; the default is empty, which pulls from ghcr.io, and you set it to pull from your own mirror."
         }
       }
     },
@@ -329,7 +351,7 @@
     },
     "gateway": {
       "type": "object",
-      "description": "The collector that receives spans from covered workloads and forwards them to impact.ai; the defaults suit most clusters, and you change them only when many workloads send spans.",
+      "description": "The collector that receives spans from covered workloads and log events from workloads that send them, and forwards both to impact.ai; the defaults suit most clusters, and you change them only when many workloads send spans or log events.",
       "properties": {
         "replicas": {
           "type": "integer",

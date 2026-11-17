@@ -1,55 +1,29 @@
-# Supported versions and updates
+# Support
 
-Which versions of Python, Node.js and Kubernetes the kit supports, and how it stays current. To report a vulnerability,
-see [SECURITY.md](SECURITY.md).
+## Where to ask
 
-## Runtimes the kit instruments
+* **A security problem**: do not open an issue. Use the private channel in [SECURITY.md](SECURITY.md).
+* **A bug, or something wrong in the documentation**: open an issue in this repository with the bug form. It asks for
+  the chart version (`helm list -n impact-ai`), the Kubernetes version and distribution, and the output of
+  `kubectl -n impact-ai get pods` and of the reporter's log; [troubleshooting](docs/troubleshooting.md#what-to-collect-first)
+  has the commands.
+* **A feature request**: open an issue with the feature form.
+* **A question about your Impact AI account, product or data**: ask Impact AI support through the channel of your
+  subscription. Issues here are public: put no customer data, keys, tokens or cluster names you consider confidential
+  into them.
 
-The kit supports the versions of Python and Node.js that their own projects still support.
+Issues are read by the maintainers at Impact AI. There is no response time for issues; security reports have one
+(below).
 
-| Runtime | Supported by the kit | End of life upstream |
-|---|---|---|
-| Python | 3.11 | October 2027 |
-| | 3.12 | October 2028 |
-| | 3.13 | October 2029 |
-| | 3.14 | October 2030 |
-| Node.js | 22, from 22.15 | 30 April 2027 |
-| | 24 | 30 April 2028 |
-| | 26 | 30 April 2029 |
+## What is supported
 
-* Node.js 22.15 or later; an older Node starts the application as without the kit, and the setup report says why.
-  Tested on 22, 24 and 26, CommonJS and ES modules.
-* Node.js means its LTS lines, which is what OpenTelemetry JavaScript supports.
-* A version leaves in the first kit release after its upstream end of life, and the release before announces it.
-* A new version joins once OpenTelemetry supports it and our tests pass.
-* On 4 November 2026: Node.js 26 became an LTS line on 28 October 2026, which OpenTelemetry JavaScript supports.
-  Python 3.15 was released on 9 October 2026. OpenTelemetry Python lists 3.10 to 3.14 and adds a new Python version no
-  later than three months after it is stable, so 3.15 joins the kit when OpenTelemetry supports it and our tests pass.
-
-## Kubernetes
-
-The kit supports the Kubernetes versions that the Kubernetes project supports, and the older ones that Amazon EKS,
-Azure AKS or Google GKE still support in extended or long-term support.
-
-* On 4 November 2026 the Kubernetes project supports 1.35, 1.36 and 1.37 (1.34 reached its end of life on 27 October
-  2026), and extended or long-term support at EKS, AKS and GKE reaches back to 1.31. At EKS and AKS that ends in November
-  2026, and 1.32 is then the oldest.
-* The chart installs on Kubernetes 1.27 and later (`kubeVersion` in `Chart.yaml`). CI runs every change on Kubernetes
-  1.27 and 1.34: the end-to-end suite on 1.34 and its Kubernetes part on 1.27.
-
-## Dependencies
-
-Dependabot opens update pull requests every week for
-
-* the base images of every Dockerfile, pinned by digest (the digest and the patch version move; a new minor or major
-  version of an image is a decision, not an update),
-* the Go modules of the reporter,
-* the npm packages of the Node.js image,
-* the Python packages of the development environment, and
-* the GitHub Actions of the workflows.
-
-The OpenTelemetry packages of an ecosystem arrive together in one pull request. CI decides whether an update merges,
-and a fix reaches customers in the next patch release.
+* The latest release of the chart `impact-ai` and of the images it installs from `ghcr.io/impact-ai`. Fixes go into the
+  next release; earlier releases are not patched.
+* The runtimes, libraries and Kubernetes versions in [compatibility](docs/compatibility.md), which also says which of
+  them CI tests and the policy for adding and removing versions.
+* The OpenTelemetry Operator and the OpenTelemetry Collector that the chart installs are the OpenTelemetry project's,
+  pinned by digest. A problem in how the chart installs or configures them is ours; a problem in them is that project's.
+* A workload's own tracer is not ours: the kit stands down beside it ([coexistence](docs/coexistence.md)).
 
 ## Security fixes
 
@@ -62,4 +36,6 @@ and a fix reaches customers in the next patch release.
 
 ## Versions
 
-Releases follow [Semantic Versioning](https://semver.org). Any removal is announced one minor release ahead.
+Before 1.0, a minor release may contain breaking changes; each is listed first in the [changelog](CHANGELOG.md) with
+its upgrade step. Pin `--version` and read the changelog before an upgrade. The full policy is in
+[compatibility](docs/compatibility.md#versions).

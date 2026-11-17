@@ -5,6 +5,7 @@
     python3 scripts/check_internal_details.py --source --chart       # the files, and `helm template` of the chart
     python3 scripts/check_internal_details.py --chart-dir DIR        # the same, for another copy of the chart
     python3 scripts/check_internal_details.py --archive image.tar    # file names and configuration of an image archive
+    python3 scripts/check_internal_details.py --zip layer.zip        # a Lambda layer: its file names, and our own files
     python3 scripts/check_internal_details.py --source --denylist FILE
     python3 scripts/check_internal_details.py --source --chart --root DIR   # the tree of another checkout
     git log -1 --format=%B | python3 scripts/check_internal_details.py --stdin   # a commit message
@@ -18,9 +19,12 @@ This repository is public, and so are the chart and the images made from it. The
   private-ip      addresses in 10/8, 172.16/12, 192.168/16, 100.64/10 (carrier-grade NAT, Tailscale) and 169.254/16
   token           credentials of a known shape: GitHub, AWS, Slack, OpenAI-style keys, private keys, JWTs, bearer tokens
   internal-reference
-                  impact.ai's own planning and code: increment ids (the letter I, a hyphen and three digits), and in
-                  Markdown the name of the private repository that holds the service. The paths of a company's private
-                  organisation are an entry of its deny-list (below): what is published names only the public repository
+                  impact.ai's own planning and code, in any file: the ids of its plan (the letter I, a hyphen and three
+                  digits), the ids of the acceptance examples behind a change (AE, a hyphen and a number, and a test
+                  name that starts with test_ae and a number), the plan's word for a unit of delivery (REFERENCES below)
+                  and the plain name of the private repository that holds the service. Say what a test proves instead,
+                  and call the service the impact.ai service. The paths of a company's private organisation are an
+                  entry of its deny-list (below): what is published names only the public repository
 
 and fails on anything not named in ALLOWLIST. The allowlist is small on purpose: the documentation account IDs, and the
 fake values of test fixtures, each tied to the file that needs it.
@@ -69,10 +73,16 @@ ALLOWLIST = (
         "documentation account IDs: examples and tests",
     ),
     Allow(
-        ("SECURITY.md", "scripts/publish-public.sh", "chart/tests/test_publish_public.py"),
+        (
+            "SECURITY.md",
+            "CODE_OF_CONDUCT.md",
+            "scripts/publish-public.sh",
+            "chart/tests/test_publish_public.py",
+            "chart/tests/test_publish_ci.py",
+        ),
         "email",
         r"security@impact\.ai",
-        "the published contact for vulnerability reports, which is also the identity of a release commit",
+        "the published contact for vulnerability and conduct reports, which is also the identity of a release commit",
     ),
     Allow(
         ("python/tests/image/conftest.py", "nodejs/tests/image/nodejs_support.py"),
@@ -93,10 +103,17 @@ ALLOWLIST = (
         "EC2 node names in a recorded API response (AWS's own naming)",
     ),
     Allow(
-        ("reporter/*_test.go", "reporter/*/*_test.go", "reporter/*/*/*_test.go", "reporter/testdata/*"),
+        (
+            "reporter/*_test.go",
+            "reporter/*/*_test.go",
+            "reporter/*/*/*_test.go",
+            "reporter/testdata/*",
+            "reporter/*/testdata/*",
+        ),
         "token",
         r"sk-live-abcdefghij(?:klmnop)",
-        "the fake key the reporter's tests plant to prove that no value is ever sent",
+        "the fake key the reporter's tests plant to prove that no value is ever sent, and that no credential of a "
+        "recorded request reaches a relay decoder",
     ),
     Allow(
         ("e2e/manifests/workloads.yaml",),
@@ -117,6 +134,13 @@ ALLOWLIST = (
         r"Bearer\s+impact(?:install)?_[A-Za-z0-9_-]+|sk-abcdefghij(?:klmnopqrstuvwxyz)",
         "the fake install tokens and the credential-shaped values of the exchange's shared test vectors: each is an "
         "example of what the exchange must refuse",
+    ),
+    Allow(
+        ("reporter/internal/relay/source/datadog.go", "reporter/internal/relay/source/testdata/datadog/*"),
+        "internal-host",
+        r"(?:network|tcp)\.local",
+        "attribute names, not hosts: the OpenTelemetry network conventions' local address and port, and the tcp "
+        "tags of Datadog's Node.js tracer they are decoded from",
     ),
 )
 
@@ -154,12 +178,17 @@ TOKENS = (
 )
 
 
-# Increment ids belong to impact.ai's planning. The repositories of its private organisation are private too, the one
-# the kit is developed in included, but this file is published with the tree it checks and names no organisation: the
-# paths of that one are an internal-reference entry of the deny-list.
-REFERENCES = (re.compile(r"\bI-\d{3}\b"),)
-# In the documentation the private repository is just called the monorepo.
-DOC_REFERENCES = (re.compile(r"\bmonorepo\b", re.IGNORECASE),)
+# The ids and words of impact.ai's planning (see the docstring), in every file: none of them means anything to a reader
+# of the public tree. The repositories of its private organisation are private too, the one the kit is developed in
+# included, but this file is published with the tree it checks and names no organisation: the paths of that one are an
+# internal-reference entry of the deny-list.
+REFERENCES = (
+    re.compile(r"\bI-\d{3}\b"),
+    re.compile(r"\bAE-\d+\b"),
+    re.compile(r"(?<![0-9A-Za-z])test_ae\d+_"),
+    re.compile(r"\bincrements?\b", re.IGNORECASE),
+    re.compile(r"\bmonorepo\b", re.IGNORECASE),
+)
 
 
 def load_denylist(path: Path) -> tuple[Deny, ...]:
@@ -245,7 +274,7 @@ def scan_text(source: str, text: str) -> list[Finding]:
         for entry in DENYLIST:
             if entry.category != "internal-host":
                 found += [Finding(source, number, entry.category, m.group(0)) for m in entry.pattern.finditer(line)]
-        for pattern in REFERENCES + (DOC_REFERENCES if source.endswith(".md") else ()):
+        for pattern in REFERENCES:
             found += [Finding(source, number, "internal-reference", m.group(0)) for m in pattern.finditer(line)]
     return found
 
@@ -380,6 +409,33 @@ def scan_archive(archive: Path) -> list[Finding]:
     return found
 
 
+# The files of a Lambda layer that are ours (lambda/build_layer.py): read in full. The rest is third-party code, of
+# which the names are read, as of an image's files.
+ZIP_OWN = (
+    "impact-ai-instrument",
+    "impact-ai/lambda/*",
+    "impact-ai/layer.json",
+    "impact-ai/python/impact_instrumentation/*",
+)
+
+
+def scan_zip(archive: Path) -> list[Finding]:
+    import zipfile
+
+    label = f"layer {archive.name}"
+    found: list[Finding] = []
+    with zipfile.ZipFile(archive) as layer:
+        for number, info in enumerate(layer.infolist(), start=1):
+            found += [
+                Finding(f"{label}: {info.filename}", number, f.category, f.match) for f in scan_text("", info.filename)
+            ]
+            own = any(fnmatch.fnmatch(info.filename, pattern) for pattern in ZIP_OWN)
+            if own and not info.filename.endswith(".pyc") and info.file_size <= MAX_FILE_BYTES:
+                text = layer.read(info).decode(errors="replace")
+                found += [f._replace(source=f"{label}: {info.filename}") for f in scan_text(info.filename, text)]
+    return found
+
+
 def main(argv: list[str]) -> int:
     try:
         path = denylist_path(argv)
@@ -412,6 +468,8 @@ def run(argv: list[str]) -> int:
             found += scan_chart(chart=Path(next(args)))
         elif arg == "--archive":
             found += scan_archive(Path(next(args)))
+        elif arg == "--zip":
+            found += scan_zip(Path(next(args)))
         elif arg == "--stdin":
             found += scan_text("stdin", sys.stdin.read())
         elif arg in ("--denylist", "--root"):

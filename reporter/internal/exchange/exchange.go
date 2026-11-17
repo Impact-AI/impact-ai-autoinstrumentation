@@ -47,8 +47,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kubesecret"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/sender"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kubesecret"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/sender"
 )
 
 // Path is the ingest route of the exchange.
@@ -242,7 +242,7 @@ var arnShape = regexp.MustCompile(`^[A-Za-z0-9/][A-Za-z0-9._:/@+=,-]{0,511}$`)
 
 // credentials is what the exchange takes for a credential in a value it is given, whatever the field: a key or an install
 // token by its exact shape, a Bearer header, a JWT, cloud and code-host tokens, a private key (the rule of
-// capabilities/ai-coverage/go/inventory.go, copied). A cluster name or an ARN of that shape is refused with the whole
+// the impact.ai service, copied). A cluster name or an ARN of that shape is refused with the whole
 // request, so the reporter leaves it out.
 var credentials = regexp.MustCompile(`impact(?:install)?_[a-z0-9-]{1,32}_[A-Za-z0-9_-]{43}|(?i:\bBearer +[A-Za-z0-9._~+/-]+=*)|eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+|(?:AKIA|ASIA)[A-Z0-9]{16}|(?:sk-|ghp_|github_pat_|xoxb-|xoxp-|AIza)[A-Za-z0-9_-]{20,}|(?s:-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----)`)
 
@@ -536,7 +536,7 @@ func statusWords(status int) string {
 }
 
 // reasons are the sentences of the refusals, for an answer that came without its own. They are the real exchange's
-// messages, word for word (capabilities/ai-coverage/go/exchange.go), so a refusal reads the same either way.
+// messages, word for word, so a refusal reads the same either way.
 var reasons = map[string]string{
 	"malformed_request":   "The install request is not valid. Update the chart and run the install command again.",
 	"token_unknown":       "This install command is not recognised. Create a new one in Cover your AI.",

@@ -3,7 +3,8 @@
 """Render checks for the cluster kit chart: what `helm template` produces, without a cluster.
 
 The checks that need a cluster (lookup: another injector, a second product, the real webhook and injection) are in
-e2e/. Here: the settings AE-1, AE-3, AE-7 and AE-8 depend on, and the names the Cover your AI commands rely on.
+e2e/. Here: the settings that install, names only, fail open and uninstall depend on, and the names the Cover
+your AI commands rely on.
 """
 
 from __future__ import annotations
@@ -18,8 +19,10 @@ import yaml
 
 CHART = Path(__file__).resolve().parents[1] / "impact-ai"
 CI_VALUES = CHART / "ci" / "values.yaml"
+OPERATOR_CHART = CHART / "charts" / "opentelemetry-operator"
 UID = "4e5622e7-f420-499c-9662-50af7f8a64b9"
 DIGEST = re.compile(r"@sha256:[0-9a-f]{64}$")
+IMAGE_ARGUMENT = re.compile(r"--[a-z0-9-]+-image=")
 
 
 def helm(*args: str, check: bool = True) -> subprocess.CompletedProcess:
@@ -59,6 +62,64 @@ def pod_specs(documents: list):
             yield d, d["spec"]["template"]["spec"]
         elif d["kind"] == "Job":
             yield d, d["spec"]["template"]["spec"]
+
+
+def image_references(documents: list) -> list[tuple[str, str]]:
+    """Every image reference of a render, as (where, reference): the `image` of every container and init container and
+    of every language of an Instrumentation, wherever it is, and the value of every `--<name>-image=` argument (the
+    Operator's defaults for what it would create)."""
+    found = []
+
+    def walk(node, where: str) -> None:
+        if isinstance(node, dict):
+            for key, value in node.items():
+                if key == "image" and isinstance(value, str):
+                    found.append((f"{where}.image", value))
+                else:
+                    walk(value, f"{where}.{key}")
+        elif isinstance(node, list):
+            for index, item in enumerate(node):
+                if isinstance(item, str) and IMAGE_ARGUMENT.match(item):
+                    flag, _, value = item.partition("=")
+                    found.append((f"{where}[{flag}]", value))
+                else:
+                    walk(item, f"{where}[{index}]")
+
+    for document in documents:
+        walk(document, f"{document['kind']}/{document['metadata']['name']}:")
+    return found
+
+
+def operator_args(documents: list) -> list[str]:
+    return find(documents, "Deployment", "impact-ai-operator")["spec"]["template"]["spec"]["containers"][0]["args"]
+
+
+def operator_languages() -> set[str]:
+    """The languages the pinned Operator can inject, by the names of its flags (apache-httpd, dotnet, nodejs, ...): each
+    the vendored deployment template has an image or a switch for, and each the Instrumentation kind has a section for.
+    The second finds what the first does not: the template of chart 0.128.0 has no PHP, which Operator 0.162.0 injects
+    when it is switched on."""
+    template = (OPERATOR_CHART / "templates" / "deployment.yaml").read_text()
+    languages = set(re.findall(r"--auto-instrumentation-([a-z0-9-]+)-image=", template))
+    languages |= set(re.findall(r"--enable-([a-z0-9-]+)-instrumentation\b", template)) - {"multi"}
+    crd = yaml.safe_load((CHART / "crds" / "instrumentations.opentelemetry.io.yaml").read_text())
+    for version in crd["spec"]["versions"]:
+        sections = version["schema"]["openAPIV3Schema"]["properties"]["spec"]["properties"]
+        for name, section in sections.items():
+            if "image" in section.get("properties", {}):  # a language: apacheHttpd is apache-httpd in the flags
+                languages.add(re.sub(r"[A-Z]", lambda capital: "-" + capital.group().lower(), name))
+    return languages
+
+
+def language_switches(args: list[str]) -> dict[str, str]:
+    """What the Operator's --enable-<language>-instrumentation flags say, read as it reads them: a flag without a value
+    is true, and the last flag of a language wins. --enable-multi-instrumentation is not a language."""
+    switches = {}
+    for arg in args:
+        match = re.fullmatch(r"--enable-([a-z0-9-]+)-instrumentation(?:=(.*))?", arg)
+        if match and match.group(1) != "multi":
+            switches[match.group(1)] = match.group(2) or "true"
+    return switches
 
 
 @pytest.fixture(scope="module")
@@ -115,7 +176,7 @@ def test_no_other_custom_resource_definition_is_rendered(docs):
     assert "CustomResourceDefinition" not in kinds(docs)  # CRDs come from crds/, which Helm never deletes
 
 
-# --- AE-7: fail open ------------------------------------------------------------------------------------------------
+# --- fail open -------------------------------------------------------------------------------------------------------
 
 
 def test_every_webhook_fails_open_with_a_five_second_timeout(docs):
@@ -177,17 +238,28 @@ def test_the_webhook_certificate_is_generated_not_cert_manager(docs):
 # --- Python only ------------------------------------------------------------------------------------------------------
 
 
-def test_only_python_and_node_auto_instrumentation_is_enabled(docs):
-    # AE-20: Node.js joins Python. The Operator may inject it; the Instrumentation gets a Node.js image once the release
+def test_python_and_node_are_switched_on_and_every_other_language_off_by_name(docs):
+    # Node.js joins Python. The Operator may inject it; the Instrumentation gets a Node.js image once the release
     # has one, so this render (no Node.js image) still holds Python alone (test_chart_cover.py has the Node.js cases).
-    args = find(docs, "Deployment", "impact-ai-operator")["spec"]["template"]["spec"]["containers"][0]["args"]
-    assert "--enable-nodejs-instrumentation=true" in args
-    for language in ("java", "dotnet", "apache-httpd"):
-        assert f"--enable-{language}-instrumentation=false" in args
-    assert not [a for a in args if a.startswith(("--enable-go", "--enable-nginx"))]
-    assert "--ignore-missing-collector-crds=true" in args
+    # Every other language the pinned Operator can inject is switched off by name: one left to the Operator's default
+    # is one an Operator bump can switch on. The languages come from the vendored chart, so a bump that brings a new one
+    # fails here until values.yaml switches it off.
+    languages = operator_languages()
+    assert {"python", "nodejs", "java"} < languages, f"the languages were not found in the vendored chart: {languages}"
+    expected = {language: "true" if language in ("python", "nodejs") else "false" for language in languages}
+    assert language_switches(operator_args(docs)) == expected
+    assert "--ignore-missing-collector-crds=true" in operator_args(docs)
     spec = find(docs, "Instrumentation")["spec"]
     assert set(spec) == {"imagePullPolicy", "initContainerSecurityContext", "python"}
+
+
+def test_the_language_switches_are_read_as_the_operator_reads_them():
+    # pflag: a bare boolean flag is true and the last one wins (the vendored template renders a bare
+    # --enable-go-instrumentation when operator.manager.autoInstrumentation.go.enabled is true, before extraArgs)
+    assert language_switches(["--enable-go-instrumentation", "--enable-go-instrumentation=false"]) == {"go": "false"}
+    assert language_switches(["--enable-ruby-instrumentation"]) == {"ruby": "true"}
+    assert language_switches(["--enable-multi-instrumentation=true", "--enable-leader-election"]) == {}
+    assert "php" in operator_languages(), "the Instrumentation kind has a PHP section, the template has none"
 
 
 def test_the_instrumentation_sets_the_gateway_and_leaves_other_tracers_environment_alone(docs):
@@ -206,8 +278,13 @@ def test_the_instrumentation_sets_the_gateway_and_leaves_other_tracers_environme
         ref = env[name]["valueFrom"]["configMapKeyRef"]
         assert ref["optional"] is True
         assert "value" not in env[name]
+    # Whether the workload trusts its callers' user, session and use case: the pod's own annotation, read by the
+    # downward API (an empty value when the pod has none, which the package reads as not trusted).
+    assert env["IMPACT_TRUST_CALLER_BAGGAGE"]["valueFrom"] == {
+        "fieldRef": {"fieldPath": "metadata.annotations['impact.ai/trust-caller-baggage']"}
+    }
     # Nothing else: the package applies its own defaults only when it starts (a stood-down workload keeps its env).
-    assert set(env) == {"IMPACT_OTLP_ENDPOINT"} | {
+    assert set(env) == {"IMPACT_OTLP_ENDPOINT", "IMPACT_TRUST_CALLER_BAGGAGE"} | {
         "OTEL_TRACES_EXPORTER",
         "OTEL_METRICS_EXPORTER",
         "OTEL_LOGS_EXPORTER",
@@ -228,31 +305,63 @@ def test_the_instrumentation_resources_and_image(docs):
 
 
 def test_every_image_is_pinned_by_digest(docs):
-    images = []
-    for _, spec in pod_specs(docs):
-        images += [c["image"] for c in spec["containers"] + spec.get("initContainers", [])]
-    images.append(find(docs, "Instrumentation")["spec"]["python"]["image"])
-    deployment = find(docs, "Deployment", "impact-ai-operator")["spec"]["template"]["spec"]["containers"][0]["args"]
-    images += [a.split("=", 1)[1] for a in deployment if a.startswith("--collector-image=")]
-    assert images
-    unpinned = [i for i in images if not DIGEST.search(i)]
-    assert unpinned == []
+    references = image_references(docs)
+    assert any(where.endswith("[--collector-image]") for where, _ in references)
+    assert [(where, image) for where, image in references if not DIGEST.search(image)] == []
 
 
-def test_one_value_points_every_image_at_a_mirror():
-    documents = render("global.imageRegistry=registry.example.com/mirror")
-    images = []
-    for _, spec in pod_specs(documents):
-        images += [c["image"] for c in spec["containers"]]
-    images.append(find(documents, "Instrumentation")["spec"]["python"]["image"])
-    args = find(documents, "Deployment", "impact-ai-operator")["spec"]["template"]["spec"]["containers"][0]["args"]
-    assert images
-    assert [i for i in images if not i.startswith("registry.example.com/mirror/")] == []
-    # the Operator's own image is one of them
-    assert any(i.startswith("registry.example.com/mirror/open-telemetry/opentelemetry-operator/") for i in images)
-    assert (
-        any("opentelemetry-collector-releases" in a and a.startswith("--collector-image=ghcr.io") for a in args) or True
+MIRROR = "registry.example.com/mirror"
+NODEJS_IMAGE = ("images.nodejs.tag=v0.0.0-test", "images.nodejs.digest=sha256:" + "c" * 64)
+TOKEN_INSTALL = ("ingest.key=", "install.token=impactinstall_e2e_" + "AbCdEfGhIjKlMnOpQrStUvWxYz0123456789-_AbCdE")
+
+
+def every_operator_image_argument() -> tuple[str, ...]:
+    """--set values that give each image argument of the vendored Operator chart an image under an upstream name, read
+    from its template: `--collector-image=`, `--auto-instrumentation-<language>-image=` and the others."""
+    template = (OPERATOR_CHART / "templates" / "deployment.yaml").read_text()
+    images = sorted(
+        set(re.findall(r"\{\{- if and \.Values\.(manager\.[A-Za-z0-9.]+)\.repository \.Values\.\1\.tag \}\}", template))
     )
+    assert len(images) == len(IMAGE_ARGUMENT.findall(template)) > 1, "an image argument of another shape"
+    return tuple(
+        value
+        for number, image in enumerate(images)
+        for value in (
+            f"operator.{image}.repository=ghcr.io/upstream/image-{number}",
+            f"operator.{image}.tag=1.{number}.0",
+        )
+    )
+
+
+@pytest.mark.parametrize(
+    "shape",
+    [NODEJS_IMAGE, (*TOKEN_INSTALL, "cover.enabled=true", *NODEJS_IMAGE)],
+    ids=["a pasted key", "a token, with the cover pod"],
+)
+def test_one_value_points_every_image_at_a_mirror(shape):
+    # The README promises that one value covers every image. An air-gapped cluster's scanner reads the whole render,
+    # the Operator's arguments too, and flags an image outside the mirror whether anything pulls it or not.
+    documents = render(f"global.imageRegistry={MIRROR}", *shape)
+    references = image_references(documents)
+    assert [(where, image) for where, image in references if not image.startswith(f"{MIRROR}/")] == []
+    # what that covers: every pod of the render, the Instrumentation's images and the Operator's arguments
+    holders = {where.split(":", 1)[0] for where, _ in references}
+    pods = {f"{d['kind']}/{d['metadata']['name']}" for d, _ in pod_specs(documents)}
+    assert pods | {"Instrumentation/impact"} <= holders
+    collector = f"--collector-image={MIRROR}/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector:"
+    assert [a for a in operator_args(documents) if a.startswith(collector)]
+    # and nothing else in the render names the registry the images come from
+    assert "ghcr.io" not in json.dumps(documents)
+
+
+def test_every_image_argument_of_the_operator_follows_the_mirror():
+    # The vendoring script sends each of them through the kit's image helper; with all of them given, all are rendered.
+    given = every_operator_image_argument()
+    documents = render(f"global.imageRegistry={MIRROR}", *given)
+    arguments = [a for a in operator_args(documents) if IMAGE_ARGUMENT.match(a)]
+    assert len(arguments) == len(given) // 2
+    assert [a for a in arguments if not a.partition("=")[2].startswith(f"{MIRROR}/upstream/image-")] == []
+    assert "ghcr.io" not in json.dumps(documents)
 
 
 def test_an_image_without_tag_or_digest_is_refused():
@@ -270,7 +379,7 @@ def test_an_image_without_tag_or_digest_is_refused():
     assert "neither a tag nor a digest" in result.stderr
 
 
-# --- AE-3: the reporter reads names, never values ------------------------------------------------------------------
+# --- the reporter reads names, never values ------------------------------------------------------------------------
 
 
 def rules_of(documents, kind, name):
@@ -507,7 +616,7 @@ def test_the_key_is_trimmed(tmp_path):
     assert find(documents, "Secret", "impact-ai-ingest-key")["stringData"]["ingest-key"] == "abc"
 
 
-# --- AE-10: reinstalling with a new key restarts what reads it ------------------------------------------------------
+# --- reinstalling with a new key restarts what reads it -------------------------------------------------------------
 
 
 def key_checksums(documents: list) -> dict[str, str | None]:
@@ -568,7 +677,7 @@ def test_the_gateway_adds_the_cluster_id_and_forwards_with_the_key(docs):
     assert exporter["endpoint"] == "${env:IMPACT_INGEST_ENDPOINT}"
     assert exporter["headers"]["authorization"] == "Bearer ${env:IMPACT_INGEST_KEY}"
     assert config["service"]["pipelines"]["traces"]["exporters"] == ["otlp_http"]
-    assert set(config["service"]["pipelines"]) == {"traces"}
+    assert set(config["service"]["pipelines"]) == {"traces", "logs"}  # log events: test_chart_gateway_logs.py
     deployment = find(docs, "Deployment", "impact-ai-gateway")["spec"]["template"]
     container = deployment["spec"]["containers"][0]
     assert {"name": "IMPACT_INGEST_ENDPOINT", "value": "https://ingest.example.test"} in container["env"]
@@ -746,11 +855,15 @@ STATEMENT = re.compile(
 )
 
 
-def gateway_attributes(documents: list) -> dict:
-    """key -> {"key", "value", "action"}: `upsert` for a statement that always sets, `insert` for one that fills in"""
+STATEMENTS = {"traces": "trace_statements", "logs": "log_statements"}  # the transform processor's key of each signal
+
+
+def gateway_attributes(documents: list, signal: str = "traces") -> dict:
+    """key -> {"key", "value", "action"}: `upsert` for a statement that always sets, `insert` for one that fills in.
+    Of the spans (signal "traces") or of the log records (signal "logs") the gateway forwards."""
     config = yaml.safe_load(find(documents, "ConfigMap", "impact-ai-gateway")["data"]["config.yaml"])
-    assert "transform/cluster" in config["service"]["pipelines"]["traces"]["processors"]
-    (block,) = config["processors"]["transform/cluster"]["trace_statements"]
+    assert "transform/cluster" in config["service"]["pipelines"][signal]["processors"]
+    (block,) = config["processors"]["transform/cluster"][STATEMENTS[signal]]
     attributes = {}
     for statement in block["statements"]:
         match = STATEMENT.fullmatch(statement)
@@ -847,7 +960,7 @@ def test_an_account_id_given_as_a_number_is_refused_not_rewritten():
     assert "/cloud/accountId" in result.stderr
 
 
-# --- report only (AE-1) ---------------------------------------------------------------------------------------------
+# --- report only ---------------------------------------------------------------------------------------------------
 
 
 def test_report_only_installs_the_reporter_and_the_gateway_only():
@@ -867,7 +980,7 @@ def test_injection_is_reported_as_enabled_when_the_operator_is_installed(docs):
     assert "--injection=enabled" in args
 
 
-# --- AE-8: uninstall -------------------------------------------------------------------------------------------------
+# --- uninstall -------------------------------------------------------------------------------------------------------
 
 
 def test_the_uninstall_hook_stops_the_reporter_then_sends_the_notice(docs):

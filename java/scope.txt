@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# The instrumentations of the upstream agent the image turns on, by the names the agent accepts in
+# otel.instrumentation.<name>.enabled; every other one is off. The scope of the Python image: request roots (HTTP
+# servers, with the frameworks that name their routes), HTTP clients, context propagation across threads and reactive
+# chains, the OpenTelemetry API bridge (libraries that make their own spans, such as Anthropic's SDK, reach the agent
+# through it) and the GenAI modules. java/tests/image/test_java_image.py checks that the agent knows every name.
+
+# HTTP servers and the frameworks that name their routes
+tomcat
+jetty
+undertow
+servlet
+netty
+reactor-netty
+java-http-server
+vertx-web
+spring-webmvc
+spring-webflux
+spring-web
+quarkus
+jaxrs
+
+# HTTP clients
+java-http-client
+http-url-connection
+okhttp
+apache-httpclient
+apache-httpasyncclient
+jetty-httpclient
+vertx-http-client
+
+# context propagation
+executors
+reactor
+rxjava
+kotlinx-coroutines
+opentelemetry-api
+
+# GenAI. Every AWS SDK module of the agent also answers to `aws-sdk` (and every 2.x one to `aws-sdk-2.2`), and those
+# names would turn on SQS, SNS and Lambda as well: Bedrock is turned on by its own name, with the 2.x core module whose
+# interceptor makes the span (the calls of other AWS services stay client spans, as an HTTP client's).
+openai-java
+aws-sdk-2.2-core
+aws-sdk-2.2-bedrock-runtime

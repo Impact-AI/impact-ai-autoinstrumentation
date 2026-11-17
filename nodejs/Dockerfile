@@ -11,7 +11,7 @@
 # Nothing is executed for the target architecture, and no package script runs at all: the tree is installed from the
 # lock file, where every tarball has its integrity hash, and its packages are plain JavaScript, so one build serves both
 # architectures and multi-architecture builds need no emulation.
-FROM --platform=$BUILDPLATFORM docker.io/library/node:22-slim@sha256:4b150b48b4116e2a22f2c39cc27025fbf4f153e2078fd3b14d159fdb5c7279da AS payload
+FROM --platform=$BUILDPLATFORM docker.io/library/node:22-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d AS payload
 ARG VERSION=0.0.0+dev
 WORKDIR /build
 COPY shims ./shims
@@ -29,6 +29,11 @@ COPY --from=root LICENSE ./
 # without a license it can name.
 RUN node assemble_payload.mjs --trees trees --src src --out /out --version "${VERSION}" --license LICENSE \
         --qualification qualification.json
+# BusyBox's license files get their modes here, in a build stage, and reach the image as a directory: COPY --chmod
+# onto a directory that COPY creates can give that directory the files' mode (0644, which no one can enter), as
+# GitHub's Ubuntu 26.04 runners do.
+COPY --from=root python/licenses/busybox /out/licenses/busybox
+RUN chmod -R a+rX,go-w /out/licenses/busybox
 
 # busybox provides the `cp` the Operator's init container runs. Non-root: it only reads this image and writes the
 # emptyDir the Operator mounts, so it also starts under runAsNonRoot.
@@ -36,11 +41,11 @@ FROM docker.io/library/busybox:1.37@sha256:a7dbc319b1438115a207e11930dc4bb3e643d
 ARG VERSION=0.0.0+dev
 LABEL org.opencontainers.image.title="impact.ai Node.js auto-instrumentation" \
       org.opencontainers.image.description="OpenTelemetry Operator auto-instrumentation image for Node.js: model calls on the span, content included" \
-      org.opencontainers.image.source="https://github.com/impact-ai/impact-ai-k8s" \
+      org.opencontainers.image.source="https://github.com/Impact-AI/impact-autoinstrumentation" \
       org.opencontainers.image.version="${VERSION}"
 COPY --from=payload /out/autoinstrumentation /autoinstrumentation
 # /licenses: ours, the generated nodejs/ (every bundled package's own files and the index), and BusyBox's.
 COPY --from=payload /out/licenses/nodejs /licenses/nodejs
 COPY --from=root --chmod=0644 LICENSE NOTICE /licenses/
-COPY --from=root --chmod=0644 python/licenses/busybox/COPYING python/licenses/busybox/README /licenses/busybox/
+COPY --from=payload /out/licenses/busybox /licenses/busybox
 USER 65532:65532

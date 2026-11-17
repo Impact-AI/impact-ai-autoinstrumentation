@@ -1,0 +1,34 @@
+{
+  "how": "ddtrace 4.16.3 on Python 3.12 with APM tracing only (LLM Observability off) ran testing/apps/datadog/providers.py: one call each to OpenAI, Anthropic and Amazon Bedrock Converse, answered by the kit's recording mock (testing/mock/server.py). Its requests to the Datadog Agent (trace-agent 7.84.3, placeholder key) were captured by a recording pass-through in front of the Agent; only the trace intake is kept.",
+  "packages": {
+    "anthropic": "0.75.0",
+    "boto3": "1.41.5",
+    "ddtrace": "4.16.3",
+    "openai": "2.8.1"
+  },
+  "recorded": "2026-11-09",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/v0.5/traces",
+      "query": "",
+      "headers": {
+        "user-agent": "Tracer/11.0.0",
+        "datadog-entity-id": "in-5222770",
+        "datadog-meta-lang": "python",
+        "datadog-meta-lang-version": "3.12.3",
+        "datadog-meta-lang-interpreter": "CPython",
+        "datadog-meta-tracer-version": "4.16.3",
+        "datadog-client-computed-top-level": "true",
+        "datadog-send-real-http-status": "1",
+        "x-datadog-trace-count": "3",
+        "content-type": "application/msgpack",
+        "host": "127.0.0.1:27200",
+        "content-length": "2400"
+      },
+      "contentType": "application/msgpack",
+      "contentEncoding": "",
+      "bodyBase64": "ktwAWKCxc3VwcG9ydC1hc3Npc3RhbnSub3BlbmFpLnJlcXVlc3S0Y3JlYXRlQ2hhdENvbXBsZXRpb261X2RkLmxsbW9icy5tb2RlbF9uYW1lq2dwdC00by1taW5pqWNvbXBvbmVudKZvcGVuYWm1b3BlbmFpLnJlc3BvbnNlLm1vZGVs2SFfZGQubGxtb2JzLmFydGlmaWNpYWxfZ2VuX2FpX3RhZ3OkdHJ1ZbRfZGQubGxtb2JzLnNwYW5fa2luZKNsbG20b3BlbmFpLnJlcXVlc3QubW9kZWyjZW52p2hhcm5lc3O3b3BlbmFpLnJlcXVlc3QucHJvdmlkZXKmT3BlbkFJqnJ1bnRpbWUtaWTZIDc3NTdkNGFiNDZmNDRhY2U4MWM0OTU5ODY5NzQ5MjEwqF9kZC5wLmRtoi0wtGdlbl9haS5yZXF1ZXN0Lm1vZGVst29wZW5haS5yZXF1ZXN0LmVuZHBvaW50tC92MS9jaGF0L2NvbXBsZXRpb25ztGdlbl9haS5wcm92aWRlci5uYW1ltW9wZW5haS5yZXF1ZXN0Lm1ldGhvZKRQT1NUtWdlbl9haS5vcGVyYXRpb24ubmFtZblfZGQubGxtb2JzLm1vZGVsX3Byb3ZpZGVyqGxhbmd1YWdlpnB5dGhvbqlfZGQucC50aWSwNmFmMWVmNmEwMDAwMDAwMKtfZGQuc3ZjX3NyY6Ftp3ZlcnNpb26lNC4yLjCwX2RkLnRhZ3MucHJvY2Vzc9lsZW50cnlwb2ludC5iYXNlZGlyOmFwcCxlbnRyeXBvaW50Lm5hbWU6cHJvdmlkZXJzLGVudHJ5cG9pbnQudHlwZTpzY3JpcHQsZW50cnlwb2ludC53b3JrZGlyOmFwcCxzdmMudXNlcjp0cnVluF9kZC5sbG1vYnMub3V0cHV0X3Rva2Vuc7pnZW5fYWkudXNhZ2Uub3V0cHV0X3Rva2Vuc7dfZGQubGxtb2JzLmlucHV0X3Rva2Vuc7dfZGQubGxtb2JzLnRvdGFsX3Rva2Vuc7JfZGQubGxtb2JzLmVuYWJsZWStX2RkLnRyYWNlcl9rcqxfZGQubWVhc3VyZWS5Z2VuX2FpLnVzYWdlLnRvdGFsX3Rva2Vuc6pwcm9jZXNzX2lktV9zYW1wbGluZ19wcmlvcml0eV92Ma1fZGQudG9wX2xldmVsuWdlbl9haS51c2FnZS5pbnB1dF90b2tlbnOsaHR0cC5yZXF1ZXN0q2h0dHAubWV0aG9kpWh0dHB4qG91dC5ob3N0qTEyNy4wLjAuMa5odHRwLnVzZXJhZ2VudLNPcGVuQUkvUHl0aG9uIDIuOC4xsGh0dHAuc3RhdHVzX2NvZGWjMjAwqXNwYW4ua2luZKZjbGllbnSoaHR0cC51cmzZMWh0dHA6Ly8xMjcuMC4wLjE6MjcwOTAvb3BlbmFpL3YxL2NoYXQvY29tcGxldGlvbnOkaHR0cLFhbnRocm9waWMucmVxdWVzdK9NZXNzYWdlcy5jcmVhdGW3YW50aHJvcGljLnJlcXVlc3QubW9kZWyxY2xhdWRlLXNvbm5ldC00LTWpYW50aHJvcGljt0FudGhyb3BpYy9QeXRob24gMC43NS4w2SxodHRwOi8vMTI3LjAuMC4xOjI3MDkwL2FudGhyb3BpYy92MS9tZXNzYWdlc7Nhd3MuYmVkcm9jay1ydW50aW1lt2JlZHJvY2stcnVudGltZS5jb21tYW5kqENvbnZlcnNltmFtYXpvbi5ub3ZhLW1pY3JvLXYxOjC+YmVkcm9jay5yZXF1ZXN0Lm1vZGVsX3Byb3ZpZGVypmFtYXpvbqdiZWRyb2NrsF9kZC5iYXNlX3NlcnZpY2WwNmFmMWVmNmIwMDAwMDAwMLViZWRyb2NrLnJlcXVlc3QubW9kZWyvbm92YS1taWNyby12MTow2SVnZW5fYWkudXNhZ2UuY2FjaGVfd3JpdGVfaW5wdXRfdG9rZW5z2SJfZGQubGxtb2JzLmNhY2hlX3JlYWRfaW5wdXRfdG9rZW5z2SRnZW5fYWkudXNhZ2UuY2FjaGVfcmVhZF9pbnB1dF90b2tlbnPZI19kZC5sbG1vYnMuY2FjaGVfd3JpdGVfaW5wdXRfdG9rZW5zk5KcAQIDz51/b8Ms5AwXz00ZYeYwnmhKAM8Y5mwakAsTrc4A8uaQAN4AFRQVJCUEBRobCQocDCIjHQcLDAYHGQcXGCAhJicNBRITCAUODxYFHh8QEYwyyz/wAAAAAAAAKMtAFAAAAAAAACzLAAAAAAAAAAAtyz/wAAAAAAAALss/8AAAAAAAADPLQBwAAAAAAAAwy0D+hVAAAAAAKctAFAAAAAAAACvLQCgAAAAAAAAqy0AcAAAAAAAAL8tAKAAAAAAAADHLP/AAAAAAAAAAnAE0NM+df2/DLOQMF8+ZGTrtp+66dM9NGWHmMJ5oSs8Y5mwakHJEqs4AToMzAIo9PiI2JCUGNg4PNzg1Gzk6Ozw/QIEuyz/wAAAAAAAAQZKcAUJDz3AT6vOCSQgfz6Pjyx/Kn9tZAM8Y5mwakpdbcc4AexjIAN4AEA4PFkUmJ0RFCQoZRh1GJCUSEyAhFBUeHxwMBEUiIwsMjCnLQBQAAAAAAAAxyz/wAAAAAAAALss/8AAAAAAAACrLQBwAAAAAAAAyyz/wAAAAAAAAM8tAHAAAAAAAAC3LP/AAAAAAAAAvy0AoAAAAAAAALMsAAAAAAAAAADDLQP6FUAAAAAAry0AoAAAAAAAAKMtAFAAAAAAAAACcATQ0z3AT6vOCSQgfz7uavqKtlXE7z6Pjyx/Kn9tZzxjmbBqSrjV/zgAc58kAijs8BjY3OA4POUc/SDUbIjYkJT0+gS7LP/AAAAAAAABBkZxJSkvPefvFwaQpQZjP9+gqu6b1glMAzxjmbBqeBBIPzgBMJHEA3gAREhMiIwkKHU9SU01OUAEeHxlPIFEODxQVFkwmJxwMBEwLDI9UywAAAAAAAAAAMMtA/oVQAAAAACzLAAAAAAAAAAAvy0AoAAAAAAAAMss/8AAAAAAAACvLQCgAAAAAAABXywAAAAAAAAAAKMtAFAAAAAAAAC3LP/AAAAAAAAApy0AUAAAAAAAAKstAHAAAAAAAAFbLAAAAAAAAAAAxyz/wAAAAAAAAM8tAHAAAAAAAAFXLAAAAAAAAAAAA"
+    }
+  ]
+}

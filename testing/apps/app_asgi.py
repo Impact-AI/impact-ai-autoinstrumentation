@@ -20,6 +20,17 @@ def healthz():
     return {"ok": True}
 
 
+@app.get("/otel/global-tracer-provider")
+def global_tracer_provider():
+    """The process's global tracer provider, as a library that makes its spans with the global tracer sees it: the
+    package never sets it (the cells of the Python qualification check it after the model calls)."""
+    try:
+        from opentelemetry import trace
+    except ImportError:
+        return {"provider": None}
+    return {"provider": type(trace.get_tracer_provider()).__name__}
+
+
 @app.post("/chat/openai")
 def chat_openai(ask: Ask):
     from openai import OpenAI
@@ -30,6 +41,23 @@ def chat_openai(ask: Ask):
         messages=[{"role": "system", "content": "be brief"}, {"role": "user", "content": ask.prompt}],
     )
     return {"answer": reply.choices[0].message.content}
+
+
+@app.post("/chat/openai/in-context")
+def chat_openai_in_context(ask: Ask, user: str = "", session: str = "", use_case: str = ""):
+    """The OpenAI call of /chat/openai, made in the business context of the request: the line a coding agent adds once
+    the application has authenticated the request (here the test names the user, the session and the use case)."""
+    from opentelemetry import baggage, context
+
+    entries = {"user.id": user, "session.id": session, "impact.use_case": use_case, "tenant.plan": "gold"}
+    current = context.get_current()
+    for key, value in entries.items():
+        current = baggage.set_baggage(key, value, context=current)
+    token = context.attach(current)
+    try:
+        return chat_openai(ask)
+    finally:
+        context.detach(token)
 
 
 @app.post("/chat/anthropic")

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""The overhead gate (AE-17): what the budget is, and how the measurements are held to it.
+"""The overhead gate: what the budget is, and how the measurements are held to it.
 
 A round starts the workload without injection and the same workload with the payload injected, side by side, and
 measures both. The overhead of a round is the difference between its two sides, per metric, so that whatever the

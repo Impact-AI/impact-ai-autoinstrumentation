@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""The qualification matrix of the Node.js image (AE-20): Node 22, 24 and 26, as CommonJS and as ES modules, with
+"""The qualification matrix of the Node.js image: Node 22, 24 and 26, as CommonJS and as ES modules, with
 OpenAI's SDK in versions 4 to 7 and Anthropic's from 0.134, against the mock providers.
 
 Every cell runs a fixture workload with the payload injected and asks: did the workload start, and did one model call
@@ -133,8 +133,8 @@ def test_the_qualification_holds_every_cell_of_the_matrix_and_nothing_else():
 @pytest.mark.nodejs
 @pytest.mark.matrix
 def test_commonjs_is_traced_everywhere_the_matrix_ran():
-    """AE-20's first claim: an uninstrumented Node.js workload, Node 22.15 or later, CommonJS, OpenAI or Anthropic:
-    covered."""
+    """The first claim of Node.js coverage: an uninstrumented Node.js workload, Node 22.15 or later, CommonJS, OpenAI or
+    Anthropic: covered."""
     table = json.loads(QUALIFICATION.read_text())
     failing = [c for c in table["cells"] if c["module"] == "cjs" and not (c["started"] and c["traced"])]
     assert failing == []

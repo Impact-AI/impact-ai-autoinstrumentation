@@ -589,6 +589,32 @@ func TestTheVersionIsLoggedOnlyWhenItChanges(t *testing.T) {
 	}
 }
 
+func TestAListWithLanguagesThisKitDoesNotKnowIsUsedAndTheSkipIsLogged(t *testing.T) {
+	srv := newListServer(t, ok(3, `"v3"`, entry("Deployment", "api"), entry("Deployment", "orders", lang("java")), entry("Deployment", "billing", lang("dotnet"))))
+	h := newHarness(t, srv.URL)
+	h.wants(time.Minute, h.poll())
+	if _, found := h.Store.Lookup("shop", "Deployment", "api"); !found {
+		t.Error("the known entry is not covered")
+	}
+	if _, found := h.Store.Lookup("shop", "Deployment", "orders"); found {
+		t.Error("an entry in an unknown language is covered")
+	}
+	var announced map[string]any
+	for _, line := range strings.Split(strings.TrimSpace(h.logs.String()), "\n") {
+		var rec map[string]any
+		if json.Unmarshal([]byte(line), &rec) == nil && rec["msg"] == "cover list in use" {
+			announced = rec
+		}
+	}
+	langs, _ := announced["skippedLanguages"].(map[string]any)
+	if announced == nil || announced["workloads"] != float64(1) || announced["skipped"] != float64(2) || langs["java"] != float64(1) || langs["dotnet"] != float64(1) {
+		t.Errorf("the skip is not reported: %v\n%s", announced, h.logs)
+	}
+	if strings.Contains(h.logs.String(), `"level":"WARN"`) || strings.Contains(h.logs.String(), "orders") {
+		t.Errorf("a skip is a fact, not a warning, and names no workload:\n%s", h.logs)
+	}
+}
+
 func TestStateThatCannotBeWrittenDoesNotStopTheCoverage(t *testing.T) {
 	srv := newListServer(t, ok(1, `"v1"`, entry("Deployment", "api")))
 	h := newHarness(t, srv.URL)

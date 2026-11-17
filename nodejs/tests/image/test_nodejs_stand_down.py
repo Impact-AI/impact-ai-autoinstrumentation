@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""Stand-down parity with the Python package (AE-5): the workload starts a tracer of its own and is annotated anyway.
+"""Stand-down parity with the Python package: the workload starts a tracer of its own and is annotated anyway.
 The package does not start, the workload's own spans reach its own endpoint as before, and the setup report says what
 was found."""
 
@@ -15,6 +15,7 @@ from containers import http, wait_until
 from nodejs_support import app_image, ask, only, readable, require_images, setup_reports, wait_ready
 
 NODE = "22"
+TOOL_PREFIXES = ("impact.setup.tool", "impact.setup.exporter", "impact.setup.alongside")
 OPENAI_APP = ["node", "openai.cjs"]
 DIRECTORY = "/apps/openai-7"
 
@@ -49,20 +50,21 @@ def assert_stood_down(app, mock, detail_starts_with: str) -> dict:
 
 @pytest.mark.nodejs
 @pytest.mark.parametrize(
-    ("package", "version", "detail"),
+    ("package", "version", "detail", "tool"),
     [
-        ("dd-trace", "5.60.0", "dd-trace 5.60.0"),
-        ("@traceloop/node-server-sdk", "0.19.0", "@traceloop/node-server-sdk 0.19.0"),
-        ("langfuse", "3.38.0", "langfuse 3.38.0"),
+        ("dd-trace", "5.60.0", "dd-trace 5.60.0", "datadog"),
+        ("@traceloop/node-server-sdk", "0.19.0", "@traceloop/node-server-sdk 0.19.0", "traceloop"),
+        ("langfuse", "3.38.0", "langfuse 3.38.0", "langfuse"),
         (
             "@arizeai/openinference-instrumentation-openai",
             "4.4.2",
             "@arizeai/openinference-instrumentation-openai 4.4.2",
+            None,  # several tools start OpenInference's instrumentations: the report names none
         ),
     ],
 )
 def test_a_tracer_installed_in_the_application_stands_the_package_down(
-    start_app, mock, tmp_path, package, version, detail
+    start_app, mock, tmp_path, package, version, detail, tool
 ):
     require_images(app_image(NODE))
     app = start_app(
@@ -70,7 +72,11 @@ def test_a_tracer_installed_in_the_application_stands_the_package_down(
     )
     wait_ready(app)
     assert ask(app, "openai") == (200, {"answer": "Hello from the stub."})
-    assert_stood_down(app, mock, detail)
+    report = assert_stood_down(app, mock, detail)
+    # it names the tool it found, its version, and that it did not start beside it
+    named = {key: value for key, value in report["attrs"].items() if key.startswith(TOOL_PREFIXES)}
+    expected = {"impact.setup.tool": tool, "impact.setup.tool.version": version, "impact.setup.alongside": False}
+    assert named == (expected if tool else {})
     # we left no trace in the process: no environment default, and the application's NODE_OPTIONS is as the Operator
     # made it
     runtime = http("GET", f"{app.url}/debug/runtime")[1]
@@ -92,7 +98,9 @@ def test_a_preload_of_a_tracer_started_with_node_options_stands_the_package_down
     )
     wait_ready(app)
     assert ask(app, "openai")[0] == 200
-    assert_stood_down(app, mock, "dd-trace/init (preload)")
+    report = assert_stood_down(app, mock, "dd-trace/init (preload)")
+    assert report["attrs"]["impact.setup.tool"] == "datadog"
+    assert report["attrs"]["impact.setup.alongside"] is False
 
 
 @pytest.mark.nodejs
@@ -110,7 +118,8 @@ def test_a_tracer_provider_registered_by_an_earlier_preload_stands_the_package_d
     )
     wait_ready(app)
     assert ask(app, "openai")[0] == 200
-    assert_stood_down(app, mock, "an OpenTelemetry tracer provider (registered before this package)")
+    report = assert_stood_down(app, mock, "an OpenTelemetry tracer provider (registered before this package)")
+    assert report["attrs"]["impact.setup.tool"] == "opentelemetry"
 
 
 @pytest.mark.nodejs
@@ -119,7 +128,9 @@ def test_a_tracer_package_that_an_earlier_preload_loaded_stands_the_package_down
     (Path(init) / "index.js").write_text("")  # loaded, as an agent started from NODE_OPTIONS=-r newrelic is
     app = start_app(NODE, OPENAI_APP, directory=DIRECTORY, mounts=mount(init, "newrelic"), node_options="-r newrelic")
     wait_ready(app)
-    assert_stood_down(app, mock, "newrelic")
+    report = assert_stood_down(app, mock, "newrelic")
+    assert report["attrs"]["impact.setup.tool"] == "newrelic"
+    assert report["attrs"]["impact.setup.tool.version"] == "12.5.0"
 
 
 @pytest.mark.nodejs

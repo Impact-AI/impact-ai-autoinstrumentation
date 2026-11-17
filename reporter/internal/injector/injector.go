@@ -10,7 +10,7 @@ package injector
 import (
 	"strings"
 
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kube"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kube"
 )
 
 // Owners reported as clusterOwner.

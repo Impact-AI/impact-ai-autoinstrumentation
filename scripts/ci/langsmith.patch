@@ -1,0 +1,21 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 1c593eb..e15d97d 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -55,6 +55,16 @@ jobs:
+       - uses: jdx/mise-action@v5
+       - name: End to end on a kind cluster (Kubernetes 1.27), the Kubernetes part of the suite
+         run: make e2e
++  langsmith:
++    # LangSmith beside the package (make test-langsmith): the Python and Node.js workloads that trace with LangSmith, run
++    # with and without the package. Estimated 6 minutes: the images about 4, as in e2e, and twelve tests on 4 workers.
++    runs-on: ubuntu-latest
++    timeout-minutes: 10
++    steps:
++      - uses: actions/checkout@v7
++      - uses: jdx/mise-action@v5
++      - name: LangSmith's default tracing receives the same runs beside the package; its OpenTelemetry mode stands it down
++        run: make test-langsmith
+   overhead:
+     runs-on: ubuntu-latest
+     timeout-minutes: 25

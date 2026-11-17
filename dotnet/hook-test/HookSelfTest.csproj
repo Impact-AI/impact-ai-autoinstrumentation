@@ -1,0 +1,21 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- The startup hook's self-test (SelfTest.cs): the hook's source compiled with checks of its decisions, on a machine of
+     the test's own. dotnet/Dockerfile runs it when it builds the hook, as java/build.sh runs the launcher's. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>HookSelfTest</AssemblyName>
+    <RootNamespace />
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <NuGetAudit>false</NuGetAudit>
+    <UseAppHost>false</UseAppHost>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../hook/StartupHook.cs" />
+    <AssemblyMetadata Include="ProvedDotnet" Value="10.0+9.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="[9.5.0]" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[8.0.1]" />
+  </ItemGroup>
+</Project>

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-8: the shown uninstall command leaves nothing, and the cluster stops reporting at once."""
+"""Uninstall: the shown uninstall command leaves nothing, and the cluster stops reporting at once."""
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ def uninstalled(world, before):
     return result
 
 
-def test_ae8_the_release_the_kit_and_its_webhooks_are_gone(world, uninstalled):
+def test_the_release_the_kit_and_its_webhooks_are_gone(world, uninstalled):
     assert json.loads(helm("list", "--all-namespaces", "-o", "json").stdout) == []
     assert not exists("namespace", "impact-ai")
     for kind, name in [
@@ -59,7 +59,7 @@ def test_ae8_the_release_the_kit_and_its_webhooks_are_gone(world, uninstalled):
         assert not exists(kind, name), (kind, name)
 
 
-def test_ae8_no_cluster_scoped_object_labelled_for_the_release_remains(uninstalled):
+def test_no_cluster_scoped_object_labelled_for_the_release_remains(uninstalled):
     # The last step of the command deletes, by label, what an uninstall that was cut short leaves behind. After the
     # whole command nothing of the release is labelled, and the Operator's resource definition (which is not) stays.
     labelled = kubectl(
@@ -75,7 +75,7 @@ def test_ae8_no_cluster_scoped_object_labelled_for_the_release_remains(uninstall
     assert exists("crd", "instrumentations.opentelemetry.io")
 
 
-def test_ae8_no_collector_reporter_instrumentation_or_hook_object_remains(uninstalled):
+def test_no_collector_reporter_instrumentation_or_hook_object_remains(uninstalled):
     assert get("instrumentations.opentelemetry.io", "--all-namespaces")["items"] == []
     for kind in ("deployments", "services", "serviceaccounts", "secrets", "jobs"):
         remaining = [
@@ -86,7 +86,7 @@ def test_ae8_no_collector_reporter_instrumentation_or_hook_object_remains(uninst
         assert remaining == [], (kind, remaining)
 
 
-def test_ae8_it_names_the_resource_type_it_keeps(uninstalled):
+def test_it_names_the_resource_type_it_keeps(uninstalled):
     # The Operator's resource definition stays: Helm never deletes definitions, and other tools may use it.
     assert exists("crd", "instrumentations.opentelemetry.io")
     assert "instrumentations.opentelemetry.io" in (
@@ -94,7 +94,7 @@ def test_ae8_it_names_the_resource_type_it_keeps(uninstalled):
     )
 
 
-def test_ae8_no_injection_annotation_remains(uninstalled):
+def test_no_injection_annotation_remains(uninstalled):
     annotated = []
     for kind in ("deployments", "statefulsets", "daemonsets", "cronjobs"):
         for item in get(kind, "--all-namespaces")["items"]:
@@ -104,7 +104,7 @@ def test_ae8_no_injection_annotation_remains(uninstalled):
     assert annotated == []
 
 
-def test_ae8_restarted_pods_are_not_injected(uninstalled):
+def test_restarted_pods_are_not_injected(uninstalled):
     kubectl("-n", "shop", "rollout", "restart", "deployment/support-assistant")
     rollout("deployment/support-assistant", "shop")
     pod = running_pod("shop", "app=support-assistant")
@@ -112,7 +112,7 @@ def test_ae8_restarted_pods_are_not_injected(uninstalled):
     assert "PYTHONPATH" not in {e["name"] for e in pod["spec"]["containers"][0].get("env", [])}
 
 
-def test_ae8_the_last_thing_impact_ai_hears_is_one_notice_and_nothing_follows(world, before, uninstalled):
+def test_the_last_thing_impact_ai_hears_is_one_notice_and_nothing_follows(world, before, uninstalled):
     requests = world.mock.requests("/v1/inventory")
     last = requests[-1]["json"]
     assert last["reporter"]["mode"] == "uninstalled"
@@ -134,5 +134,5 @@ def test_ae8_the_last_thing_impact_ai_hears_is_one_notice_and_nothing_follows(wo
     assert after[-1]["json"]["reporter"]["mode"] == "uninstalled"
 
 
-def test_ae8_the_notice_arrived_while_the_uninstall_command_ran(world, before, uninstalled):
+def test_the_notice_arrived_while_the_uninstall_command_ran(world, before, uninstalled):
     assert len(world.mock.requests("/v1/inventory")) > before["count"]

@@ -176,7 +176,12 @@ func (p *Poller) announce(list List) {
 		return
 	}
 	p.logged, p.isLogged = info, true
-	p.log().Info("cover list in use", "version", list.Version, "automatic", list.Automatic, "workloads", p.Store.Info().Workloads)
+	args := []any{"version", list.Version, "automatic", list.Automatic, "workloads", p.Store.Info().Workloads}
+	if list.Skipped > 0 {
+		// Languages only, never the workloads: this kit does not inject them, a newer one may.
+		args = append(args, "skipped", list.Skipped, "skippedLanguages", list.SkippedLanguages)
+	}
+	p.log().Info("cover list in use", args...)
 }
 
 // standDown forgets the list: the key was refused, so nothing is injected until a list can be fetched again.

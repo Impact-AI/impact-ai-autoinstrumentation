@@ -10,7 +10,8 @@ application's own OpenTelemetry setup.
 Every Python process of the container starts the package (an exec probe is one), so a report is claimed once per
 container with a marker file, and the HTTP machinery is imported only by the process that actually sends.
 
-Besides the state, every report carries two string arrays (see frameworks.py; the monorepo drops what does not fit):
+Besides the state, every report carries two string arrays (see frameworks.py; the impact.ai service drops what does
+not fit):
 
 * `impact.setup.frameworks`: the AI libraries and agent frameworks among the installed distributions, each `name` or
   `name version` (one space, both at most 64 characters), at most 20, agent frameworks before provider SDKs;
@@ -18,6 +19,12 @@ Besides the state, every report carries two string arrays (see frameworks.py; th
 
 They are on every report, stood down or not, and `[]` when there is nothing to list: OTLP `arrayValue` of
 `stringValue`, never one joined string and never a missing attribute.
+
+When the package found a tool it knows beside it (detect.tool; coexistence.py), the report also names it:
+`impact.setup.tool` (its id, such as `langsmith`), `impact.setup.tool.version`, `impact.setup.exporter` (the kind of
+exporter its provider uses, such as `otlp-http`, when the names and settings show it) and `impact.setup.alongside`, a
+boolean: true when the package started beside the tool, false when it stood down. Names, a version and a flag; never a
+setting's value. A report that names no tool has none of the four.
 """
 
 from __future__ import annotations
@@ -161,7 +168,7 @@ def report(
     *,
     environ: Mapping[str, str],
     root: str,
-    extra: Mapping[str, str | list[str]] | None = None,
+    extra: Mapping[str, str | bool | list[str]] | None = None,
 ) -> None:
     """Claim and send a report, once per container for identical content."""
     content = f"{detail}\0" + "\0".join(f"{k}={_text(v)}" for k, v in sorted((extra or {}).items()))

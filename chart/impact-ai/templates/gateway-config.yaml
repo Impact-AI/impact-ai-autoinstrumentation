@@ -1,6 +1,34 @@
 {{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
+{{- /*
+The resource attributes the gateway puts on everything it forwards, as statements of the transform processor. One list,
+written once, that the traces pipeline and the logs pipeline both read: a span and a log event of one workload carry the
+same cluster ID, name and cloud identity, and a value is never written into the configuration in two places. Each
+statement is quoted twice: Go's quoted form of the value is the string literal the processor reads, and the YAML scalar
+around it is quoted the same way. Before that, every "$" of the value is written as "$$" (cluster-kit.collectorLiteral):
+the Collector would read "${...}" in a name as a reference.
+*/ -}}
+{{- define "cluster-kit.gatewayStatements" -}}
 {{- $uid := include "cluster-kit.clusterUID" . }}
 {{- $cloud := .Values.cloud | default dict }}
+- {{ printf `set(resource.attributes["k8s.cluster.uid"], %q)` (include "cluster-kit.collectorLiteral" $uid) | quote }}
+{{- with .Values.cluster.name }}
+- {{ printf `set(resource.attributes["k8s.cluster.name"], %q)` (include "cluster-kit.collectorLiteral" .) | quote }}
+{{- end }}
+{{- /* The cloud identity fills a gap: a workload that detected its own account and region keeps them. */}}
+{{- with $cloud.provider }}
+- {{ printf `set(resource.attributes["cloud.provider"], %q) where resource.attributes["cloud.provider"] == nil` (include "cluster-kit.collectorLiteral" .) | quote }}
+{{- end }}
+{{- with $cloud.accountId }}
+- {{ printf `set(resource.attributes["cloud.account.id"], %q) where resource.attributes["cloud.account.id"] == nil` (include "cluster-kit.collectorLiteral" .) | quote }}
+{{- end }}
+{{- with $cloud.region }}
+- {{ printf `set(resource.attributes["cloud.region"], %q) where resource.attributes["cloud.region"] == nil` (include "cluster-kit.collectorLiteral" .) | quote }}
+{{- end }}
+{{- with .Values.cluster.arn }}
+- {{ printf `set(resource.attributes["cloud.resource_id"], %q) where resource.attributes["cloud.resource_id"] == nil` (include "cluster-kit.collectorLiteral" .) | quote }}
+{{- end }}
+{{- end -}}
+{{- $statements := include "cluster-kit.gatewayStatements" . | trim }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -22,32 +50,17 @@ data:
         spike_limit_percentage: 20
       {{- /*
       Resource attributes, set with the transform processor: the resource processor leaves the core distribution in
-      0.167.0. Each statement is quoted twice: Go's quoted form of the value is the string literal the processor reads, and
-      the YAML scalar around it is quoted the same way. Before that, every "$" of the value is written as "$$"
-      (cluster-kit.collectorLiteral): the Collector would read "${...}" in a name as a reference. error_mode ignore: a
-      statement that fails is logged and the spans go on.
+      0.167.0. The same statements for spans and for log records (cluster-kit.gatewayStatements). error_mode ignore: a
+      statement that fails is logged and the spans and log records go on.
       */}}
       transform/cluster:
         error_mode: ignore
         trace_statements:
           - statements:
-              - {{ printf `set(resource.attributes["k8s.cluster.uid"], %q)` (include "cluster-kit.collectorLiteral" $uid) | quote }}
-              {{- with .Values.cluster.name }}
-              - {{ printf `set(resource.attributes["k8s.cluster.name"], %q)` (include "cluster-kit.collectorLiteral" .) | quote }}
-              {{- end }}
-              {{- /* The cloud identity fills a gap: a workload that detected its own account and region keeps them. */}}
-              {{- with $cloud.provider }}
-              - {{ printf `set(resource.attributes["cloud.provider"], %q) where resource.attributes["cloud.provider"] == nil` (include "cluster-kit.collectorLiteral" .) | quote }}
-              {{- end }}
-              {{- with $cloud.accountId }}
-              - {{ printf `set(resource.attributes["cloud.account.id"], %q) where resource.attributes["cloud.account.id"] == nil` (include "cluster-kit.collectorLiteral" .) | quote }}
-              {{- end }}
-              {{- with $cloud.region }}
-              - {{ printf `set(resource.attributes["cloud.region"], %q) where resource.attributes["cloud.region"] == nil` (include "cluster-kit.collectorLiteral" .) | quote }}
-              {{- end }}
-              {{- with .Values.cluster.arn }}
-              - {{ printf `set(resource.attributes["cloud.resource_id"], %q) where resource.attributes["cloud.resource_id"] == nil` (include "cluster-kit.collectorLiteral" .) | quote }}
-              {{- end }}
+              {{- $statements | nindent 14 }}
+        log_statements:
+          - statements:
+              {{- $statements | nindent 14 }}
       batch:
         timeout: 2s
         send_batch_size: 512
@@ -76,6 +89,10 @@ data:
           level: none
       pipelines:
         traces:
+          receivers: [otlp]
+          processors: [memory_limiter, transform/cluster, batch]
+          exporters: [otlp_http]
+        logs:
           receivers: [otlp]
           processors: [memory_limiter, transform/cluster, batch]
           exporters: [otlp_http]

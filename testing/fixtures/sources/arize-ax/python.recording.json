@@ -1,0 +1,142 @@
+{
+  "how": "canonical.py arize-ax (testing/apps/otel_tools) against the kit's recording mock as the tool's backend and provider.py as the model provider",
+  "packages": {
+    "arize-otel": "0.14.1",
+    "openai": "3.46.0",
+    "openinference-instrumentation-openai": "0.1.69",
+    "opentelemetry-sdk": "1.44.0"
+  },
+  "recorded": "2026-11-09",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/v1/traces",
+      "query": "",
+      "headers": {
+        "Host": "127.0.0.1:34665",
+        "User-Agent": "OTel-OTLP-Exporter-Python/1.44.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "sdk-language": "python",
+        "language-version": "3.12.3",
+        "sdk-version": "0.14.1",
+        "sdk-package-name": "arize-otel",
+        "authorization": "planted-arize-key",
+        "api_key": "planted-arize-key",
+        "arize-space-id": "planted-space",
+        "space_id": "planted-space",
+        "arize-interface": "otel",
+        "Content-Type": "application/x-protobuf",
+        "Content-Length": "2360"
+      },
+      "contentType": "application/x-protobuf",
+      "contentEncoding": "",
+      "bodyBase64": "CrUSCsYCCiIKFnRlbGVtZXRyeS5zZGsubGFuZ3VhZ2USCAoGcHl0aG9uCiUKEnRlbGVtZXRyeS5zZGsubmFtZRIPCg1vcGVudGVsZW1ldHJ5CiEKFXRlbGVtZXRyeS5zZGsudmVyc2lvbhIICgYxLjQ0LjAKPQoTc2VydmljZS5pbnN0YW5jZS5pZBImCiQ2YmNkMjRmNC04MGY2LTQ3NTMtYTE3Ny02Mzc4Njk0N2JkY2YKGgoPc2VydmljZS52ZXJzaW9uEgcKBTQuMi4wCiMKDHNlcnZpY2UubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudAoxChpvcGVuaW5mZXJlbmNlLnByb2plY3QubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudAojChJhcml6ZS5wcm9qZWN0LnR5cGUSDQoLYXBwbGljYXRpb24S6Q8KLgokb3BlbmluZmVyZW5jZS5pbnN0cnVtZW50YXRpb24ub3BlbmFpEgYwLjEuNjkStg8KEDZh8enIzHSJNKZ0iYgHIj0SCIBoEVk6EV7bIgh86u30+PQenyoOQ2hhdENvbXBsZXRpb24wATm3i/buvG3mGEE9rKzvvG3mGEoWCgpsbG0uc3lzdGVtEggKBm9wZW5haUrWAgoLaW5wdXQudmFsdWUSxgIKwwJ7Im1vZGVsIjogImdwdC00byIsICJtZXNzYWdlcyI6IFt7InJvbGUiOiAidXNlciIsICJjb250ZW50IjogIldoZXJlIGlzIG9yZGVyIDEwNDI/IENPTlRFTlQtQ0FOQVJZIn1dLCAidG9vbHMiOiBbeyJ0eXBlIjogImZ1bmN0aW9uIiwgImZ1bmN0aW9uIjogeyJuYW1lIjogImdldF9vcmRlciIsICJkZXNjcmlwdGlvbiI6ICJMb29rIHVwIGFuIG9yZGVyIGJ5IGl0cyBpZC4iLCAicGFyYW1ldGVycyI6IHsidHlwZSI6ICJvYmplY3QiLCAicHJvcGVydGllcyI6IHsib3JkZXJfaWQiOiB7InR5cGUiOiAic3RyaW5nIn19LCAicmVxdWlyZWQiOiBbIm9yZGVyX2lkIl19fX1dfUolCg9pbnB1dC5taW1lX3R5cGUSEgoQYXBwbGljYXRpb24vanNvbkrxAwoMb3V0cHV0LnZhbHVlEuADCt0DeyJpZCI6ImNoYXRjbXBsLWNhbm9uaWNhbC0xIiwiY2hvaWNlcyI6W3siZmluaXNoX3JlYXNvbiI6InRvb2xfY2FsbHMiLCJpbmRleCI6MCwibG9ncHJvYnMiOm51bGwsIm1lc3NhZ2UiOnsiY29udGVudCI6bnVsbCwicmVmdXNhbCI6bnVsbCwicm9sZSI6ImFzc2lzdGFudCIsInRvb2xfY2FsbHMiOlt7ImlkIjoiY2FsbF8xIiwiZnVuY3Rpb24iOnsiYXJndW1lbnRzIjoie1wib3JkZXJfaWRcIjpcIjEwNDIgQ09OVEVOVC1DQU5BUllcIn0iLCJuYW1lIjoiZ2V0X29yZGVyIn0sInR5cGUiOiJmdW5jdGlvbiJ9XX19XSwiY3JlYXRlZCI6MTc2MjY0NjQwMCwibW9kZWwiOiJncHQtNG8tMjAyNC0wOC0wNiIsIm9iamVjdCI6ImNoYXQuY29tcGxldGlvbiIsInN5c3RlbV9maW5nZXJwcmludCI6ImZwX2Nhbm9uaWNhbCIsInVzYWdlIjp7ImNvbXBsZXRpb25fdG9rZW5zIjoyMCwicHJvbXB0X3Rva2VucyI6MTIwLCJ0b3RhbF90b2tlbnMiOjE0MH19SiYKEG91dHB1dC5taW1lX3R5cGUSEgoQYXBwbGljYXRpb24vanNvbkr1AQocbGxtLnRvb2xzLjAudG9vbC5qc29uX3NjaGVtYRLUAQrRAXsidHlwZSI6ICJmdW5jdGlvbiIsICJmdW5jdGlvbiI6IHsibmFtZSI6ICJnZXRfb3JkZXIiLCAiZGVzY3JpcHRpb24iOiAiTG9vayB1cCBhbiBvcmRlciBieSBpdHMgaWQuIiwgInBhcmFtZXRlcnMiOiB7InR5cGUiOiAib2JqZWN0IiwgInByb3BlcnRpZXMiOiB7Im9yZGVyX2lkIjogeyJ0eXBlIjogInN0cmluZyJ9fSwgInJlcXVpcmVkIjogWyJvcmRlcl9pZCJdfX19SjIKGWxsbS5pbnZvY2F0aW9uX3BhcmFtZXRlcnMSFQoTeyJtb2RlbCI6ICJncHQtNG8ifUorCiFsbG0uaW5wdXRfbWVzc2FnZXMuMC5tZXNzYWdlLnJvbGUSBgoEdXNlckpNCiRsbG0uaW5wdXRfbWVzc2FnZXMuMC5tZXNzYWdlLmNvbnRlbnQSJQojV2hlcmUgaXMgb3JkZXIgMTA0Mj8gQ09OVEVOVC1DQU5BUllKJQoObGxtLm1vZGVsX25hbWUSEwoRZ3B0LTRvLTIwMjQtMDgtMDZKHAoVbGxtLnRva2VuX2NvdW50LnRvdGFsEgMYjAFKHAoWbGxtLnRva2VuX2NvdW50LnByb21wdBICGHhKIAoabGxtLnRva2VuX2NvdW50LmNvbXBsZXRpb24SAhgUSjEKImxsbS5vdXRwdXRfbWVzc2FnZXMuMC5tZXNzYWdlLnJvbGUSCwoJYXNzaXN0YW50SkMKN2xsbS5vdXRwdXRfbWVzc2FnZXMuMC5tZXNzYWdlLnRvb2xfY2FsbHMuMC50b29sX2NhbGwuaWQSCAoGY2FsbF8xSlEKQmxsbS5vdXRwdXRfbWVzc2FnZXMuMC5tZXNzYWdlLnRvb2xfY2FsbHMuMC50b29sX2NhbGwuZnVuY3Rpb24ubmFtZRILCglnZXRfb3JkZXJKbwpHbGxtLm91dHB1dF9tZXNzYWdlcy4wLm1lc3NhZ2UudG9vbF9jYWxscy4wLnRvb2xfY2FsbC5mdW5jdGlvbi5hcmd1bWVudHMSJAoieyJvcmRlcl9pZCI6IjEwNDIgQ09OVEVOVC1DQU5BUlkifUohChFsbG0uZmluaXNoX3JlYXNvbhIMCgp0b29sX2NhbGxzSiAKF29wZW5pbmZlcmVuY2Uuc3Bhbi5raW5kEgUKA0xMTXoCGAGFAQABAAA="
+    },
+    {
+      "method": "POST",
+      "path": "/v1/traces",
+      "query": "",
+      "headers": {
+        "Host": "127.0.0.1:34665",
+        "User-Agent": "OTel-OTLP-Exporter-Python/1.44.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "sdk-language": "python",
+        "language-version": "3.12.3",
+        "sdk-version": "0.14.1",
+        "sdk-package-name": "arize-otel",
+        "authorization": "planted-arize-key",
+        "api_key": "planted-arize-key",
+        "arize-space-id": "planted-space",
+        "space_id": "planted-space",
+        "arize-interface": "otel",
+        "Content-Type": "application/x-protobuf",
+        "Content-Length": "824"
+      },
+      "contentType": "application/x-protobuf",
+      "contentEncoding": "",
+      "bodyBase64": "CrUGCsYCCiIKFnRlbGVtZXRyeS5zZGsubGFuZ3VhZ2USCAoGcHl0aG9uCiUKEnRlbGVtZXRyeS5zZGsubmFtZRIPCg1vcGVudGVsZW1ldHJ5CiEKFXRlbGVtZXRyeS5zZGsudmVyc2lvbhIICgYxLjQ0LjAKPQoTc2VydmljZS5pbnN0YW5jZS5pZBImCiQ2YmNkMjRmNC04MGY2LTQ3NTMtYTE3Ny02Mzc4Njk0N2JkY2YKGgoPc2VydmljZS52ZXJzaW9uEgcKBTQuMi4wCiMKDHNlcnZpY2UubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudAoxChpvcGVuaW5mZXJlbmNlLnByb2plY3QubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudAojChJhcml6ZS5wcm9qZWN0LnR5cGUSDQoLYXBwbGljYXRpb24S6QMKCgoIX19tYWluX18S2gMKEDZh8enIzHSJNKZ0iYgHIj0SCBufRg+i38ogIgh86u30+PQenyoJZ2V0X29yZGVyMAE5QpXc77xt5hhBF0fe77xt5hhKSAoLaW5wdXQudmFsdWUSOQo3eyJhcmd1bWVudHMiOiAie1wib3JkZXJfaWRcIjpcIjEwNDIgQ09OVEVOVC1DQU5BUllcIn0ifUolCg9pbnB1dC5taW1lX3R5cGUSEgoQYXBwbGljYXRpb24vanNvbkoYCgl0b29sLm5hbWUSCwoJZ2V0X29yZGVySnkKD3Rvb2wucGFyYW1ldGVycxJmCmR7InR5cGUiOiAib2JqZWN0IiwgInRpdGxlIjogImdldF9vcmRlciIsICJwcm9wZXJ0aWVzIjogeyJhcmd1bWVudHMiOiB7fX0sICJyZXF1aXJlZCI6IFsiYXJndW1lbnRzIl19Sj4KDG91dHB1dC52YWx1ZRIuCix7InN0YXR1cyI6InNoaXBwZWQiLCJub3RlIjoiQ09OVEVOVC1DQU5BUlkifUogChBvdXRwdXQubWltZV90eXBlEgwKCnRleHQvcGxhaW5KIQoXb3BlbmluZmVyZW5jZS5zcGFuLmtpbmQSBgoEVE9PTHoCGAGFAQABAAA="
+    },
+    {
+      "method": "POST",
+      "path": "/v1/traces",
+      "query": "",
+      "headers": {
+        "Host": "127.0.0.1:34665",
+        "User-Agent": "OTel-OTLP-Exporter-Python/1.44.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "sdk-language": "python",
+        "language-version": "3.12.3",
+        "sdk-version": "0.14.1",
+        "sdk-package-name": "arize-otel",
+        "authorization": "planted-arize-key",
+        "api_key": "planted-arize-key",
+        "arize-space-id": "planted-space",
+        "space_id": "planted-space",
+        "arize-interface": "otel",
+        "Content-Type": "application/x-protobuf",
+        "Content-Length": "1129"
+      },
+      "contentType": "application/x-protobuf",
+      "contentEncoding": "",
+      "bodyBase64": "CuYICsYCCiIKFnRlbGVtZXRyeS5zZGsubGFuZ3VhZ2USCAoGcHl0aG9uCiUKEnRlbGVtZXRyeS5zZGsubmFtZRIPCg1vcGVudGVsZW1ldHJ5CiEKFXRlbGVtZXRyeS5zZGsudmVyc2lvbhIICgYxLjQ0LjAKPQoTc2VydmljZS5pbnN0YW5jZS5pZBImCiQ2YmNkMjRmNC04MGY2LTQ3NTMtYTE3Ny02Mzc4Njk0N2JkY2YKGgoPc2VydmljZS52ZXJzaW9uEgcKBTQuMi4wCiMKDHNlcnZpY2UubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudAoxChpvcGVuaW5mZXJlbmNlLnByb2plY3QubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudAojChJhcml6ZS5wcm9qZWN0LnR5cGUSDQoLYXBwbGljYXRpb24SmgYKCgoIX19tYWluX18SiwYKEDZh8enIzHSJNKZ0iYgHIj0SCBPSdtORT+AXIgh86u30+PQenyoLaGVscC1jZW50cmUwATme3GvyvG3mGEEqSW7yvG3mGEo4CgtpbnB1dC52YWx1ZRIpCidXaGVuIGRvZXMgYW4gb3JkZXIgc2hpcD8gQ09OVEVOVC1DQU5BUllKHwoPaW5wdXQubWltZV90eXBlEgwKCnRleHQvcGxhaW5KVwomcmV0cmlldmFsLmRvY3VtZW50cy4wLmRvY3VtZW50LmNvbnRlbnQSLQorT3JkZXJzIHNoaXAgd2l0aGluIHR3byBkYXlzLiBDT05URU5ULUNBTkFSWUotCiFyZXRyaWV2YWwuZG9jdW1lbnRzLjAuZG9jdW1lbnQuaWQSCAoGa2ItMTEySjEKJHJldHJpZXZhbC5kb2N1bWVudHMuMC5kb2N1bWVudC5zY29yZRIJIR+F61G4Hu0/Sl0KJnJldHJpZXZhbC5kb2N1bWVudHMuMS5kb2N1bWVudC5jb250ZW50EjMKMVRyYWNraW5nIG51bWJlcnMgYXJyaXZlIGJ5IGUtbWFpbC4gQ09OVEVOVC1DQU5BUllKLQohcmV0cmlldmFsLmRvY3VtZW50cy4xLmRvY3VtZW50LmlkEggKBmtiLTQwN0oxCiRyZXRyaWV2YWwuZG9jdW1lbnRzLjEuZG9jdW1lbnQuc2NvcmUSCSFcj8L1KFznP0pZCiZyZXRyaWV2YWwuZG9jdW1lbnRzLjIuZG9jdW1lbnQuY29udGVudBIvCi1XZWVrZW5kIG9yZGVycyBzaGlwIG9uIE1vbmRheS4gQ09OVEVOVC1DQU5BUllKLQohcmV0cmlldmFsLmRvY3VtZW50cy4yLmRvY3VtZW50LmlkEggKBmtiLTAxOUoxCiRyZXRyaWV2YWwuZG9jdW1lbnRzLjIuZG9jdW1lbnQuc2NvcmUSCSGkcD0K16PgP0omChdvcGVuaW5mZXJlbmNlLnNwYW4ua2luZBILCglSRVRSSUVWRVJ6AIUBAAEAAA=="
+    },
+    {
+      "method": "POST",
+      "path": "/v1/traces",
+      "query": "",
+      "headers": {
+        "Host": "127.0.0.1:34665",
+        "User-Agent": "OTel-OTLP-Exporter-Python/1.44.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "sdk-language": "python",
+        "language-version": "3.12.3",
+        "sdk-version": "0.14.1",
+        "sdk-package-name": "arize-otel",
+        "authorization": "planted-arize-key",
+        "api_key": "planted-arize-key",
+        "arize-space-id": "planted-space",
+        "space_id": "planted-space",
+        "arize-interface": "otel",
+        "Content-Type": "application/x-protobuf",
+        "Content-Length": "2864"
+      },
+      "contentType": "application/x-protobuf",
+      "contentEncoding": "",
+      "bodyBase64": "Cq0WCsYCCiIKFnRlbGVtZXRyeS5zZGsubGFuZ3VhZ2USCAoGcHl0aG9uCiUKEnRlbGVtZXRyeS5zZGsubmFtZRIPCg1vcGVudGVsZW1ldHJ5CiEKFXRlbGVtZXRyeS5zZGsudmVyc2lvbhIICgYxLjQ0LjAKPQoTc2VydmljZS5pbnN0YW5jZS5pZBImCiQ2YmNkMjRmNC04MGY2LTQ3NTMtYTE3Ny02Mzc4Njk0N2JkY2YKGgoPc2VydmljZS52ZXJzaW9uEgcKBTQuMi4wCiMKDHNlcnZpY2UubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudAoxChpvcGVuaW5mZXJlbmNlLnByb2plY3QubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudAojChJhcml6ZS5wcm9qZWN0LnR5cGUSDQoLYXBwbGljYXRpb24S4RMKLgokb3BlbmluZmVyZW5jZS5pbnN0cnVtZW50YXRpb24ub3BlbmFpEgYwLjEuNjkSrhMKEDZh8enIzHSJNKZ0iYgHIj0SCCYjyjT85UoBIgh86u30+PQenyoOQ2hhdENvbXBsZXRpb24wATkV1CH1vG3mGEEs4kr1vG3mGEoWCgpsbG0uc3lzdGVtEggKBm9wZW5haUr9BAoLaW5wdXQudmFsdWUS7QQK6gR7Im1vZGVsIjogImdwdC00byIsICJtZXNzYWdlcyI6IFt7InJvbGUiOiAidXNlciIsICJjb250ZW50IjogIldoZXJlIGlzIG9yZGVyIDEwNDI/IENPTlRFTlQtQ0FOQVJZIn0sIHsicm9sZSI6ICJhc3Npc3RhbnQiLCAiY29udGVudCI6IG51bGwsICJ0b29sX2NhbGxzIjogW3siaWQiOiAiY2FsbF8xIiwgInR5cGUiOiAiZnVuY3Rpb24iLCAiZnVuY3Rpb24iOiB7Im5hbWUiOiAiZ2V0X29yZGVyIiwgImFyZ3VtZW50cyI6ICJ7XCJvcmRlcl9pZFwiOlwiMTA0MiBDT05URU5ULUNBTkFSWVwifSJ9fV19LCB7InJvbGUiOiAidG9vbCIsICJ0b29sX2NhbGxfaWQiOiAiY2FsbF8xIiwgImNvbnRlbnQiOiAie1wic3RhdHVzXCI6XCJzaGlwcGVkXCIsXCJub3RlXCI6XCJDT05URU5ULUNBTkFSWVwifSJ9XSwgInRvb2xzIjogW3sidHlwZSI6ICJmdW5jdGlvbiIsICJmdW5jdGlvbiI6IHsibmFtZSI6ICJnZXRfb3JkZXIiLCAiZGVzY3JpcHRpb24iOiAiTG9vayB1cCBhbiBvcmRlciBieSBpdHMgaWQuIiwgInBhcmFtZXRlcnMiOiB7InR5cGUiOiAib2JqZWN0IiwgInByb3BlcnRpZXMiOiB7Im9yZGVyX2lkIjogeyJ0eXBlIjogInN0cmluZyJ9fSwgInJlcXVpcmVkIjogWyJvcmRlcl9pZCJdfX19XX1KJQoPaW5wdXQubWltZV90eXBlEhIKEGFwcGxpY2F0aW9uL2pzb25KiQMKDG91dHB1dC52YWx1ZRL4Agr1AnsiaWQiOiJjaGF0Y21wbC1jYW5vbmljYWwtMiIsImNob2ljZXMiOlt7ImZpbmlzaF9yZWFzb24iOiJzdG9wIiwiaW5kZXgiOjAsImxvZ3Byb2JzIjpudWxsLCJtZXNzYWdlIjp7ImNvbnRlbnQiOiJPcmRlciAxMDQyIGhhcyBzaGlwcGVkLiBDT05URU5ULUNBTkFSWSIsInJlZnVzYWwiOm51bGwsInJvbGUiOiJhc3Npc3RhbnQifX1dLCJjcmVhdGVkIjoxNzYyNjQ2NDAwLCJtb2RlbCI6ImdwdC00by0yMDI0LTA4LTA2Iiwib2JqZWN0IjoiY2hhdC5jb21wbGV0aW9uIiwic3lzdGVtX2ZpbmdlcnByaW50IjoiZnBfY2Fub25pY2FsIiwidXNhZ2UiOnsiY29tcGxldGlvbl90b2tlbnMiOjgwLCJwcm9tcHRfdG9rZW5zIjozMDAsInRvdGFsX3Rva2VucyI6MzgwfX1KJgoQb3V0cHV0Lm1pbWVfdHlwZRISChBhcHBsaWNhdGlvbi9qc29uSvUBChxsbG0udG9vbHMuMC50b29sLmpzb25fc2NoZW1hEtQBCtEBeyJ0eXBlIjogImZ1bmN0aW9uIiwgImZ1bmN0aW9uIjogeyJuYW1lIjogImdldF9vcmRlciIsICJkZXNjcmlwdGlvbiI6ICJMb29rIHVwIGFuIG9yZGVyIGJ5IGl0cyBpZC4iLCAicGFyYW1ldGVycyI6IHsidHlwZSI6ICJvYmplY3QiLCAicHJvcGVydGllcyI6IHsib3JkZXJfaWQiOiB7InR5cGUiOiAic3RyaW5nIn19LCAicmVxdWlyZWQiOiBbIm9yZGVyX2lkIl19fX1KMgoZbGxtLmludm9jYXRpb25fcGFyYW1ldGVycxIVChN7Im1vZGVsIjogImdwdC00byJ9SisKIWxsbS5pbnB1dF9tZXNzYWdlcy4wLm1lc3NhZ2Uucm9sZRIGCgR1c2VySk0KJGxsbS5pbnB1dF9tZXNzYWdlcy4wLm1lc3NhZ2UuY29udGVudBIlCiNXaGVyZSBpcyBvcmRlciAxMDQyPyBDT05URU5ULUNBTkFSWUowCiFsbG0uaW5wdXRfbWVzc2FnZXMuMS5tZXNzYWdlLnJvbGUSCwoJYXNzaXN0YW50SkIKNmxsbS5pbnB1dF9tZXNzYWdlcy4xLm1lc3NhZ2UudG9vbF9jYWxscy4wLnRvb2xfY2FsbC5pZBIICgZjYWxsXzFKUApBbGxtLmlucHV0X21lc3NhZ2VzLjEubWVzc2FnZS50b29sX2NhbGxzLjAudG9vbF9jYWxsLmZ1bmN0aW9uLm5hbWUSCwoJZ2V0X29yZGVySm4KRmxsbS5pbnB1dF9tZXNzYWdlcy4xLm1lc3NhZ2UudG9vbF9jYWxscy4wLnRvb2xfY2FsbC5mdW5jdGlvbi5hcmd1bWVudHMSJAoieyJvcmRlcl9pZCI6IjEwNDIgQ09OVEVOVC1DQU5BUlkifUorCiFsbG0uaW5wdXRfbWVzc2FnZXMuMi5tZXNzYWdlLnJvbGUSBgoEdG9vbEo1CilsbG0uaW5wdXRfbWVzc2FnZXMuMi5tZXNzYWdlLnRvb2xfY2FsbF9pZBIICgZjYWxsXzFKVgokbGxtLmlucHV0X21lc3NhZ2VzLjIubWVzc2FnZS5jb250ZW50Ei4KLHsic3RhdHVzIjoic2hpcHBlZCIsIm5vdGUiOiJDT05URU5ULUNBTkFSWSJ9SiUKDmxsbS5tb2RlbF9uYW1lEhMKEWdwdC00by0yMDI0LTA4LTA2ShwKFWxsbS50b2tlbl9jb3VudC50b3RhbBIDGPwCSh0KFmxsbS50b2tlbl9jb3VudC5wcm9tcHQSAxisAkogChpsbG0udG9rZW5fY291bnQuY29tcGxldGlvbhICGFBKMQoibGxtLm91dHB1dF9tZXNzYWdlcy4wLm1lc3NhZ2Uucm9sZRILCglhc3Npc3RhbnRKUQolbGxtLm91dHB1dF9tZXNzYWdlcy4wLm1lc3NhZ2UuY29udGVudBIoCiZPcmRlciAxMDQyIGhhcyBzaGlwcGVkLiBDT05URU5ULUNBTkFSWUobChFsbG0uZmluaXNoX3JlYXNvbhIGCgRzdG9wSiAKF29wZW5pbmZlcmVuY2Uuc3Bhbi5raW5kEgUKA0xMTXoCGAGFAQABAAA="
+    },
+    {
+      "method": "POST",
+      "path": "/v1/traces",
+      "query": "",
+      "headers": {
+        "Host": "127.0.0.1:34665",
+        "User-Agent": "OTel-OTLP-Exporter-Python/1.44.0",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "sdk-language": "python",
+        "language-version": "3.12.3",
+        "sdk-version": "0.14.1",
+        "sdk-package-name": "arize-otel",
+        "authorization": "planted-arize-key",
+        "api_key": "planted-arize-key",
+        "arize-space-id": "planted-space",
+        "space_id": "planted-space",
+        "arize-interface": "otel",
+        "Content-Type": "application/x-protobuf",
+        "Content-Length": "630"
+      },
+      "contentType": "application/x-protobuf",
+      "contentEncoding": "",
+      "bodyBase64": "CvMECsYCCiIKFnRlbGVtZXRyeS5zZGsubGFuZ3VhZ2USCAoGcHl0aG9uCiUKEnRlbGVtZXRyeS5zZGsubmFtZRIPCg1vcGVudGVsZW1ldHJ5CiEKFXRlbGVtZXRyeS5zZGsudmVyc2lvbhIICgYxLjQ0LjAKPQoTc2VydmljZS5pbnN0YW5jZS5pZBImCiQ2YmNkMjRmNC04MGY2LTQ3NTMtYTE3Ny02Mzc4Njk0N2JkY2YKGgoPc2VydmljZS52ZXJzaW9uEgcKBTQuMi4wCiMKDHNlcnZpY2UubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudAoxChpvcGVuaW5mZXJlbmNlLnByb2plY3QubmFtZRITChFzdXBwb3J0LWFzc2lzdGFudAojChJhcml6ZS5wcm9qZWN0LnR5cGUSDQoLYXBwbGljYXRpb24SpwIKCgoIX19tYWluX18SmAIKEDZh8enIzHSJNKZ0iYgHIj0SCHzq7fT49B6fKgdzdXBwb3J0MAE5r5Bm2bxt5hhBEPAl+Lxt5hhKEwoLaW5wdXQudmFsdWUSBAoCe31KJQoPaW5wdXQubWltZV90eXBlEhIKEGFwcGxpY2F0aW9uL2pzb25KFwoKYWdlbnQubmFtZRIJCgdzdXBwb3J0SjgKDG91dHB1dC52YWx1ZRIoCiZPcmRlciAxMDQyIGhhcyBzaGlwcGVkLiBDT05URU5ULUNBTkFSWUogChBvdXRwdXQubWltZV90eXBlEgwKCnRleHQvcGxhaW5KIgoXb3BlbmluZmVyZW5jZS5zcGFuLmtpbmQSBwoFQUdFTlR6AhgBhQEAAQAA"
+    }
+  ]
+}

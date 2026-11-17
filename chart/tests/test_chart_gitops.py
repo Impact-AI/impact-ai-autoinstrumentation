@@ -19,7 +19,8 @@ import yaml
 from test_chart import CHART, CI_VALUES, helm
 from test_chart_exchange import TOKEN
 
-README = (CHART / "README.md").read_text()
+# The install options page, which the chart README links to for installs without a token.
+README = (CHART.parents[1] / "docs" / "install.md").read_text()
 
 
 def template(*sets: str, switch: bool = False):
@@ -69,7 +70,7 @@ def test_a_render_with_the_chart_tests_values_is_what_the_switch_is_for():
 
 
 def test_the_readme_says_why_a_token_install_needs_the_cluster_and_names_the_gitops_route():
-    start = README.index("### Giving the key yourself")
+    start = README.index("## Giving the key yourself")
     section = " ".join(README[start : README.index("\n## ", start)].split())
     for needed in (
         "helm template --no-hooks",

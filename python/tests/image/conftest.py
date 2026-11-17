@@ -64,7 +64,7 @@ def network():
 def _mocks(network):
     require_images(MOCK_IMAGE)
     started = [
-        Container.start(MOCK_IMAGE, network=network, publish=8080, name=f"i019-mock-{uuid.uuid4().hex[:6]}")
+        Container.start(MOCK_IMAGE, network=network, publish=8080, name=f"kit-test-mock-{uuid.uuid4().hex[:6]}")
         for _ in range(2)
     ]
     yield [Mock(c) for c in started]
@@ -92,7 +92,7 @@ def payload():
     require_images(IMAGE)
     volumes = {}
     for variant, source in (("glibc", "/autoinstrumentation/."), ("musl", "/autoinstrumentation-musl/.")):
-        name = f"i019-payload-{variant}-{uuid.uuid4().hex[:6]}"
+        name = f"kit-test-payload-{variant}-{uuid.uuid4().hex[:6]}"
         run("volume", "create", name)
         # A new volume belongs to root and is not writable by the image's user; a Kubernetes emptyDir is (mode 1777).
         run("run", "--rm", "--user", "0", "-v", f"{name}:{MOUNT}", IMAGE, "chmod", "1777", MOUNT)
@@ -117,18 +117,21 @@ def start_app(network, payload, mock):
         env: dict[str, str] | None = None,
         inject: bool = True,
         gateway: str | None = None,
+        mounts: dict[str, str] | None = None,
     ) -> Container:
         base = {"STUB_URL": mock.internal_url}
         if inject:
             base.update(OPERATOR_ENV)
             base["IMPACT_OTLP_ENDPOINT"] = gateway or mock.internal_url
         base.update(env or {})
+        volumes = {payload[variant]: MOUNT} if inject else {}
+        volumes.update(mounts or {})  # a directory of the host (absolute path) or a volume, read by the workload
         container = Container.start(
             image,
             network=network,
             command=command,
             env=base,
-            volumes={payload[variant]: MOUNT} if inject else None,
+            volumes=volumes or None,
             publish=8000,
             user="10001:10001",  # not root, and not the user that copied the files
         )

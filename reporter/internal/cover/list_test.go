@@ -45,30 +45,32 @@ func TestParseListRefusesTheWholeListForOneBadThing(t *testing.T) {
 	}
 	good := `{"namespace":"shop","kind":"Deployment","name":"api","lang":"python"}`
 	cases := map[string]string{
-		"not JSON":                     `{"schema":`,
-		"an array":                     `[]`,
-		"no schema":                    `{"version":1,"automatic":true,"workloads":[]}`,
-		"another schema":               `{"schema":"impact.cover.v2","version":1,"automatic":true,"workloads":[]}`,
-		"a negative version":           `{"schema":"impact.cover.v1","version":-1,"automatic":true,"workloads":[]}`,
-		"a version that is text":       `{"schema":"impact.cover.v1","version":"17","automatic":true,"workloads":[]}`,
-		"automatic that is text":       `{"schema":"impact.cover.v1","version":1,"automatic":"yes","workloads":[]}`,
-		"an unknown kind":              wrap(good + `,{"namespace":"shop","kind":"Pod","name":"p","lang":"python"}`),
-		"a lowercase kind":             wrap(`{"namespace":"shop","kind":"deployment","name":"p","lang":"python"}`),
-		"an unknown language":          wrap(`{"namespace":"shop","kind":"Deployment","name":"p","lang":"java"}`),
-		"no language":                  wrap(`{"namespace":"shop","kind":"Deployment","name":"p"}`),
-		"an empty namespace":           wrap(`{"namespace":"","kind":"Deployment","name":"p","lang":"python"}`),
-		"an uppercase namespace":       wrap(`{"namespace":"Shop","kind":"Deployment","name":"p","lang":"python"}`),
-		"a namespace with a dot":       wrap(`{"namespace":"a.b","kind":"Deployment","name":"p","lang":"python"}`),
-		"a namespace of 64 letters":    wrap(`{"namespace":"` + strings.Repeat("a", 64) + `","kind":"Deployment","name":"p","lang":"python"}`),
-		"an empty name":                wrap(`{"namespace":"shop","kind":"Deployment","name":"","lang":"python"}`),
-		"a name with a slash":          wrap(`{"namespace":"shop","kind":"Deployment","name":"a/b","lang":"python"}`),
-		"a name with a space":          wrap(`{"namespace":"shop","kind":"Deployment","name":"a b","lang":"python"}`),
-		"a name of 254 letters":        wrap(`{"namespace":"shop","kind":"Deployment","name":"` + strings.Repeat("a", 254) + `","lang":"python"}`),
-		"a bad container name":         wrap(`{"namespace":"shop","kind":"Deployment","name":"p","lang":"python","container":"App_1"}`),
-		"a container of 64 letters":    wrap(`{"namespace":"shop","kind":"Deployment","name":"p","lang":"python","container":"` + strings.Repeat("a", 64) + `"}`),
-		"musl that is text":            wrap(`{"namespace":"shop","kind":"Deployment","name":"p","lang":"python","musl":"yes"}`),
-		"an entry that is not object":  wrap(good + `,"shop/api"`),
-		"workloads that is not a list": `{"schema":"impact.cover.v1","version":1,"automatic":true,"workloads":{}}`,
+		"not JSON":                      `{"schema":`,
+		"an array":                      `[]`,
+		"no schema":                     `{"version":1,"automatic":true,"workloads":[]}`,
+		"another schema":                `{"schema":"impact.cover.v2","version":1,"automatic":true,"workloads":[]}`,
+		"a negative version":            `{"schema":"impact.cover.v1","version":-1,"automatic":true,"workloads":[]}`,
+		"a version that is text":        `{"schema":"impact.cover.v1","version":"17","automatic":true,"workloads":[]}`,
+		"automatic that is text":        `{"schema":"impact.cover.v1","version":1,"automatic":"yes","workloads":[]}`,
+		"an unknown kind":               wrap(good + `,{"namespace":"shop","kind":"Pod","name":"p","lang":"python"}`),
+		"a lowercase kind":              wrap(`{"namespace":"shop","kind":"deployment","name":"p","lang":"python"}`),
+		"a language that is not a name": wrap(`{"namespace":"shop","kind":"Deployment","name":"p","lang":"Java 21"}`),
+		"a language that is a number":   wrap(`{"namespace":"shop","kind":"Deployment","name":"p","lang":21}`),
+		"an unknown language, bad name": wrap(`{"namespace":"shop","kind":"Deployment","name":"a/b","lang":"java"}`),
+		"no language":                   wrap(`{"namespace":"shop","kind":"Deployment","name":"p"}`),
+		"an empty namespace":            wrap(`{"namespace":"","kind":"Deployment","name":"p","lang":"python"}`),
+		"an uppercase namespace":        wrap(`{"namespace":"Shop","kind":"Deployment","name":"p","lang":"python"}`),
+		"a namespace with a dot":        wrap(`{"namespace":"a.b","kind":"Deployment","name":"p","lang":"python"}`),
+		"a namespace of 64 letters":     wrap(`{"namespace":"` + strings.Repeat("a", 64) + `","kind":"Deployment","name":"p","lang":"python"}`),
+		"an empty name":                 wrap(`{"namespace":"shop","kind":"Deployment","name":"","lang":"python"}`),
+		"a name with a slash":           wrap(`{"namespace":"shop","kind":"Deployment","name":"a/b","lang":"python"}`),
+		"a name with a space":           wrap(`{"namespace":"shop","kind":"Deployment","name":"a b","lang":"python"}`),
+		"a name of 254 letters":         wrap(`{"namespace":"shop","kind":"Deployment","name":"` + strings.Repeat("a", 254) + `","lang":"python"}`),
+		"a bad container name":          wrap(`{"namespace":"shop","kind":"Deployment","name":"p","lang":"python","container":"App_1"}`),
+		"a container of 64 letters":     wrap(`{"namespace":"shop","kind":"Deployment","name":"p","lang":"python","container":"` + strings.Repeat("a", 64) + `"}`),
+		"musl that is text":             wrap(`{"namespace":"shop","kind":"Deployment","name":"p","lang":"python","musl":"yes"}`),
+		"an entry that is not object":   wrap(good + `,"shop/api"`),
+		"workloads that is not a list":  `{"schema":"impact.cover.v1","version":1,"automatic":true,"workloads":{}}`,
 	}
 	for name, in := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -80,6 +82,76 @@ func TestParseListRefusesTheWholeListForOneBadThing(t *testing.T) {
 	// ... and the same list without the bad entry is fine.
 	if _, err := ParseList([]byte(wrap(good))); err != nil {
 		t.Errorf("the good entry alone: %v", err)
+	}
+}
+
+func TestParseListSkipsAnEntryInALanguageItDoesNotKnow(t *testing.T) {
+	// A newer impact.ai lists languages this kit does not inject. Refusing the whole list would keep the last one for
+	// ever and stop automatic coverage of the languages it does know, so such an entry is skipped and counted.
+	in := `{"schema":"impact.cover.v1","version":9,"automatic":true,"workloads":[
+		{"namespace":"shop","kind":"Deployment","name":"api","lang":"python"},
+		{"namespace":"shop","kind":"Deployment","name":"orders","lang":"java"},
+		{"namespace":"shop","kind":"StatefulSet","name":"ledger","lang":"java","container":"app"},
+		{"namespace":"edge","kind":"Deployment","name":"billing","lang":"dotnet"},
+		{"namespace":"edge","kind":"Deployment","name":"web","lang":"node"}
+	]}`
+	list, err := ParseList([]byte(in))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(list.Workloads) != 2 || list.Workloads[0].Name != "api" || list.Workloads[1].Name != "web" {
+		t.Errorf("workloads = %+v, want api and web", list.Workloads)
+	}
+	if list.Skipped != 3 || list.SkippedLanguages["java"] != 2 || list.SkippedLanguages["dotnet"] != 1 || len(list.SkippedLanguages) != 2 {
+		t.Errorf("skipped = %d %v, want 3: java 2, dotnet 1", list.Skipped, list.SkippedLanguages)
+	}
+
+	var s Store
+	s.Set(list)
+	if _, ok := s.Lookup("shop", "Deployment", "orders"); ok {
+		t.Error("a skipped entry is covered")
+	}
+	if _, ok := s.Lookup("shop", "Deployment", "api"); !ok {
+		t.Error("a known entry beside skipped ones is not covered")
+	}
+	if info := s.Info(); info.Workloads != 2 || info.Skipped != 3 {
+		t.Errorf("Info = %+v, want 2 workloads and 3 skipped", info)
+	}
+
+	// A list of only unknown languages is a valid, empty list.
+	only := `{"schema":"impact.cover.v1","version":1,"automatic":true,"workloads":[{"namespace":"shop","kind":"Job","name":"j","lang":"ruby"}]}`
+	if list, err := ParseList([]byte(only)); err != nil || len(list.Workloads) != 0 || list.Skipped != 1 {
+		t.Errorf("only unknown languages: %+v, %v", list, err)
+	}
+	// A list with nothing skipped says so.
+	if list, err := ParseList([]byte(goodList)); err != nil || list.Skipped != 0 || len(list.SkippedLanguages) != 0 {
+		t.Errorf("nothing to skip: %+v, %v", list, err)
+	}
+}
+
+func TestSkippedLanguagesAreBounded(t *testing.T) {
+	var b strings.Builder
+	b.WriteString(`{"schema":"impact.cover.v1","version":1,"automatic":true,"workloads":[`)
+	for i := 0; i < 40; i++ {
+		if i > 0 {
+			b.WriteByte(',')
+		}
+		fmt.Fprintf(&b, `{"namespace":"shop","kind":"Deployment","name":"app-%d","lang":"lang%d"}`, i, i)
+	}
+	b.WriteString(`]}`)
+	list, err := ParseList([]byte(b.String()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if list.Skipped != 40 || len(list.SkippedLanguages) > maxSkippedLanguages+1 {
+		t.Errorf("skipped = %d, %d languages named, want 40 and at most %d", list.Skipped, len(list.SkippedLanguages), maxSkippedLanguages+1)
+	}
+	total := 0
+	for _, n := range list.SkippedLanguages {
+		total += n
+	}
+	if total != 40 || list.SkippedLanguages[otherLanguages] == 0 {
+		t.Errorf("languages = %v, want every entry counted and the rest under %q", list.SkippedLanguages, otherLanguages)
 	}
 }
 

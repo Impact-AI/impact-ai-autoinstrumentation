@@ -28,6 +28,12 @@ const TRACER_PACKAGES = new Set([
   '@azure/monitor-opentelemetry',
   '@honeycombio/opentelemetry-node',
   '@arizeai/openinference-vercel',
+  '@arizeai/phoenix-otel',
+  '@pydantic/logfire-node',
+  // Impact AI's own SDK: an application that uses it sends its traces itself, so the preload does not trace the same
+  // calls a second time.
+  'impact-ai',
+  '@impact-ai/sdk',
 ]);
 // Families: Traceloop's SDK and OpenLLMetry's per-provider packages, and OpenInference's per-library instrumentations.
 const TRACER_PREFIXES = ['@traceloop/', '@arizeai/openinference-instrumentation-'];
@@ -62,6 +68,8 @@ const SCOPES = new Set([
   '@azure-rest',
   '@huggingface',
   '@aws-sdk',
+  '@pydantic',
+  '@impact-ai',
 ]);
 
 // The exporter settings a workload sets when it runs its own OpenTelemetry pipeline. OTEL_EXPORTER_OTLP_PROTOCOL and
@@ -75,6 +83,154 @@ const EXPORTER_SETTINGS = [
 const EXPORTER_PREFIXES = ['OTEL_EXPORTER_ZIPKIN_', 'OTEL_EXPORTER_JAEGER_'];
 
 const RANK = { launcher: 0, runtime: 1, distribution: 2, environment: 3 };
+
+// LangSmith: its default tracing uses callbacks and wrappers and leaves the OpenTelemetry provider alone, so the package
+// starts beside it. Its OpenTelemetry mode makes the SDK register the process's provider (initializeOTEL()) and export
+// OTLP itself, and then the workload owns its tracing. The SDK reads TRACING_MODE (langsmith or otel) under LANGSMITH_,
+// then LANGCHAIN_; when it is not set, OTEL_ENABLED=true, bare or under those prefixes, switches the mode on. The
+// values are read here and never leave the process: a finding names the setting.
+const LANGSMITH_PREFIXES = ['LANGSMITH_', 'LANGCHAIN_'];
+
+function langsmithSetting(env, name) {
+  for (const prefix of LANGSMITH_PREFIXES) {
+    if (env[prefix + name]) return { name: prefix + name, value: String(env[prefix + name]) };
+  }
+  return null;
+}
+
+function langsmithOtelMode(env) {
+  const mode = langsmithSetting(env, 'TRACING_MODE');
+  if (mode) return mode.value.toLowerCase() === 'otel' ? [{ kind: 'environment', name: mode.name }] : [];
+  if (env.OTEL_ENABLED === 'true') return [{ kind: 'environment', name: 'OTEL_ENABLED' }];
+  const legacy = langsmithSetting(env, 'OTEL_ENABLED');
+  return legacy && legacy.value === 'true' ? [{ kind: 'environment', name: legacy.name }] : [];
+}
+
+// The tool a finding shows, by the source ids impact.ai's service knows, and the packages whose version is the tool's
+// (the first one installed). A finding of no tool here (an OpenLLMetry or OpenInference instrumentation on its own, which
+// several tools start) names none: impact.ai reads the workload as owned by another tracer.
+const TOOLS = {
+  'dd-trace': 'datadog',
+  '@traceloop/node-server-sdk': 'traceloop',
+  langfuse: 'langfuse',
+  '@langfuse/otel': 'langfuse',
+  '@langfuse/tracing': 'langfuse',
+  openlit: 'openlit',
+  newrelic: 'newrelic',
+  '@elastic/opentelemetry-node': 'elastic-edot',
+  '@splunk/otel': 'splunk-otel',
+  '@honeycombio/opentelemetry-node': 'honeycomb',
+  '@arizeai/phoenix-otel': 'phoenix',
+  '@pydantic/logfire-node': 'logfire',
+  '@opentelemetry/auto-instrumentations-node': 'opentelemetry',
+  '@opentelemetry/sdk-node': 'opentelemetry',
+};
+const TOOL_PACKAGES = {
+  datadog: ['dd-trace'],
+  traceloop: ['@traceloop/node-server-sdk'],
+  langfuse: ['langfuse', '@langfuse/otel', '@langfuse/tracing'],
+  openlit: ['openlit'],
+  newrelic: ['newrelic'],
+  'elastic-edot': ['@elastic/opentelemetry-node'],
+  'splunk-otel': ['@splunk/otel'],
+  honeycomb: ['@honeycombio/opentelemetry-node'],
+  phoenix: ['@arizeai/phoenix-otel'],
+  logfire: ['@pydantic/logfire-node'],
+  opentelemetry: ['@opentelemetry/sdk-node', '@opentelemetry/sdk-trace-node', '@opentelemetry/sdk-trace-base'],
+  langsmith: ['langsmith'],
+};
+// The exporter kind of an OpenTelemetry SDK's traces, from OTEL_TRACES_EXPORTER and the OTLP protocol it reads. Only these
+// words leave the process, never a setting's value.
+const TRACES_EXPORTERS = ['zipkin', 'console'];
+const OTLP_PROTOCOLS = { grpc: 'otlp-grpc', 'http/protobuf': 'otlp-http', 'http/json': 'otlp-http' };
+const LANGSMITH_EXPORTER = 'otlp-http'; // LangSmith's OpenTelemetry mode exports OTLP over HTTP, whatever else is set
+const MAX_TOOL_TEXT = 64;
+const RUNTIME_PROVIDER = 'an OpenTelemetry tracer provider (registered before this package)';
+const LOADED_BEFORE = ' (loaded before this package)';
+
+function own(object, key) {
+  return Object.prototype.hasOwnProperty.call(object, key);
+}
+
+/** LangSmith's tracing is switched on in the environment, as its SDK reads it: TRACING_V2 or TRACING equal to "true". */
+function langsmithTracing(env) {
+  return ['TRACING_V2', 'TRACING'].some((name) => {
+    const setting = langsmithSetting(env, name);
+    return setting !== null && setting.value === 'true';
+  });
+}
+
+/** The tool id a finding shows, or null. */
+function findingTool(finding) {
+  if (finding.kind === 'environment') {
+    if (finding.name === 'OTEL_ENABLED' || LANGSMITH_PREFIXES.some((prefix) => finding.name.indexOf(prefix) === 0)) {
+      return 'langsmith';
+    }
+    return finding.name.indexOf('OTEL_') === 0 ? 'opentelemetry' : null;
+  }
+  let name = finding.name;
+  if (finding.kind === 'runtime') {
+    if (name === RUNTIME_PROVIDER) return 'opentelemetry';
+    if (name.slice(-LOADED_BEFORE.length) === LOADED_BEFORE) name = name.slice(0, -LOADED_BEFORE.length);
+  } else if (finding.kind === 'launcher') {
+    name = specifierPackage(name);
+  }
+  return name && own(TOOLS, name) ? TOOLS[name] : null;
+}
+
+/** A name or version impact.ai keeps (a letter or digit first, then letters, digits and ._+!-, at most 64), else null. */
+function printableWord(text) {
+  if (typeof text !== 'string' || text.length > MAX_TOOL_TEXT) return null;
+  return /^[A-Za-z0-9][A-Za-z0-9._+!-]*$/.test(text) ? text : null;
+}
+
+/** The kind of exporter an OpenTelemetry SDK configured by the environment sends its traces with, or null. */
+function otelExporter(env) {
+  const names = String(env.OTEL_TRACES_EXPORTER || '')
+    .split(',')
+    .map((name) => name.trim().toLowerCase())
+    .filter(Boolean);
+  if (names.length && TRACES_EXPORTERS.indexOf(names[0]) >= 0) return names[0];
+  if (names.length && names[0] !== 'otlp') return null;
+  if (Object.keys(env).some((name) => name.indexOf('OTEL_EXPORTER_ZIPKIN_') === 0 && env[name])) return 'zipkin';
+  const protocol = String(env.OTEL_EXPORTER_OTLP_TRACES_PROTOCOL || env.OTEL_EXPORTER_OTLP_PROTOCOL || '')
+    .trim()
+    .toLowerCase();
+  return own(OTLP_PROTOCOLS, protocol) ? OTLP_PROTOCOLS[protocol] : null;
+}
+
+function byRank(a, b) {
+  return RANK[a.kind] - RANK[b.kind] || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
+}
+
+/**
+ * The tool the setup report names, { id, version, exporter }: that of the first finding (in the detail's order) which
+ * shows one (a LangSmith setting, OTEL_ENABLED among them, only when the langsmith package is installed), else, when
+ * there is no finding at all, LangSmith when its default tracing is on (it leaves the OpenTelemetry API alone, so it is
+ * no finding), else null. A tracer of no known tool is named only in the detail: LangSmith's tracing beside it does not
+ * make LangSmith its owner. Never a setting's value.
+ */
+function toolOf(findings, packages, env) {
+  const installed = packages || {};
+  const settings = env || {};
+  const langsmith = own(installed, 'langsmith');
+  const all = findings || [];
+  let id = null;
+  for (const finding of all.slice().sort(byRank)) {
+    id = findingTool(finding);
+    if (id === 'langsmith' && !langsmith) id = null;
+    if (id) break;
+  }
+  if (!id) {
+    if (all.length || !langsmith || !langsmithTracing(settings)) return null;
+    return { id: 'langsmith', version: printableWord(installed.langsmith), exporter: null };
+  }
+  const owner = (TOOL_PACKAGES[id] || []).find((name) => own(installed, name));
+  let exporter = null;
+  if (id === 'langsmith') exporter = LANGSMITH_EXPORTER;
+  else if (id === 'opentelemetry') exporter = otelExporter(settings);
+  return { id, version: owner ? printableWord(installed[owner]) : null, exporter };
+}
 
 function isTracerPackage(name) {
   if (TRACER_PACKAGES.has(name)) return true;
@@ -92,10 +248,7 @@ function describeFinding(finding) {
 }
 
 function describe(findings) {
-  const sorted = findings.slice().sort(
-    (a, b) => RANK[a.kind] - RANK[b.kind] || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)
-  );
-  const text = sorted.map(describeFinding).join(', ');
+  const text = findings.slice().sort(byRank).map(describeFinding).join(', ');
   return text.length <= MAX_DETAIL ? text : text.slice(0, MAX_DETAIL - 3) + '...';
 }
 
@@ -238,12 +391,12 @@ function runtimeFindings(cache, globalState) {
     const name = specifierPackage(file.slice(at + marker.length));
     if (name && isTracerPackage(name) && !seen.has(name)) {
       seen.add(name);
-      found.push({ kind: 'runtime', name: name + ' (loaded before this package)' });
+      found.push({ kind: 'runtime', name: name + LOADED_BEFORE });
     }
   }
   const api = globalState && globalState['opentelemetry.js.api.1'];
   if (api && api.trace) {
-    found.push({ kind: 'runtime', name: 'an OpenTelemetry tracer provider (registered before this package)' });
+    found.push({ kind: 'runtime', name: RUNTIME_PROVIDER });
   }
   return found;
 }
@@ -274,12 +427,14 @@ function findForeign(input) {
   }
   const hasOtelSdk = OTEL_SDK_PACKAGES.some((name) => name in packages);
   found.push(...environmentFindings(input.env || {}, hasOtelSdk));
+  found.push(...langsmithOtelMode(input.env || {}));
   return found;
 }
 
-/** The names `scan` reads: tracers, the OpenTelemetry SDK, and what `frameworks.js` catalogues (passed in). */
+/** The names `scan` reads: tracers, the OpenTelemetry SDK, LangSmith, and what `frameworks.js` catalogues (passed in). */
 function wantedNames(catalogued) {
-  return (name) => isTracerPackage(name) || OTEL_SDK_PACKAGES.indexOf(name) >= 0 || catalogued(name);
+  return (name) =>
+    isTracerPackage(name) || OTEL_SDK_PACKAGES.indexOf(name) >= 0 || name === 'langsmith' || catalogued(name);
 }
 
 function entryFile(argv1) {
@@ -363,6 +518,13 @@ module.exports = {
   specifierPackage,
   preloads,
   findForeign,
+  findingTool,
+  toolOf,
+  TOOLS,
+  TOOL_PACKAGES,
+  TRACES_EXPORTERS,
+  OTLP_PROTOCOLS,
+  LANGSMITH_EXPORTER,
   moduleSystem,
   isPackageManager,
   ancestors,

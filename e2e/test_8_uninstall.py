@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-8 for what automatic coverage added: the uninstall leaves nothing of it, and the cluster stops reporting at once.
+"""Uninstall, for what automatic coverage added: the uninstall leaves nothing of it, and the cluster stops reporting at
+once.
 
 On the install and the covered pods test_8_auto_cover.py leaves behind, `helm uninstall` alone (step 1 of the shown
 uninstall command) runs the pre-delete hook, which
@@ -132,12 +133,12 @@ def scripted(uninstalled):
 # --- step 1: helm uninstall and the hook -------------------------------------------------------------------
 
 
-def test_ae8_the_uninstall_took_a_hook_and_not_forever(uninstalled):
+def test_the_uninstall_took_a_hook_and_not_forever(uninstalled):
     # 60 s to stop the pods of the reporter and 60 s to stop the cover pod's, 60 s to send: a covered cluster stays in.
     assert uninstalled["seconds"] < 240
 
 
-def test_ae8_the_hook_patched_no_pod_so_the_marks_are_still_on_the_pods(before, uninstalled):
+def test_the_hook_patched_no_pod_so_the_marks_are_still_on_the_pods(before, uninstalled):
     # The hook has no right to write a pod, and no role of the kit has: the marks come off with the rights of the
     # person who runs steps 2 to 5 of the command.
     assert set(marked_pods()) == set(before["marked"])
@@ -146,7 +147,7 @@ def test_ae8_the_hook_patched_no_pod_so_the_marks_are_still_on_the_pods(before, 
     assert after == before["uids"], "the same pods, none replaced"
 
 
-def test_ae8_the_final_snapshot_was_accepted_with_the_key_and_then_the_key_was_deleted(world, before, uninstalled):
+def test_the_final_snapshot_was_accepted_with_the_key_and_then_the_key_was_deleted(world, before, uninstalled):
     notices = [
         r
         for r in world.mock.requests("/v1/inventory", before["mark"])
@@ -163,7 +164,7 @@ def test_ae8_the_final_snapshot_was_accepted_with_the_key_and_then_the_key_was_d
     assert world.mock.requests("/v1/inventory", notice["seq"]) == [], "no snapshot follows the final one"
 
 
-def test_ae8_no_webhook_collector_reporter_cover_pod_or_hook_object_remains(uninstalled):
+def test_no_webhook_collector_reporter_cover_pod_or_hook_object_remains(uninstalled):
     for kind, name in (
         ("mutatingwebhookconfiguration", "impact-ai-cover"),
         ("mutatingwebhookconfiguration", "impact-ai-zz-cover"),
@@ -204,7 +205,7 @@ def test_ae8_no_webhook_collector_reporter_cover_pod_or_hook_object_remains(unin
     )
 
 
-def test_ae8_the_cluster_stops_reporting(world, before, uninstalled):
+def test_the_cluster_stops_reporting(world, before, uninstalled):
     last = world.mock.requests("/v1/inventory")[-1]["json"]
     assert last["reporter"]["mode"] == "uninstalled"
     time.sleep(12)  # more than a reporter cycle of the suite (10 s): the old reporter is gone, nothing follows
@@ -214,7 +215,7 @@ def test_ae8_the_cluster_stops_reporting(world, before, uninstalled):
 # --- steps 2 to 5: the marks, the namespace and the cluster-scoped objects ---------------------------------
 
 
-def test_ae8_no_pod_carries_the_cover_pods_marker_its_label_or_an_annotation_it_added(before, scripted):
+def test_no_pod_carries_the_cover_pods_marker_its_label_or_an_annotation_it_added(before, scripted):
     assert marked_pods() == {}, "the marker is gone from every pod"
     assert marked_pods(label=True) == {}, "and so is the label that found them"
     left = injected_annotations()
@@ -225,7 +226,7 @@ def test_ae8_no_pod_carries_the_cover_pods_marker_its_label_or_an_annotation_it_
         assert name not in left, f"{name} still asks for injection"
 
 
-def test_ae8_taking_the_marks_off_restarted_nothing(before, scripted):
+def test_taking_the_marks_off_restarted_nothing(before, scripted):
     after = {
         f"{p['metadata']['namespace']}/{p['metadata']['name']}": p for p in get("pods", "--all-namespaces")["items"]
     }
@@ -241,14 +242,14 @@ def test_ae8_taking_the_marks_off_restarted_nothing(before, scripted):
         ]
 
 
-def test_ae8_the_pods_of_a_template_the_customer_annotated_are_not_among_those_the_pod_patch_selects(before, scripted):
+def test_the_pods_of_a_template_the_customer_annotated_are_not_among_those_the_pod_patch_selects(before, scripted):
     # Step 2 selects pods by the label only the cover pod adds. The customer's own pods are not on its list, so the
     # command never patches them: the workload's template is what step 3 changes (and the workload restarts then).
     assert before["own"], "the file under test has a workload the customer annotated"
     assert not set(before["own"]) & set(before["marked"])
 
 
-def test_ae8_the_namespace_is_gone_and_no_cluster_scoped_object_of_the_release_remains(scripted):
+def test_the_namespace_is_gone_and_no_cluster_scoped_object_of_the_release_remains(scripted):
     assert not kube_exists("namespace", NAMESPACE)
     labelled = kubectl("get", CLUSTER_SCOPED, "-l", RELEASE_LABELS, "-o", "name", check=False).stdout.split()
     assert labelled == [], labelled
@@ -257,7 +258,7 @@ def test_ae8_the_namespace_is_gone_and_no_cluster_scoped_object_of_the_release_r
     assert kube_exists("crd", "instrumentations.opentelemetry.io"), "the definition stays"
 
 
-def test_ae8_a_pod_created_again_is_not_injected(scripted):
+def test_a_pod_created_again_is_not_injected(scripted):
     kubectl("-n", AUTO, "rollout", "restart", "deployment/web")
     rollout("deployment/web", AUTO)
     pod = running_pod(AUTO, "app=web")
@@ -267,7 +268,7 @@ def test_ae8_a_pod_created_again_is_not_injected(scripted):
     assert "PYTHONPATH" not in {e["name"] for e in pod["spec"]["containers"][0].get("env", [])}
 
 
-def test_ae8_the_namespaces_of_the_tests_are_removed_so_the_next_file_starts_clean(scripted):
+def test_the_namespaces_of_the_tests_are_removed_so_the_next_file_starts_clean(scripted):
     kubectl("delete", "namespace", NAMESPACE, AUTO, "auto-optout", "--ignore-not-found", "--wait=true", timeout=400)
     for namespace in (NAMESPACE, AUTO, "auto-optout"):
         assert not kube_exists("namespace", namespace)

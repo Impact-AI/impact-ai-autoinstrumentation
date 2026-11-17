@@ -158,6 +158,58 @@ def test_a_namespace_package_is_left_alone(modules):
     assert hooked_ns.part.Y == 2
 
 
+def shared_namespace(directory: Path) -> None:
+    """hooked_google/ as Google's distributions lay out `google`: a namespace package that no one owns, with a package
+    of one distribution (genai) and a module of another (auth) inside."""
+    (directory / "hooked_google" / "genai").mkdir(parents=True)
+    (directory / "hooked_google" / "genai" / "__init__.py").write_text("from . import models\nVALUE = 5\n")
+    (directory / "hooked_google" / "genai" / "models.py").write_text("class Models:\n    pass\n")
+    (directory / "hooked_google" / "auth.py").write_text("TOKEN = 'stub'\n")
+    importlib.invalidate_caches()
+
+
+def test_a_package_inside_a_namespace_package_is_watched_by_its_dotted_name(modules):
+    # google.genai: `google` is a namespace package shared by google-auth, protobuf and the cloud libraries, and it has
+    # no loader to wait for. The hook is on the package the library is.
+    shared_namespace(modules)
+    seen = []
+    hooks.install().watch("hooked_google.genai", lambda module: seen.append((module.__name__, module.models.Models)))
+    import hooked_google.auth  # another distribution's module in the same namespace
+
+    assert seen == []
+    import hooked_google.genai
+
+    assert seen == [("hooked_google.genai", hooked_google.genai.models.Models)]  # once it has executed in full
+    assert hooked_google.genai.VALUE == 5
+    assert type(hooked_google.genai.__spec__.loader).__name__ == "SourceFileLoader"
+    importlib.import_module("hooked_google.genai.models")
+    assert len(seen) == 1
+
+
+def test_a_submodule_that_is_already_imported_fires_at_once(modules):
+    shared_namespace(modules)
+    import hooked_google.genai
+
+    seen = []
+    hooks.install().watch("hooked_google.genai", seen.append)
+    assert seen == [hooked_google.genai]
+
+
+def test_a_watched_name_is_matched_whole_not_by_its_last_part(modules):
+    # A module called `genai` elsewhere, at the top or in another package, is not google.genai.
+    shared_namespace(modules)
+    write(modules, "genai")
+    (modules / "other_pkg").mkdir()
+    (modules / "other_pkg" / "__init__.py").write_text("")
+    write(modules / "other_pkg", "genai")
+    seen = []
+    hooks.install().watch("hooked_google.genai", seen.append)
+    import genai  # noqa: F401
+    import other_pkg.genai  # noqa: F401
+
+    assert seen == []
+
+
 def test_concurrent_imports_fire_the_hook_once(modules):
     write(modules, "hooked_j", "import time\ntime.sleep(0.2)\nVALUE = 1\n")
     seen = []

@@ -1,0 +1,20 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -55,6 +55,17 @@
+       - uses: jdx/mise-action@v5
+       - name: End to end on a kind cluster (Kubernetes 1.27), the Kubernetes part of the suite
+         run: make e2e
++  dynatrace:
++    # Apps that export OTLP to Dynatrace, as its public guides configure them, against a mock of its documented endpoint:
++    # no Dynatrace software, no account. About three minutes: three Python environments from locked requirements and two
++    # Node.js packages from their locks (the OpenTelemetry JavaScript SDK 3 needs Node.js 22.15 or later, so mise runs 24).
++    runs-on: ubuntu-latest
++    timeout-minutes: 10
++    steps:
++      - uses: actions/checkout@v7
++      - uses: jdx/mise-action@v5
++      - name: The endpoint mock, the recorded copies, and each app run again against its recording
++        run: mise exec node@24 -- make test-dynatrace dynatrace-cells
+   overhead:
+     runs-on: ubuntu-latest
+     timeout-minutes: 25

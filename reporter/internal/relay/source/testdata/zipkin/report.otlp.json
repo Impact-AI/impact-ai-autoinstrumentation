@@ -1,0 +1,176 @@
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "impact.source.decoder",
+            "value": {
+              "stringValue": "zipkin/1"
+            }
+          },
+          {
+            "key": "impact.source.id",
+            "value": {
+              "stringValue": "zipkin"
+            }
+          },
+          {
+            "key": "impact.source.route",
+            "value": {
+              "stringValue": "relay"
+            }
+          },
+          {
+            "key": "service.name",
+            "value": {
+              "stringValue": "assistant"
+            }
+          }
+        ]
+      },
+      "scopeSpans": [
+        {
+          "scope": {
+            "name": "zipkin"
+          },
+          "spans": [
+            {
+              "attributes": [
+                {
+                  "key": "gen_ai.provider.name",
+                  "value": {
+                    "stringValue": "openai"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.model",
+                  "value": {
+                    "stringValue": "gpt-4o"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.input_tokens",
+                  "value": {
+                    "intValue": "12"
+                  }
+                },
+                {
+                  "key": "network.peer.address",
+                  "value": {
+                    "stringValue": "203.0.113.9"
+                  }
+                },
+                {
+                  "key": "network.peer.port",
+                  "value": {
+                    "intValue": "443"
+                  }
+                },
+                {
+                  "key": "peer.service",
+                  "value": {
+                    "stringValue": "model-provider"
+                  }
+                },
+                {
+                  "key": "zipkin.component",
+                  "value": {
+                    "stringValue": "openai"
+                  }
+                },
+                {
+                  "key": "zipkin.content.llm.prompt",
+                  "value": {
+                    "stringValue": "What is the weather?"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1556604172357168000",
+              "events": [
+                {
+                  "name": "retry",
+                  "timeUnixNano": "1556604172356000000"
+                }
+              ],
+              "kind": 3,
+              "name": "chat gpt-4o",
+              "parentSpanId": "6b221d5bc9e6496c",
+              "spanId": "352bff9a74ca9ad2",
+              "startTimeUnixNano": "1556604172355737000",
+              "status": {
+                "code": 2,
+                "message": "rate limited"
+              },
+              "traceId": "00000000000000005af7183fb1d4cf5f"
+            },
+            {
+              "endTimeUnixNano": "1556604172355810000",
+              "kind": 1,
+              "name": "tool search",
+              "parentSpanId": "352bff9a74ca9ad2",
+              "spanId": "0000000000000001",
+              "startTimeUnixNano": "1556604172355800000",
+              "traceId": "00000000000000005af7183fb1d4cf5f"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "impact.source.decoder",
+            "value": {
+              "stringValue": "zipkin/1"
+            }
+          },
+          {
+            "key": "impact.source.id",
+            "value": {
+              "stringValue": "zipkin"
+            }
+          },
+          {
+            "key": "impact.source.route",
+            "value": {
+              "stringValue": "relay"
+            }
+          },
+          {
+            "key": "service.name",
+            "value": {
+              "stringValue": "api"
+            }
+          }
+        ]
+      },
+      "scopeSpans": [
+        {
+          "scope": {
+            "name": "zipkin"
+          },
+          "spans": [
+            {
+              "attributes": [
+                {
+                  "key": "http.request.method",
+                  "value": {
+                    "stringValue": "POST"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1556604172400000000",
+              "kind": 2,
+              "name": "post /answer",
+              "spanId": "a2fb4a1d1a96d312",
+              "startTimeUnixNano": "1556604172000000000",
+              "traceId": "463ac35c9f6413ad48485a3953bb6124"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

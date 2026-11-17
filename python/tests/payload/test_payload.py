@@ -39,6 +39,7 @@ def payloads(tmp_path_factory):
                 "--lock", str(ROOT / "requirements.lock"), "--src", str(ROOT / "src"),
                 "--out", str(target), "--arch", arch, "--version", "9.9.9", "--pythons", ",".join(PYTHONS),
                 "--license", str(ROOT.parent / "LICENSE"), "--notice", str(ROOT.parent / "NOTICE"),
+                "--qualification", str(ROOT / "qualification.json"),
             ],
             check=True,
             cwd=ROOT,
@@ -171,12 +172,41 @@ def test_the_registry_lists_every_instrumentation_with_its_library_range(payload
         "falcon": (("falcon", "<5.0.0,>=1.4.1"),),
         "fastapi": (("fastapi", "~=0.92"),),
         "flask": (("flask", ">=1.0"),),
+        "google-genai": (("google-genai", "<3,>=1.32.0"),),  # imported as google.genai: runtime.MODULES
         "langchain": (("langchain", "<2,>=0.3.22"),),  # runtime.ALTERNATIVES adds langchain-core
         "openai": (("openai", "<4,>=1.26.0"),),
         "openai_agents": (("openai-agents", "<1,>=0.3.3"),),  # imported as `agents`: runtime.MODULES
         "pyramid": (("pyramid", ">=1.7"),),
         "starlette": (("starlette", ">=0.13"),),
     }
+
+
+@pytest.mark.parametrize(("variant", "arch"), TARGETS)
+def test_the_payload_carries_the_qualification_and_the_package_reads_the_same_table(payloads, variant, arch):
+    root = payloads[(variant, arch)]
+    committed = json.loads((ROOT / "qualification.json").read_text())
+    assert json.loads((root / "qualification.json").read_text()) == committed
+    namespace: dict = {}
+    exec((root / "impact_instrumentation" / "_qualification.py").read_text(), namespace)  # noqa: S102 - generated
+    assert namespace["TABLE"] == committed
+
+
+def test_a_qualification_that_is_not_one_stops_the_build(tmp_path):
+    broken = tmp_path / "qualification.json"
+    for text in ("{", "[]", '{"schema": "impact.nodejs.qualification.v1", "cells": [{}]}', '{"schema": "x"}'):
+        broken.write_text(text)
+        with pytest.raises(SystemExit, match="qualification"):
+            assemble.read_qualification(broken)
+    broken.write_text(json.dumps({"schema": assemble.QUALIFICATION_SCHEMA, "cells": []}))
+    with pytest.raises(SystemExit, match="with cells"):
+        assemble.read_qualification(broken)
+
+
+def test_the_generated_table_is_the_qualification_as_a_literal():
+    table = {"schema": assemble.QUALIFICATION_SCHEMA, "cells": [{"steps": None, "traced": True}], "excluded": []}
+    namespace: dict = {}
+    exec(assemble.generate_qualification(table), namespace)  # noqa: S102 - the generator's own output
+    assert namespace["TABLE"] == table
 
 
 @pytest.mark.parametrize(("variant", "arch"), TARGETS)

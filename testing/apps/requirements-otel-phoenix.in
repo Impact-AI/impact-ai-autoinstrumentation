@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# Arize Phoenix's OpenTelemetry package with OpenInference's OpenAI instrumentation.
+arize-phoenix-otel==0.17.3
+openinference-instrumentation-openai==0.1.69
+openai==3.46.0

@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
-# impact.ai cluster kit. Install (the command Cover your AI in impact.ai shows):
+# Impact AI cluster kit. Install (the command Cover your AI in Impact AI shows):
 #
-#   helm upgrade --install impact-ai oci://ghcr.io/impact-ai/charts/impact-ai \
+#   helm upgrade --install impact-ai oci://ghcr.io/impact-ai/charts/impact-ai --version <version> \
 #     -n impact-ai --create-namespace \
 #     --set-string product.id=<product> --set-string ingest.endpoint=<ingest origin> --set-string cluster.name=<name> \
 #     --set-string install.token=<one-time install token>
 #
-# The cluster trades the token for its own ingest key inside the cluster (a pre-install and pre-upgrade hook), so nobody
-# copies, pastes or types a key. To give the key yourself instead (GitOps, an existing Secret), use ingest.key or
-# ingest.existingSecret and leave install.token empty.
+# The token is valid for 15 minutes and for one use. The cluster trades it for its own ingest key inside the cluster (a
+# pre-install and pre-upgrade hook), so nobody copies, pastes or types a key. To give the key yourself instead (GitOps,
+# an existing Secret), use ingest.key or ingest.existingSecret and leave install.token empty.
 #
 # Values you keep across upgrades: helm upgrade --reset-then-reuse-values (Helm 3.14 or later), or pass the same --set
 # flags again. Not --reuse-values: it keeps the image digests of the release before. A token that was used stays in the
@@ -20,13 +20,15 @@ product:
   id: ""
 
 ingest:
-  # Origin of the impact.ai ingest host, without a path: https://ingest.example.impact.ai (the chart adds /v1/traces
-  # and /v1/inventory).
+  # Origin of the impact.ai ingest host, without a path: https://ingest.example.impact.ai (the chart adds /v1/traces,
+  # /v1/logs and /v1/inventory).
   endpoint: ""
-  # The ingest key of the product, one per install, when you give it yourself instead of an install token. Pass it on
-  # standard input so it stays out of shell history:
-  #   --set-file ingest.key=/dev/stdin
-  # It is kept in a Kubernetes Secret (and, like every Helm value, in the release record).
+  # The ingest key of the product, one per install, when you give it yourself instead of an install token (the token
+  # is the way to install: the key is then made inside the cluster). Never paste the key where the terminal shows it:
+  # the chart README ("Giving the key yourself") reads it at a prompt that shows nothing and hands it to helm on
+  # standard input (--set-file ingest.key=/dev/stdin), so it is on no screen, in no shell history and on no command
+  # line. Those steps are for bash. The key is kept in a Kubernetes Secret (and, like every Helm value, in the release
+  # record).
   key: ""
   # Or name a Secret in the release namespace that already holds the key under the key `ingest-key`.
   existingSecret: ""
@@ -98,9 +100,17 @@ images:
     repository: ghcr.io/impact-ai/autoinstrumentation-nodejs
     tag: ""
     digest: ""
+  # The Java instrumentation. A release that publishes it (RELEASE_JAVA=1) writes its tag and digest; the Instrumentation
+  # does not inject it yet.
+  java:
+    repository: ghcr.io/impact-ai/autoinstrumentation-java
+    tag: ""
+    digest: ""
 
-# One value points every image of the kit (and the Operator's) at a mirror: it replaces the registry host,
-# so ghcr.io/impact-ai/autoinstrumentation-python becomes <imageRegistry>/impact-ai/autoinstrumentation-python.
+# One value points every image of the kit (and the Operator's, the images its arguments name included) at a mirror: it
+# replaces the registry host, so ghcr.io/impact-ai/autoinstrumentation-python becomes
+# <imageRegistry>/impact-ai/autoinstrumentation-python. Copy each image to the same path under the mirror with
+# `oras cp -r <src> <dst>`, which copies its signatures and attestations with it (the chart README, "Images").
 global:
   imageRegistry: ""
 
@@ -117,10 +127,13 @@ reporter:
     limits: {memory: 128Mi}
 
 gateway:
-  # Receives spans from the injected workloads, adds the cluster's ID and forwards them to ingest with the key.
+  # Receives spans from the injected workloads, and log events from workloads whose own OpenTelemetry instrumentation
+  # sends them, adds the cluster's ID to both and forwards them to ingest with the key.
   replicas: 1
   # The memory request is the gateway's usual working set (107 to 142 MB measured). The chart sets GOMEMLIMIT to 80% of
-  # the memory limit, so that an ingest outage under load makes the gateway refuse spans instead of running out of memory.
+  # the memory limit, so that an ingest outage under load makes the gateway refuse spans and log events instead of
+  # running out of memory. One memory limiter and one GOMEMLIMIT serve both signals, and each signal has a queue of its
+  # own.
   resources:
     requests: {cpu: 50m, memory: 128Mi}
     limits: {memory: 256Mi}
@@ -180,16 +193,28 @@ operator:
       tag: "0.162.0@sha256:771d341d89b2c0a31580293c0a9e09598e2c425b6cf342d31b91da16c2b952d9"
     # Only the Instrumentation kind is installed, so the collector CRDs are expected to be missing.
     ignoreMissingCollectorCRDs: true
+    # The Operator's default for collectors it would create (the kit creates none): the gateway's own image
+    # (images.collector), so that the Operator names no other. Like every image argument of the Operator, it follows
+    # global.imageRegistry.
     collectorImage:
       repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector
       tag: "0.164.0@sha256:28b6d41ac51bff6b41ba5e8fe503569ffb9d6a1ea90f7a78419e86f34e44f750"
     targetAllocatorImage: {repository: "", tag: ""}
-    # Python and Node.js only. The release writes the Node.js image (images.nodejs).
+    # Python and Node.js only: every language the pinned Operator (0.162.0) can inject is switched on or off here by
+    # name, so that none is left to the Operator's defaults (Java, .NET and Apache HTTPD are on by default; Go, Ruby,
+    # nginx and PHP off). autoInstrumentation.go.enabled and .ruby.enabled cannot do it: false renders no flag at all.
+    # chart/tests/test_chart.py reads the languages from the vendored chart and fails on one that is missing here. The
+    # release writes the Node.js image (images.nodejs).
     extraArgs:
-      - --enable-java-instrumentation=false
+      - --enable-python-instrumentation=true
       - --enable-nodejs-instrumentation=true
+      - --enable-java-instrumentation=false
       - --enable-dotnet-instrumentation=false
       - --enable-apache-httpd-instrumentation=false
+      - --enable-go-instrumentation=false
+      - --enable-ruby-instrumentation=false
+      - --enable-nginx-instrumentation=false
+      - --enable-php-instrumentation=false
     resources:
       requests: {cpu: 20m, memory: 64Mi}
       limits: {memory: 256Mi}

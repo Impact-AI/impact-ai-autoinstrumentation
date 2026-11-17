@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-14: the install token. What `helm template` produces for a token install, without a cluster.
+"""The install token. What `helm template` produces for a token install, without a cluster.
 
 The command Cover your AI shows carries `install.token` and no ingest key. A Helm pre-install and pre-upgrade hook runs
 `reporter exchange`, which makes the key inside the cluster and keeps it in a Secret of its own. The hook, its

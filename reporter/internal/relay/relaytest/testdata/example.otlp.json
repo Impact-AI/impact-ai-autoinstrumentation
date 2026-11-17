@@ -1,0 +1,112 @@
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "example.lang",
+            "value": {
+              "stringValue": "python"
+            }
+          },
+          {
+            "key": "impact.source.decoder",
+            "value": {
+              "stringValue": "example/1.0.0"
+            }
+          },
+          {
+            "key": "impact.source.id",
+            "value": {
+              "stringValue": "example"
+            }
+          },
+          {
+            "key": "impact.source.route",
+            "value": {
+              "stringValue": "relay"
+            }
+          }
+        ]
+      },
+      "scopeSpans": [
+        {
+          "scope": {
+            "name": "example-sdk"
+          },
+          "spans": [
+            {
+              "attributes": [
+                {
+                  "key": "example.component",
+                  "value": {
+                    "stringValue": "example-sdk"
+                  }
+                },
+                {
+                  "key": "gen_ai.operation.name",
+                  "value": {
+                    "stringValue": "chat"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.model",
+                  "value": {
+                    "stringValue": "gpt-4o-2024-08-06"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.input_tokens",
+                  "value": {
+                    "intValue": "420"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.output_tokens",
+                  "value": {
+                    "intValue": "100"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1767225601000000000",
+              "kind": 3,
+              "name": "chat gpt-4o-2024-08-06",
+              "spanId": "663aa9e925b71a55",
+              "startTimeUnixNano": "1767225600000000000",
+              "traceId": "2d8e281ec6d16d93ae78815aa2991462"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "example.component",
+                  "value": {
+                    "stringValue": "example-sdk"
+                  }
+                },
+                {
+                  "key": "gen_ai.operation.name",
+                  "value": {
+                    "stringValue": "execute_tool"
+                  }
+                },
+                {
+                  "key": "gen_ai.tool.name",
+                  "value": {
+                    "stringValue": "get_order"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1767225601200000000",
+              "kind": 3,
+              "name": "execute_tool get_order",
+              "parentSpanId": "663aa9e925b71a55",
+              "spanId": "c925a04821ac2724",
+              "startTimeUnixNano": "1767225601000000000",
+              "traceId": "2d8e281ec6d16d93ae78815aa2991462"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

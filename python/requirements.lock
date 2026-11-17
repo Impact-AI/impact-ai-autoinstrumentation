@@ -37,6 +37,9 @@ opentelemetry-instrumentation-genai-openai==1.3b0 \
 opentelemetry-instrumentation-genai-openai-agents==1.3b0 \
     --hash=sha256:816ab383c3ae74c9258e1635ce15cd7f0af4d4c039f5a41263b630da9afba1f4 \
     --hash=sha256:f431d874ad449fe34fdc8f81343680ab1de72da9044363d27e222388a6511d3f
+opentelemetry-instrumentation-google-genai==1.3b0 \
+    --hash=sha256:88fa4720cc665e63260f9c70a7196fc65627174753b16fe1b3a9bfee1740ab20 \
+    --hash=sha256:d818c8a3613d77f5b6cb97b1b9dd208df711ac8c7892f9303cb3336b134ceca6
 opentelemetry-instrumentation-pyramid==0.66b2 \
     --hash=sha256:d9ee62720ed555a0e0a923dbe1205b125a02f70a73374745f705b3bea21046bd \
     --hash=sha256:ea40102f1faaade27bbd60d894a46f77052e111d9f84d509e30ffc313fc90d9e

@@ -205,3 +205,148 @@ test('start never throws, whatever it is given', () => {
     assert.doesNotThrow(() => bootstrap.start(settings), JSON.stringify(settings));
   }
 });
+
+// --- the tool beside the package, and the coexistence list -------------------------------------------------------------
+
+const TOOL_KEYS = ['impact.setup.tool', 'impact.setup.tool.version', 'impact.setup.exporter', 'impact.setup.alongside'];
+
+function toolAttributes(report) {
+  const out = {};
+  for (const key of TOOL_KEYS) if (key in report) out[key] = report[key];
+  return out;
+}
+
+/** A generic fixture list: these cells, on Node 22. */
+function list(...cells) {
+  return { schema: 'impact.coexistence.v1', cells };
+}
+
+function alongsideCell(tool, major, answers) {
+  return Object.assign(
+    { tool, mode: 'alongside', node: 22, major, version: major + '.0.0', started: true, traced: true, same: true, proof: 'nodejs/tests/image/test_example.py' },
+    answers || {}
+  );
+}
+
+test('a stood-down workload names the tool, its version, and that it did not start beside it', async () => {
+  const run = await started({ 'dd-trace': '5.2.0', openai: '5.0.0' });
+  try {
+    assert.equal(run.outcome.state, 'pre-existing');
+    const [report] = await run.reports(1);
+    assert.deepEqual(toolAttributes(report), {
+      'impact.setup.tool': 'datadog',
+      'impact.setup.tool.version': '5.2.0',
+      'impact.setup.alongside': false,
+    });
+  } finally {
+    await run.sink.close();
+  }
+});
+
+test('a tool the list proves runs alongside: the runtime is armed and the report says so', async () => {
+  const run = await started({ openlit: '1.9.0', openai: '5.0.0' }, { settings: { coexistence: list(alongsideCell('openlit', '1')) } });
+  try {
+    assert.equal(run.outcome.state, 'active');
+    assert.equal(run.runtime.calls.length, 1);
+    const [report] = await run.reports(1);
+    assert.equal(report['impact.setup.state'], 'active');
+    assert.equal(report['impact.setup.detail'], '');
+    assert.deepEqual(toolAttributes(report), {
+      'impact.setup.tool': 'openlit',
+      'impact.setup.tool.version': '1.9.0',
+      'impact.setup.alongside': true,
+    });
+  } finally {
+    await run.sink.close();
+  }
+});
+
+for (const [why, table] of [
+  ['the shipped list', undefined],
+  ['another series', list(alongsideCell('openlit', '2'))],
+  ['another Node', list(alongsideCell('openlit', '1', { node: 24 }))],
+  ['a failed proof', list(alongsideCell('openlit', '1', { same: false }))],
+  ['another tool', list(alongsideCell('langfuse', '1'))],
+  ['a list that is not one', { schema: 'x' }],
+]) {
+  test('a tool the list does not prove keeps the stand-down: ' + why, async () => {
+    const run = await started({ openlit: '1.9.0' }, { settings: { coexistence: table } });
+    try {
+      assert.deepEqual(run.outcome, { state: 'pre-existing', detail: 'openlit 1.9.0' });
+      assert.equal(run.runtime.calls.length, 0);
+      const [report] = await run.reports(1);
+      assert.equal(report['impact.setup.alongside'], false);
+    } finally {
+      await run.sink.close();
+    }
+  });
+}
+
+test('LangSmith\'s default tracing is named and the package runs beside it', async () => {
+  const run = await started({ langsmith: '0.11.8', openai: '5.0.0' }, { env: { LANGSMITH_TRACING: 'true', LANGSMITH_API_KEY: 'lsv2_pt_planted' } });
+  try {
+    assert.equal(run.outcome.state, 'active');
+    const [report] = await run.reports(1);
+    assert.deepEqual(toolAttributes(report), {
+      'impact.setup.tool': 'langsmith',
+      'impact.setup.tool.version': '0.11.8',
+      'impact.setup.alongside': true,
+    });
+    assert.ok(!JSON.stringify(report).includes('lsv2_pt_planted'));
+  } finally {
+    await run.sink.close();
+  }
+});
+
+test('LangSmith\'s OpenTelemetry mode stands the package down before it registers anything, and names its OTLP exporter', async () => {
+  const env = { LANGSMITH_TRACING: 'true', LANGSMITH_OTEL_ENABLED: 'true', LANGSMITH_API_KEY: 'lsv2_pt_planted' };
+  const run = await started({ langsmith: '0.11.8', '@anthropic-ai/sdk': '0.140.0' }, { env });
+  try {
+    assert.deepEqual(run.outcome, { state: 'pre-existing', detail: 'LANGSMITH_OTEL_ENABLED (set by the workload)' });
+    assert.equal(run.runtime.calls.length, 0, 'no provider of ours, so LangSmith\'s can register');
+    const [report] = await run.reports(1);
+    assert.deepEqual(toolAttributes(report), {
+      'impact.setup.tool': 'langsmith',
+      'impact.setup.tool.version': '0.11.8',
+      'impact.setup.exporter': 'otlp-http',
+      'impact.setup.alongside': false,
+    });
+    assert.ok(!JSON.stringify(report).includes('lsv2_pt_planted'));
+  } finally {
+    await run.sink.close();
+  }
+});
+
+test('a workload with no tool has no tool attributes', async () => {
+  const run = await started({ langsmith: '0.11.8', openai: '5.0.0' });
+  try {
+    assert.equal(run.outcome.state, 'active');
+    const [report] = await run.reports(1);
+    assert.deepEqual(toolAttributes(report), {});
+  } finally {
+    await run.sink.close();
+  }
+});
+
+test('LangSmith\'s tracing beside a tracer of no known tool names none: the unknown tracer owns the workload', async () => {
+  const packages = { langsmith: '0.11.8', '@arizeai/openinference-instrumentation-openai': '2.3.0', openai: '5.0.0' };
+  const run = await started(packages, { env: { LANGSMITH_TRACING: 'true' } });
+  try {
+    assert.equal(run.outcome.state, 'pre-existing');
+    const [report] = await run.reports(1);
+    assert.deepEqual(toolAttributes(report), {});
+  } finally {
+    await run.sink.close();
+  }
+});
+
+test('OTEL_ENABLED=true without the langsmith package stands the package down and names no tool', async () => {
+  const run = await started({ openai: '5.0.0' }, { env: { OTEL_ENABLED: 'true' } });
+  try {
+    assert.deepEqual(run.outcome, { state: 'pre-existing', detail: 'OTEL_ENABLED (set by the workload)' });
+    const [report] = await run.reports(1);
+    assert.deepEqual(toolAttributes(report), {});
+  } finally {
+    await run.sink.close();
+  }
+});

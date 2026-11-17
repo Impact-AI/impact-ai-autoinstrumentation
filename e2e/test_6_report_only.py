@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-1: when another injector already owns the cluster, only the reporter and the gateway are installed."""
+"""Report only: when another injector already owns the cluster, only the reporter and the gateway are installed."""
 
 from __future__ import annotations
 
@@ -65,7 +65,7 @@ def apply(owner: str) -> str:
 
 
 @pytest.mark.parametrize("owner", OWNERS)
-def test_ae1_the_chart_leaves_the_operator_out_beside_each_known_injector(owner):
+def test_the_chart_leaves_the_operator_out_beside_each_known_injector(owner):
     name = apply(owner)
     try:
         result = install(extra=("--dry-run=server",), check=False)
@@ -84,7 +84,7 @@ def test_ae1_the_chart_leaves_the_operator_out_beside_each_known_injector(owner)
         kubectl("delete", "mutatingwebhookconfiguration", name, "--ignore-not-found")
 
 
-def test_ae1_installed_beside_datadog_the_page_can_name_the_injector(world, helm4):
+def test_installed_beside_datadog_the_page_can_name_the_injector(world, helm4):
     # The one live install of the suite that Helm 4 makes (and removes), made with an install token, as the command
     # Cover your AI shows is: the chart, its schema, the lookups of the guard and of the other injector, the CRD, the
     # exchange hook and the Secret it fills, the Deployments, the pre-delete hook and its roles. Flux embeds Helm 4 and

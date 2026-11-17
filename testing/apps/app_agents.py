@@ -30,6 +30,17 @@ def healthz():
     return {"ok": True}
 
 
+@app.get("/otel/global-tracer-provider")
+def global_tracer_provider():
+    """The process's global tracer provider, as a library that makes its spans with the global tracer sees it: the
+    package never sets it (the cells of the Python qualification check it after the model calls)."""
+    try:
+        from opentelemetry import trace
+    except ImportError:
+        return {"provider": None}
+    return {"provider": type(trace.get_tracer_provider()).__name__}
+
+
 def get_weather(city: str) -> str:
     """Weather of a city."""
     return f"Sunny in {city}"
@@ -71,10 +82,10 @@ async def openai_agents_chat(ask: Ask):
     return {"answer": result.final_output}
 
 
-def chat_model():
+def chat_model(**options):
     from langchain_openai import ChatOpenAI
 
-    return ChatOpenAI(model="gpt-4o-mini", base_url=STUB + "/v1", api_key="sk-test")
+    return ChatOpenAI(model="gpt-4o-mini", base_url=STUB + "/v1", api_key="sk-test", **options)
 
 
 def langchain_weather_agent():
@@ -89,6 +100,36 @@ def langchain_agent(ask: Ask):
     """A LangChain v1 agent, which runs on LangGraph."""
     out = langchain_weather_agent().invoke({"messages": [{"role": "user", "content": ask.prompt}]})
     return {"answer": out["messages"][-1].content}
+
+
+@app.post("/agent/langchain-executor")
+def langchain_executor(ask: Ask):
+    """A LangChain 0.3 agent: a tool-calling agent run by AgentExecutor, which is how an application written before
+    LangChain v1 runs one (the oldest fixture). AgentExecutor streams the model's answer; the stub answers whole."""
+    from langchain.agents import AgentExecutor, create_tool_calling_agent
+    from langchain_core.prompts import ChatPromptTemplate
+    from langchain_core.tools import tool
+
+    tools = [tool(get_weather)]
+    prompt = ChatPromptTemplate.from_messages(
+        [("system", "be brief"), ("human", "{input}"), ("placeholder", "{agent_scratchpad}")]
+    )
+    executor = AgentExecutor(
+        agent=create_tool_calling_agent(chat_model(disable_streaming=True), tools, prompt),
+        tools=tools,
+        name="weather_agent",
+    )
+    return {"answer": executor.invoke({"input": ask.prompt})["output"]}
+
+
+@app.post("/chain/langchain-core")
+def langchain_core_chain(ask: Ask):
+    """langchain-core on its own: a prompt template piped into a chat model, as an application without the langchain
+    package calls a model."""
+    from langchain_core.prompts import ChatPromptTemplate
+
+    chain = ChatPromptTemplate.from_messages([("system", "be brief"), ("user", "{question}")]) | chat_model()
+    return {"answer": chain.invoke({"question": ask.prompt}).content}
 
 
 @app.post("/agent/langchain-async")
