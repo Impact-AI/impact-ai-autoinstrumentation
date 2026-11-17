@@ -72,6 +72,17 @@ def test_the_summary_orders_the_workloads_and_keeps_the_worst_of_each_number(dir
     assert [c["rerun"] for c in summary["combos"]] == [False, True, False, False]
 
 
+def test_a_workload_that_calls_a_library_of_its_own_is_named_by_it_after_the_plain_one(directory):
+    rec = record("python", "3.12", "uvicorn", 1.1, 19.0, 0.9)
+    rec.update(id="python3.12-uvicorn-google-genai", library="google-genai")
+    (directory / "combos" / f"{rec['id']}.json").write_text(json.dumps(rec))
+    summary = overhead_report.summarize(overhead_report.load(directory), "0.3.0")
+    names = [c["workload"] for c in summary["combos"]]
+    assert names.index("Python 3.12, uvicorn, calling google-genai") == names.index("Python 3.12, uvicorn") + 1
+    assert summary["worst"]["cpuMsPerCall"] == 1.1
+    assert "| Python 3.12, uvicorn, calling google-genai | +1.10 ms |" in overhead_report.render(summary)
+
+
 def test_the_markdown_is_a_table_with_the_budget_and_how_it_was_measured(directory):
     text = overhead_report.render(overhead_report.summarize(overhead_report.load(directory), "0.3.0"))
     assert text.startswith("# Overhead of the injected instrumentation, release 0.3.0")

@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kubetest"
+	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/kubetest"
 )
 
 var update = flag.Bool("update", false, "rewrite testdata/golden-snapshot.json")
@@ -268,7 +268,7 @@ func TestSendsTheGoldenSnapshotToIngest(t *testing.T) {
 	body := gunzip(t, r.Raw)
 	compareGolden(t, body)
 
-	// AE-3 end to end: nothing secret reaches ingest.
+	// Names only, end to end: nothing secret reaches ingest.
 	for _, forbidden := range []string{
 		fakeKey, "sk-live", "--api-key", "support_assistant", "last-applied", "kubectl.kubernetes.io",
 		"example.com/team", "TOP-SECRET-CA-BUNDLE", "cert-manager.io/inject-ca-from-secret", testKey, "86400",

@@ -1,0 +1,28 @@
+{
+  "how": "Written by hand from Zipkin's public API documentation (https://zipkin.io/zipkin-api/#/default/post_spans): a span report as a tracer POSTs it, gzip compressed, beside a read of the query API that is only relayed. Not a recording of any tool.",
+  "packages": {},
+  "recorded": "2026-11-09",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/v2/services",
+      "query": "",
+      "headers": {},
+      "contentType": "",
+      "contentEncoding": "",
+      "bodyBase64": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/v2/spans",
+      "query": "",
+      "headers": {
+        "Content-Type": "application/json",
+        "Content-Encoding": "gzip"
+      },
+      "contentType": "application/json",
+      "contentEncoding": "gzip",
+      "bodyBase64": "H4sIAAAAAAAC/5VTQW7bMBD8isGzoooiJVu+9FD4EKBIiyRoD0EQrMiVTUQiVZJ2EBj6e1dqUtlAkqK8CNwRhzuzw7sjix4UXmq2ZgU0S74STc21VE3RsIT14NHGCS3rPOe6qFWFpaxKRagZ66LI66apYCkVVKBzqj8aOyJfvl5urm5pb6FD2qsdxMW2jxfSUTGaDkOErmdrXhRlmUm+zEVRLMUyYXrvIRpnCZOCJ6x1CtqN1b0zNrL1kQX0B6Pw6g8zhGCIiyBqqj9IKvEqT7M0T3nGhoR57FzE9wk6p7G96L07GI1+ZskzQSyci7Qa3XCezkopiDHCNow8W7QPYFKPv/YkJ52I6OBfmS94eA4ROwJcjxbMDOwDbDGlm7s+PkT3iDaM3Y82tm33AlDl52ieCYu4w8UTAn38Z/pHEewsjppmavTeeSqQh7hoTWci6tEFsNbFyVe64+743gjKLMsSdoB2P1rjMfpnNtwPyWlWZClAiUJVTSm5AC1XclWAqApR1yXP5Ws6IG9qCVxzqEot+Ek6bjbXPzbXczp6F+LiE9jwNA3gzd6yaZ3GQ75U/hWQ3rCToe1i7OeRYdy5saPv325u2XCu8+M38Ub2J9XZ+eKzyuhcuwgIXu0+eAOrc5E8+48XMAz3vwFHrqdl1gMAAA=="
+    }
+  ]
+}

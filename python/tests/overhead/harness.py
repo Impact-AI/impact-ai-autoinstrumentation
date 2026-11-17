@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""Measure the overhead of the injected instrumentation (AE-17) on the real images, in containers.
+"""Measure the overhead of the injected instrumentation on the real images, in containers.
 
 One round, for one combination of runtime and server:
 
@@ -72,7 +72,7 @@ class Setup:
     def __init__(self, combo: Combo):
         if combo.runtime == "python":
             self.kit = python_env.IMAGE
-            self.workload = python_env.app_image(combo.version)
+            self.workload = python_env.app_image(combo.version, combo.fixture)
             self.mount = python_env.MOUNT
             self.source = "/autoinstrumentation/."
             self.injection = {
@@ -201,14 +201,14 @@ def wait_for_probe(container: Container, timeout: float = 120.0) -> None:
     raise AssertionError(f"{container.name} did not answer its probe in {timeout:.0f} s\n{container.logs()[-2000:]}")
 
 
-def drive(container: Container, calls: int) -> None:
-    """`calls` model calls through the workload, one after another on one connection."""
+def drive(container: Container, calls: int, routes: Sequence[str]) -> None:
+    """`calls` model calls through the workload, one after another on one connection, taking its routes in turn."""
     connection = http.client.HTTPConnection("127.0.0.1", container.port, timeout=60)
     body = b'{"prompt": "hi there"}'
     headers = {"Content-Type": "application/json"}
     try:
-        for _ in range(calls):
-            connection.request("POST", "/chat/openai", body, headers)
+        for call in range(calls):
+            connection.request("POST", routes[call % len(routes)], body, headers)
             response = connection.getresponse()
             payload = response.read()
             if response.status != 200:
@@ -256,7 +256,7 @@ class Session:
 
     def mock(self) -> Mock:
         container = Container.start(
-            self.setup.mock_image, network=self.network, publish=8080, name=f"i019-mock-{uuid.uuid4().hex[:6]}"
+            self.setup.mock_image, network=self.network, publish=8080, name=f"kit-test-mock-{uuid.uuid4().hex[:6]}"
         )
         self.containers.append(container)
         return Mock(container)
@@ -264,7 +264,7 @@ class Session:
     def copy_payload(self) -> tuple[str, float]:
         """The init container's copy into a fresh volume, as the Operator makes it: the volume and how long the copy
         took."""
-        volume = f"i019-overhead-{uuid.uuid4().hex[:8]}"
+        volume = f"kit-test-overhead-{uuid.uuid4().hex[:8]}"
         self.volumes.append(volume)
         run("volume", "create", volume)
         # A new volume belongs to root and is not writable by the image's user; a Kubernetes emptyDir is (mode 1777).
@@ -326,11 +326,11 @@ class Session:
             injected_future = pool.submit(self.start_side, injected_mock, injected=True, volume=volume, cpu=cpus[1])
             (plain, plain_start), (injected, injected_start) = plain_future.result(), injected_future.result()
 
-            self.both(pool, plain, injected, WARMUP)
+            self.both(pool, plain, injected, WARMUP, self.combo.routes)
             # the warm-up's spans are exported before the window opens, so that their export is not counted in it
             wait_for_spans(injected_mock, WARMUP)
             before = {c.name: read_cgroup(c) for c in (plain, injected)}
-            self.both(pool, plain, injected, CALLS)
+            self.both(pool, plain, injected, CALLS, self.combo.routes)
             # the injected side's spans go out in the exporter's batches: wait until all of them have, so that their
             # CPU is in
             wait_for_spans(injected_mock, WARMUP + CALLS)
@@ -354,18 +354,20 @@ class Session:
             )
 
         measured = gate.Round(plain=side(plain, plain_start), injected=side(injected, injected_start, copy_seconds))
-        for container in (plain, injected, *[c for c in self.containers if c.name.startswith("i019-mock-")]):
+        for container in (plain, injected, *[c for c in self.containers if c.name.startswith("kit-test-mock-")]):
             container.stop()
         run("volume", "rm", "-f", volume, check=False)
         return measured
 
     @staticmethod
-    def both(pool: ThreadPoolExecutor, plain: Container, injected: Container, calls: int) -> None:
+    def both(
+        pool: ThreadPoolExecutor, plain: Container, injected: Container, calls: int, routes: Sequence[str]
+    ) -> None:
         errors: list[BaseException] = []
 
         def work(container: Container) -> None:
             try:
-                drive(container, calls)
+                drive(container, calls, routes)
             except BaseException as error:  # noqa: BLE001 - re-raised below, on the caller's thread
                 errors.append(error)
 

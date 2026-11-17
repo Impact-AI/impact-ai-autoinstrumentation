@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kube"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kubetest"
+	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/kube"
+	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/kubetest"
 )
 
 // fakeKey is a literal that looks like a provider key. It must never appear in

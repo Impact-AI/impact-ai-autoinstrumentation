@@ -9,10 +9,20 @@ Standard library only, so it runs in a plain python image.
               POST /v1/responses                OpenAI Responses (what the OpenAI Agents SDK calls)
               POST /v1/messages                 Anthropic messages
               POST /model/<id>/converse         Amazon Bedrock Converse (any model id, Nova's included)
+              POST .../models/<model>:generateContent
+                                                Google's Gemini API (/v1beta/models/...) and Vertex AI
+                                                (/v1beta1/projects/<p>/locations/<l>/publishers/google/models/...), what
+                                                google-genai calls; :streamGenerateContent answers the same text in two
+                                                parts, the usage in each: as server-sent events with ?alt=sse (as
+                                                google-genai asks), else as one JSON array (the REST transport of the
+                                                older vertexai module)
               A chat or Responses request that offers tools and has no tool result yet is answered with a call of the
               first tool (arguments made from its schema); once the result is in, with the usual answer. That is one
               round of an agent loop.
-  Ingest      POST /v1/traces, /v1/inventory    recorded; answered 202 unless a rule says otherwise (a snapshot with a
+  Ingest      POST /v1/traces, /v1/logs         recorded; answered 200 unless a rule says otherwise, after the same key
+                                                check (the spans, and the log events of a customer's own OpenTelemetry
+                                                instrumentation or of the kit's gateway)
+              POST /v1/inventory                recorded; answered 202 unless a rule says otherwise (a snapshot with a
                                                 workload member the intake does not know, or a stall that is not names
                                                 alone, is refused 400 malformed_request, as the real intake refuses it)
               POST /v1/installs/exchange        the install token exchange (C10), see below
@@ -40,8 +50,8 @@ Install token exchange (C10) and automatic coverage (C11), as the real Ingest se
   GET  /v1/inventory/cover            Authorization: Bearer <install key>; {"schema":"impact.cover.v1","version",
                                         "automatic","workloads"} with an ETag, 304 on If-None-Match.
 
-  Keys the exchange issued are accepted next to `require_key` on /v1/inventory, /v1/traces and the cover list; a
-  snapshot for another cluster than the key was issued for is refused (403 key_cluster_mismatch). With no
+  Keys the exchange issued are accepted next to `require_key` on /v1/inventory, /v1/traces, /v1/logs and the cover
+  list; a snapshot for another cluster than the key was issued for is refused (403 key_cluster_mismatch). With no
   `require_key` and no key issued yet, nothing is checked (what the container tests rely on).
 
 Test-only control (not recorded in /_requests):
@@ -74,7 +84,7 @@ ANSWER = "Hello from the stub."
 
 EXCHANGE_PATH = "/v1/installs/exchange"
 COVER_PATH = "/v1/inventory/cover"
-KEYED_PATHS = ("/v1/inventory", "/v1/traces", COVER_PATH)  # the routes that want an ingest key
+KEYED_PATHS = ("/v1/inventory", "/v1/traces", "/v1/logs", COVER_PATH)  # the routes that want an ingest key
 MAX_EXCHANGE_BODY = 4096
 COVER_SCHEMA = "impact.cover.v1"
 
@@ -82,7 +92,7 @@ ENVIRONMENT = r"[a-z0-9](?:[a-z0-9-]{0,30}[a-z0-9])?"
 TOKEN_GRAMMAR = re.compile(rf"impactinstall_({ENVIRONMENT})_[A-Za-z0-9_-]{{43}}")
 PREFIX_GRAMMAR = re.compile(rf"impact_({ENVIRONMENT})_[A-Za-z0-9_-]{{8}}")
 HASH_GRAMMAR = re.compile(r"[0-9a-f]{64}")
-# What the real exchange reads of the request (capabilities/ai-coverage/go/exchange.go and inventory.go): a value that
+# What the real exchange reads of the request (the impact.ai service): a value that
 # does not fit is a malformed_request, so a chart that sends one fails here as it would there.
 PRODUCT_GRAMMAR = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{2,63}")
 CLUSTER_UID_GRAMMAR = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{3,127}")
@@ -232,6 +242,45 @@ def chat_body(request: dict) -> dict:
     }
 
 
+# Google's Gemini API and Vertex AI: the same methods on every path that ends in the model, the model the last segment
+# before the colon.
+GEMINI = re.compile(r"/(?:[^:]+/)?models/(?P<model>[^/:]+):(?P<method>generateContent|streamGenerateContent)")
+
+
+def gemini_chunk(model: str, text: str, output_tokens: int, finish: str | None) -> dict:
+    """One GenerateContentResponse, in the REST API's own spelling."""
+    candidate: dict = {"content": {"role": "model", "parts": [{"text": text}]}, "index": 0}
+    if finish:
+        candidate["finishReason"] = finish
+    return {
+        "candidates": [candidate],
+        "usageMetadata": {
+            "promptTokenCount": 7,
+            "candidatesTokenCount": output_tokens,
+            "totalTokenCount": 7 + output_tokens,
+        },
+        "modelVersion": model,
+        "responseId": "stub-response",
+    }
+
+
+def gemini_answer(path: str, query: str) -> tuple[str, bytes] | None:
+    """(content type, body) of a Gemini or Vertex AI call, or None for any other path. A stream is two parts whose text
+    joins to the usual answer, the usage counted up in each, as the API sends them: server-sent events when the query
+    asks for them (alt=sse), else a JSON array."""
+    match = GEMINI.fullmatch(path)
+    if not match:
+        return None
+    model = match["model"]
+    if match["method"] == "generateContent":
+        return "application/json", json.dumps(gemini_chunk(model, ANSWER, 5, "STOP")).encode()
+    head, tail = ANSWER.split(" ", 1)
+    parts = [gemini_chunk(model, head, 2, None), gemini_chunk(model, " " + tail, 5, "STOP")]
+    if "sse" in parse_qs(query).get("alt", []):
+        return "text/event-stream", b"".join(b"data: " + json.dumps(part).encode() + b"\r\n\r\n" for part in parts)
+    return "application/json", json.dumps(parts).encode()
+
+
 def provider_body(path: str, request: dict) -> dict | None:
     if path.endswith("/v1/chat/completions"):
         return chat_body(request)
@@ -277,7 +326,7 @@ def sha256_hex(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()
 
 
-# What the real exchange treats as a credential in a value it is given (capabilities/ai-coverage/go/inventory.go): a
+# What the real exchange treats as a credential in a value it is given (the impact.ai service): a
 # key or an install token by its exact shape, a Bearer header, a JWT, cloud and code-host tokens, a private key.
 CREDENTIAL = re.compile(
     r"impact(?:install)?_[a-z0-9-]{1,32}_[A-Za-z0-9_-]{43}"
@@ -346,7 +395,7 @@ def key_admitted(bearer: str | None) -> bool:
         return issued is not None and not issued["revoked"]
 
 
-# What the real intake reads of a workload (capabilities/ai-coverage/go/inventory.go and src/inventory.ts). It reads
+# What the real intake reads of a workload (the impact.ai service). It reads
 # exactly the contract: a snapshot with a member it has not been taught is refused whole (400 malformed_request), and
 # the cluster's inventory stays as it was until the kit stops sending it. So a field joins this list when the intake
 # reads it, and a kit that sends one earlier fails here as it would there.
@@ -755,15 +804,20 @@ def control_post(path: str, body: bytes) -> tuple[int, dict] | None:
 
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
+    # A response is written as its headers, then its body. On a kept-alive connection Nagle's algorithm holds the body
+    # until the client acknowledges the headers, which a client that delays its acknowledgements does after 40 ms: every
+    # answer would then look 40 ms slow.
+    disable_nagle_algorithm = True
 
     def log_message(self, *args):
         pass
 
     def _send(self, status: int, body: bytes = b"{}", headers: dict | None = None, content_type="application/json"):
+        headers = dict(headers or {})
         self.send_response(status)
-        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Type", headers.pop("Content-Type", content_type))
         self.send_header("Content-Length", str(len(body)))
-        for key, value in (headers or {}).items():
+        for key, value in headers.items():
             self.send_header(key, str(value))
         self.end_headers()
         self.wfile.write(body)
@@ -848,6 +902,9 @@ class Handler(BaseHTTPRequestHandler):
         provider = provider_body(path, self._json(body))
         if provider is not None:
             return 200, json.dumps(provider).encode(), {}, delay
+        gemini = gemini_answer(path, record["query"])
+        if gemini is not None:
+            return 200, gemini[1], {"Content-Type": gemini[0]}, delay
         if path == "/v1/inventory":
             if inventory_problem(record["json"]) is not None:  # the body is read before it is stored
                 return 400, b'{"code":"malformed_request"}', {}, delay

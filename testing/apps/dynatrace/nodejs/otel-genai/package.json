@@ -1,0 +1,16 @@
+{
+  "name": "dynatrace-cell-otel-genai",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The canonical interaction traced by the OpenTelemetry GenAI instrumentation of the OpenAI SDK, exported as OTLP to a Dynatrace environment",
+  "dependencies": {
+    "@opentelemetry/api": "1.10.0",
+    "@opentelemetry/context-async-hooks": "3.1.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "0.301.0",
+    "@opentelemetry/instrumentation": "0.301.0",
+    "@opentelemetry/instrumentation-openai": "0.23.0",
+    "@opentelemetry/resources": "3.1.0",
+    "@opentelemetry/sdk-trace": "3.1.0",
+    "openai": "6.49.0"
+  }
+}

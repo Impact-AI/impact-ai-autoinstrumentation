@@ -30,8 +30,9 @@ def test_c7_pins():
         "opentelemetry-util-genai",
         "opentelemetry-instrumentation-genai-openai",
         "opentelemetry-instrumentation-genai-anthropic",
-        "opentelemetry-instrumentation-genai-openai-agents",  # AE-11: the OpenAI Agents SDK
-        "opentelemetry-instrumentation-genai-langchain",  # AE-11: LangChain and LangGraph
+        "opentelemetry-instrumentation-genai-openai-agents",  # agents: the OpenAI Agents SDK
+        "opentelemetry-instrumentation-genai-langchain",  # agents: LangChain and LangGraph
+        "opentelemetry-instrumentation-google-genai",  # Google's SDK: the Gemini API and Vertex AI
     ):
         assert pins[package] == "1.3b0", package
     assert pins["opentelemetry-instrumentation-bedrock"] == "0.62.4"  # OpenLLMetry, not botocore's
@@ -40,6 +41,12 @@ def test_c7_pins():
 def test_the_agent_frameworks_themselves_are_not_in_the_payload():
     # The application has its own openai-agents, langchain and langgraph; only the instrumentation is ours.
     for name in ("openai-agents", "langchain", "langchain-core", "langgraph", "langchain-openai", "openai"):
+        assert name not in LOCK, name
+
+
+def test_google_s_sdk_and_its_dependencies_are_not_in_the_payload():
+    # The application has its own google-genai; the instrumentation adds no package of Google's to the payload.
+    for name in ("google-genai", "google-auth", "google-cloud-aiplatform", "protobuf", "httpx", "websockets"):
         assert name not in LOCK, name
 
 
@@ -80,3 +87,12 @@ def test_requirements_round_trip(tmp_path):
     out = tmp_path / "r.txt"
     assemble.write_requirements({"foo": ("1.0", ["sha256:" + "a" * 64, "sha256:" + "b" * 64])}, out)
     assert assemble.parse_lock(out.read_text()) == {"foo": ("1.0", ["sha256:" + "a" * 64, "sha256:" + "b" * 64])}
+
+
+def test_the_payload_install_copies_files_out_of_the_uv_cache(monkeypatch, tmp_path):
+    # The payload is changed in place after the install; a hardlinked file would change uv's cache with it.
+    seen = []
+    monkeypatch.setattr(assemble.subprocess, "run", lambda command, check: seen.append(command))
+    assemble.uv_install("uv", tmp_path / "requirements.txt", tmp_path / "root", "x86_64-manylinux_2_28", "3.12")
+    (command,) = seen
+    assert command[command.index("--link-mode") + 1] == "copy"

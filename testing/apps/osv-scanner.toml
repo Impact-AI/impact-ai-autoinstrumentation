@@ -1,0 +1,77 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# Known vulnerabilities in the test fixtures of this directory that do not affect what the kit ships, for OSV-Scanner
+# and OpenSSF Scorecard. These fixtures are workloads that run against mock providers in CI; nothing of them is in an
+# image or the chart. Each entry says why it stays, and lapses after six months so that it is looked at again. The ids
+# are GitHub's, which OSV-Scanner matches with their aliases (PYSEC, CVE), so that the dependency review of a pull
+# request allows the same ones: .github/dependency-review-config.yml lists them (chart/tests/test_ci_supply_chain.py).
+
+# requirements-oldest.txt pins the oldest LangGraph, LangChain and langchain-core the image traces, on purpose: their
+# qualification cells prove those versions (python/qualification.json).
+[[IgnoredVulns]]
+id = "GHSA-g48c-2wqr-h844"
+ignoreUntil = 2027-05-14
+reason = "langgraph 0.2.76 in requirements-oldest.txt: the oldest LangGraph the kit traces, a fixture against mock providers"
+
+[[IgnoredVulns]]
+id = "GHSA-wwqv-p2pp-99h5"
+ignoreUntil = 2027-05-14
+reason = "langgraph-checkpoint 2.1.2, a dependency of the oldest LangGraph in requirements-oldest.txt (a fixture)"
+
+[[IgnoredVulns]]
+id = "GHSA-fjqc-hq36-qh5p"
+ignoreUntil = 2027-05-14
+reason = "langgraph-checkpoint 2.1.2, a dependency of the oldest LangGraph in requirements-oldest.txt (a fixture)"
+
+[[IgnoredVulns]]
+id = "GHSA-mhr3-j7m5-c7c9"
+ignoreUntil = 2027-05-14
+reason = "langgraph-checkpoint 2.1.2, a dependency of the oldest LangGraph in requirements-oldest.txt (a fixture)"
+
+[[IgnoredVulns]]
+id = "GHSA-w39p-vh2g-g8g5"
+ignoreUntil = 2027-05-14
+reason = "langgraph-sdk 0.1.74, a dependency of the oldest LangGraph in requirements-oldest.txt (a fixture)"
+
+[[IgnoredVulns]]
+id = "GHSA-fvww-7h3r-vfhp"
+ignoreUntil = 2027-05-14
+reason = "langgraph-sdk 0.1.74, a dependency of the oldest LangGraph in requirements-oldest.txt (a fixture)"
+
+[[IgnoredVulns]]
+id = "GHSA-gr75-jv2w-4656"
+ignoreUntil = 2027-05-14
+reason = "langchain 0.3.30 in requirements-oldest.txt: the oldest LangChain the kit traces, a fixture against mock providers"
+
+[[IgnoredVulns]]
+id = "GHSA-qh6h-p6c9-ff54"
+ignoreUntil = 2027-05-14
+reason = "langchain-core 0.3.86 in requirements-oldest.txt: the oldest langchain-core the kit traces, a fixture against mock providers"
+
+[[IgnoredVulns]]
+id = "GHSA-2g6r-c272-w58r"
+ignoreUntil = 2027-05-14
+reason = "langchain-core 0.3.86 in requirements-oldest.txt: the oldest langchain-core the kit traces, a fixture against mock providers"
+
+[[IgnoredVulns]]
+id = "GHSA-fv5p-p927-qmxr"
+ignoreUntil = 2027-05-14
+reason = "langchain-text-splitters 0.3.11, a dependency of the oldest LangChain in requirements-oldest.txt (a fixture)"
+
+[[IgnoredVulns]]
+id = "GHSA-r7w7-9xr2-qq2r"
+ignoreUntil = 2027-05-14
+reason = "langchain-openai 0.3.35, the oldest LangChain's OpenAI integration in requirements-oldest.txt (a fixture)"
+
+# requirements-otel-arize-ax.txt and requirements-otel-splunk-otel.txt reproduce the OpenTelemetry versions those
+# vendors' distributions install, so that the stand-down beside them is tested as a workload would run them. The image
+# itself carries a fixed opentelemetry-api (python/requirements.lock).
+[[IgnoredVulns]]
+id = "GHSA-mf5v-w3w3-f6cg"
+ignoreUntil = 2027-05-14
+reason = "opentelemetry-api 1.44.0 and 1.45.1 as Arize AX's and Splunk's distributions install them, in stand-down fixtures"
+
+[[IgnoredVulns]]
+id = "GHSA-xcq7-p3pf-p88h"
+ignoreUntil = 2027-05-14
+reason = "opentelemetry-api 1.44.0 as Arize AX's distribution installs it, in a stand-down fixture"

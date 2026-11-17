@@ -5,10 +5,10 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const frameworks = require('../../src/impact/frameworks');
 
-// The monorepo's grammar for an entry (capabilities/traces/go/seen.go): a name, and a version after one space.
+// The impact.ai service's grammar for an entry: a name, and a version after one space.
 const ENTRY = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}( [A-Za-z0-9][A-Za-z0-9._+!-]{0,63})?$/;
 
-test('every catalogued library has a label the monorepo accepts', () => {
+test('every catalogued library has a label the impact.ai service accepts', () => {
   for (const name of Object.keys(frameworks.CATALOG)) {
     assert.match(frameworks.label(name, '1.2.3'), ENTRY, name);
     assert.match(frameworks.label(name, null), ENTRY, name);

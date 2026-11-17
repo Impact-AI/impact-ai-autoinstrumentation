@@ -1,66 +1,260 @@
-# Proposed .github/workflows/ci.yml of the kit (the code owner's file), for v0.3.0. What changes against the file in main,
-# with the times of the pull request (GitHub-hosted ubuntu-latest, queue time not counted):
+# .github/workflows/ci.yml of the kit (the code owner's file). Every job finishes in under ten minutes. A change runs the
+# parts of `make ci`; the end-to-end suite runs once a day and at a release. The first job, `changes`, runs
+# scripts/ci_jobs.py (`make ci-jobs` shows its answer on a workstation) and the others read its answer:
 #
-#   test        15 -> 20 minutes. It took 10.6 to 12.5 minutes (runs 41859711213, 41852762649, 41867224302); the old limit left 2.5.
-#   e2e         25 -> 35 minutes, and it no longer waits for `test`. The suite grew with the token exchange, automatic
-#               coverage, the Operator's role and the failure cases: it took 24.5 minutes on the last run (41867224302:
-#               build the images 4.1, create the cluster 0.8, load the images 1.8, e2e/ 12.2, then the tracer, agent,
-#               Node.js and gateway container tests 4.8), against the 25 of the old limit. The jobs are independent (each
-#               builds its own images), so a pull request takes as long as the slowest job instead of `test` plus `e2e`.
-#               Splitting the container tests into a job of their own would save about 5 minutes of waiting and cost
-#               about 8 minutes of runner time: not proposed.
-#   e2e-oldest  new: the Kubernetes part of the suite (what `make e2e` runs when E2E_NODE_IMAGE is set) on Kubernetes 1.27,
-#               the oldest version the chart supports: 17.9 minutes (run 41852762649). It proves the Operator's narrow role
-#               there: the suite fails when the Operator's log holds a "forbidden".
-#   overhead    new: the overhead of all eleven runtimes and servers against the budget (`make overhead`), about ten
-#               minutes by the estimate of its author, on a runner of its own so that nothing else disturbs the numbers;
-#               the report goes to the job summary.
+#   test        `make ci` in its three parts, a job each: test (checks), test (python), test (nodejs), 4 to 7 minutes.
+#               Every pull request, a draft too, and every push to main.
+#   e2e         `make e2e` in parts: the images the cluster runs, built once and handed on as an artifact (e2e (images),
+#               about 5 minutes); the kind suite in three shards, each on a cluster of its own (e2e (kind 1), (kind 2),
+#               (kind 3), 5 to 9 minutes); the tracer, agent framework and AI gateway container tests (e2e (python), about
+#               7); the Node.js qualification matrix (e2e (nodejs), about 4); and the cells of the Python qualification
+#               that what changed touches (e2e (cells)). The daily run on main; a release, whose workflow calls this one
+#               with `release: true` and publishes nothing until it passed on the tagged commit (`make release` runs the
+#               cells itself); and a pull request labelled run-full-ci.
+#   e2e-oldest  the same shards on Kubernetes 1.27, the oldest version the chart supports: they prove the Operator's
+#               narrow role there (the suite fails when the Operator's log holds a "forbidden"). Wherever e2e runs.
+#   e2e-newest  the same shards on Kubernetes 1.37, the newest version kind v0.33 builds a node image for, so that the
+#               range the chart installs on is tested at both ends. Wherever e2e runs.
+#   overhead    the overhead of all eleven runtimes and servers against the budget (`make overhead`, about 15 minutes),
+#               on a runner of its own so that nothing else disturbs the numbers; the report goes to the job summary.
+#               The daily run on main, and a pull request labelled benchmark (a release measures its own).
 #
-# If `e2e-oldest` and `overhead` should block a merge, add them to the branch ruleset next to `test` and `e2e`.
+# The daily run takes what changed on main in the last 26 hours: it runs nothing on a day that changed nothing the
+# suite can see (NOT_E2E in scripts/ci_jobs.py), and nothing in the repository releases are made in. A breakage shows
+# up the morning after the merge that made it, and no release goes out with it. A draft runs the parts of `make ci`
+# only, whatever its labels say. A new push cancels the run of the one before, on a pull request and on main. `test`
+# and `e2e` are each a job that fails when one of its parts failed and is skipped otherwise (a skipped job counts as
+# passed), so that a branch ruleset can require these two names. A job added here needs `needs: changes` and an output
+# of scripts/ci_jobs.py in its `if`: without one it would run for every pull request, in the daily run and at a
+# release. The actions are pinned by commit; Dependabot moves the pins and their comments.
 name: ci
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled]
   push:
     branches: [main]
+  workflow_dispatch:  # a run started by hand: what a push to main runs
+  schedule:
+    - cron: "17 4 * * *"  # every day 04:17 UTC: the suite on Kubernetes 1.34 and 1.27 and the overhead, when main changed
+  workflow_call:
+    inputs:
+      release:
+        description: The gate of a release (release.yml), the end-to-end suite on the tagged commit
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      test: ${{ steps.select.outputs.test }}
+      images: ${{ steps.select.outputs.images }}
+      kind: ${{ steps.select.outputs.kind }}
+      containers: ${{ steps.select.outputs.containers }}
+      cells: ${{ steps.select.outputs.cells }}
+      oldest: ${{ steps.select.outputs.oldest }}
+      overhead: ${{ steps.select.outputs.overhead }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # the daily run reads what changed on main in 26 hours, from the whole history; a pull request is checked out
+          # as its merge commit, and the first parent is its base
+          fetch-depth: ${{ github.event_name == 'schedule' && '0' || '2' }}
+          persist-credentials: false
+      - id: select
+        name: The jobs this event needs
+        run: make ci-jobs
+        env:
+          CI_JOBS_RELEASE: ${{ inputs.release }}
+
+  test-part:
+    name: test (${{ matrix.part }})
+    needs: changes
+    if: ${{ needs.changes.outputs.test != '[]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        part: ${{ fromJSON(needs.changes.outputs.test) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+      - name: A part of make ci
+        run: make "ci-$PART"
+        env:
+          PART: ${{ matrix.part }}
+
   test:
+    needs: [changes, test-part]
+    if: ${{ !cancelled() && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 2
     steps:
-      - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v5
-      - name: Unit tests, chart checks and image tests
-        run: make ci
+      - name: A part of the test job did not pass
+        run: exit 1
+
+  e2e-images:
+    name: e2e (images)
+    needs: changes
+    if: ${{ needs.changes.outputs.images == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+      - name: The images the kind cluster runs, and their archives
+        run: make e2e-images
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: kind-images
+          path: build/images/*.tar
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 1
+
+  e2e-kind:
+    name: e2e (kind ${{ matrix.shard }})
+    needs: [changes, e2e-images]
+    if: ${{ needs.changes.outputs.kind != '[]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.changes.outputs.kind) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: kind-images
+          path: build/images
+      - name: A shard of the kind suite on Kubernetes 1.34 (e2e/kind.yaml)
+        run: make e2e-kind
+        env:
+          E2E_TESTS: ${{ matrix.tests }}
+
+  e2e-part:
+    name: e2e (${{ matrix.part }})
+    needs: changes
+    if: ${{ needs.changes.outputs.containers != '[]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        part: ${{ fromJSON(needs.changes.outputs.containers) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+      - name: The container tests of the end-to-end job
+        run: make "e2e-$PART"
+        env:
+          PART: ${{ matrix.part }}
+
+  e2e-cells:
+    name: e2e (cells)
+    needs: changes
+    if: ${{ needs.changes.outputs.cells != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+      - name: The cells of the Python qualification this change touches
+        run: make test-python-cells
+        env:
+          CELLS: ${{ needs.changes.outputs.cells }}
+
   e2e:
+    needs: [changes, e2e-images, e2e-kind, e2e-part, e2e-cells]
+    if: ${{ !cancelled() && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) }}
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 2
     steps:
-      - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v5
-      - name: End to end on a kind cluster (Kubernetes 1.34), then the tracer, agent, Node.js and gateway container tests
-        run: make e2e
+      - name: A part of the end-to-end job did not pass
+        run: exit 1
+
   e2e-oldest:
+    name: e2e-oldest (kind ${{ matrix.shard }})
+    needs: [changes, e2e-images]
+    if: ${{ needs.changes.outputs.oldest != '[]' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 12
     env:
       # kind v0.33's node image for Kubernetes 1.27, the oldest version the chart supports (kubeVersion in Chart.yaml).
       E2E_NODE_IMAGE: docker.io/kindest/node:v1.27.16@sha256:2d21a61643eafc439905e18705b8186f3296384750a835ad7a005dceb9546d20
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.changes.outputs.oldest) }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v5
-      - name: End to end on a kind cluster (Kubernetes 1.27), the Kubernetes part of the suite
-        run: make e2e
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: kind-images
+          path: build/images
+      - name: A shard of the kind suite on Kubernetes 1.27
+        run: make e2e-kind
+        env:
+          E2E_TESTS: ${{ matrix.tests }}
+
+  e2e-newest:
+    name: e2e-newest (kind ${{ matrix.shard }})
+    needs: [changes, e2e-images]
+    if: ${{ needs.changes.outputs.oldest != '[]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      # kind v0.33's node image for Kubernetes 1.37, its default (https://github.com/kubernetes-sigs/kind/releases/tag/v0.33.0).
+      E2E_NODE_IMAGE: docker.io/kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.changes.outputs.oldest) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: kind-images
+          path: build/images
+      - name: A shard of the kind suite on Kubernetes 1.37
+        run: make e2e-kind
+        env:
+          E2E_TESTS: ${{ matrix.tests }}
+
   overhead:
+    needs: changes
+    if: ${{ needs.changes.outputs.overhead == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
       - name: Overhead of the injected workloads (+1.5 ms per model call, +40 MiB, +2 s)
         run: make overhead
       - name: The report

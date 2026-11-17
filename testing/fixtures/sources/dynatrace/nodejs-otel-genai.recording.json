@@ -1,0 +1,28 @@
+{
+  "how": "testing/apps/dynatrace/nodejs/otel-genai/app.cjs, nodejs, configured by the OpenTelemetry SDK's environment variables (OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_HEADERS), a Classic access token, run against testing/apps/dynatrace/tenant.py (a mock of the OTLP trace endpoint Dynatrace documents, https://docs.dynatrace.com/docs/dynatrace-api/environment-api/opentelemetry/post-traces) with the canonical provider testing/apps/dynatrace/provider.py",
+  "packages": {
+    "@opentelemetry/exporter-trace-otlp-proto": "0.301.0",
+    "@opentelemetry/instrumentation-openai": "0.23.0",
+    "@opentelemetry/sdk-trace": "3.1.0",
+    "openai": "6.49.0"
+  },
+  "recorded": "2026-11-09",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/api/v2/otlp/v1/traces",
+      "query": "",
+      "headers": {
+        "Authorization": "Api-Token dt0c01.PLANTED",
+        "Content-Type": "application/x-protobuf",
+        "User-Agent": "OTel-OTLP-Exporter-JavaScript/0.301.0",
+        "Host": "127.0.0.1:44353",
+        "Connection": "keep-alive",
+        "Transfer-Encoding": "chunked"
+      },
+      "contentType": "application/x-protobuf",
+      "contentEncoding": "",
+      "bodyBase64": "Cp8PCkMKIwoMc2VydmljZS5uYW1lEhMKEXN1cHBvcnQtYXNzaXN0YW50ChoKD3NlcnZpY2UudmVyc2lvbhIHCgU0LjIuMBAAEqoHCi8KJUBvcGVudGVsZW1ldHJ5L2luc3RydW1lbnRhdGlvbi1vcGVuYWkSBjAuMjMuMBK8AwoQdWMK+yt2EVjJ/QMvGfpB9hIIhxOArmmgde4iCPq4y8XyQq0dKgtjaGF0IGdwdC00bzADOUC9NrQybeYYQdMNurUybeYYSh8KFWdlbl9haS5vcGVyYXRpb24ubmFtZRIGCgRjaGF0SiAKFGdlbl9haS5yZXF1ZXN0Lm1vZGVsEggKBmdwdC00b0oZCg1nZW5fYWkuc3lzdGVtEggKBm9wZW5haUodCg5zZXJ2ZXIuYWRkcmVzcxILCgkxMjcuMC4wLjFKEwoLc2VydmVyLnBvcnQSBBijywJKMgoeZ2VuX2FpLnJlc3BvbnNlLmZpbmlzaF9yZWFzb25zEhAqDgoMCgp0b29sX2NhbGxzSiwKEmdlbl9haS5yZXNwb25zZS5pZBIWChRjaGF0Y21wbC1jYW5vbmljYWwtMUosChVnZW5fYWkucmVzcG9uc2UubW9kZWwSEwoRZ3B0LTRvLTIwMjQtMDgtMDZKHwoZZ2VuX2FpLnVzYWdlLmlucHV0X3Rva2VucxICGHhKIAoaZ2VuX2FpLnVzYWdlLm91dHB1dF90b2tlbnMSAhgUUABgAHAAegIYAIUBAQEAABK3AwoQdWMK+yt2EVjJ/QMvGfpB9hIIRu5jmE/M5WQiCPq4y8XyQq0dKgtjaGF0IGdwdC00bzADOcB3w7UybeYYQdcw/rUybeYYSh8KFWdlbl9haS5vcGVyYXRpb24ubmFtZRIGCgRjaGF0SiAKFGdlbl9haS5yZXF1ZXN0Lm1vZGVsEggKBmdwdC00b0oZCg1nZW5fYWkuc3lzdGVtEggKBm9wZW5haUodCg5zZXJ2ZXIuYWRkcmVzcxILCgkxMjcuMC4wLjFKEwoLc2VydmVyLnBvcnQSBBijywJKLAoeZ2VuX2FpLnJlc3BvbnNlLmZpbmlzaF9yZWFzb25zEgoqCAoGCgRzdG9wSiwKEmdlbl9haS5yZXNwb25zZS5pZBIWChRjaGF0Y21wbC1jYW5vbmljYWwtMkosChVnZW5fYWkucmVzcG9uc2UubW9kZWwSEwoRZ3B0LTRvLTIwMjQtMDgtMDZKIAoZZ2VuX2FpLnVzYWdlLmlucHV0X3Rva2VucxIDGKwCSiAKGmdlbl9haS51c2FnZS5vdXRwdXRfdG9rZW5zEgIYUFAAYABwAHoCGACFAQEBAAASqgcKEwoRc3VwcG9ydC1hc3Npc3RhbnQS3AIKEHVjCvsrdhFYyf0DLxn6QfYSCHR7xA2E6MPXIgj6uMvF8kKtHSoWZXhlY3V0ZV90b29sIGdldF9vcmRlcjABOcB3w7UybeYYQXoIxLUybeYYSicKFWdlbl9haS5vcGVyYXRpb24ubmFtZRIOCgxleGVjdXRlX3Rvb2xKHwoQZ2VuX2FpLnRvb2wubmFtZRILCglnZXRfb3JkZXJKHwoTZ2VuX2FpLnRvb2wuY2FsbC5pZBIICgZjYWxsXzFKQgoaZ2VuX2FpLnRvb2wuY2FsbC5hcmd1bWVudHMSJAoieyJvcmRlcl9pZCI6IjEwNDIgQ09OVEVOVC1DQU5BUlkifUpJChdnZW5fYWkudG9vbC5jYWxsLnJlc3VsdBIuCix7InN0YXR1cyI6InNoaXBwZWQiLCJub3RlIjoiQ09OVEVOVC1DQU5BUlkifVAAYABwAHoCGACFAQEBAAASkQMKEHVjCvsrdhFYyf0DLxn6QfYSCDHTc4K7OhQcIgj6uMvF8kKtHSoVcmV0cmlldmFsIGhlbHAtY2VudHJlMAM5wHfDtTJt5hhB2xbEtTJt5hhKJAoVZ2VuX2FpLm9wZXJhdGlvbi5uYW1lEgsKCXJldHJpZXZhbEomChVnZW5fYWkuZGF0YV9zb3VyY2UuaWQSDQoLaGVscC1jZW50cmVKHAoWZ2VuX2FpLnJldHJpZXZhbC50b3BfaxICGAVKSAobZ2VuX2FpLnJldHJpZXZhbC5xdWVyeS50ZXh0EikKJ1doZW4gZG9lcyBhbiBvcmRlciBzaGlwPyBDT05URU5ULUNBTkFSWUp4ChpnZW5fYWkucmV0cmlldmFsLmRvY3VtZW50cxJaClhbeyJpZCI6ImtiLTExMiIsInNjb3JlIjowLjkxfSx7ImlkIjoia2ItNDA3Iiwic2NvcmUiOjAuNzN9LHsiaWQiOiJrYi0wMTkiLCJzY29yZSI6MC41Mn1dUABgAHAAegIYAIUBAQEAABKfAQoQdWMK+yt2EVjJ/QMvGfpB9hII+rjLxfJCrR0qFGludm9rZV9hZ2VudCBzdXBwb3J0MAE5AHsntDJt5hhBL6j4tTJt5hhKJwoVZ2VuX2FpLm9wZXJhdGlvbi5uYW1lEg4KDGludm9rZV9hZ2VudEoeChFnZW5fYWkuYWdlbnQubmFtZRIJCgdzdXBwb3J0UABgAHAAegIYAIUBAQEAAA=="
+    }
+  ]
+}

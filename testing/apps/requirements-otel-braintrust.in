@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# Braintrust's SDK with its OpenTelemetry span processor, and OpenTelemetry's OpenAI instrumentation.
+braintrust[otel]==0.49.3
+opentelemetry-instrumentation-openai-v2==2.4b0
+httpx==0.28.1  # the instrumentation imports it; openai 3 no longer brings it
+opentelemetry-util-genai==1.1b0  # the instrumentation imports a module 1.2b0 removed
+openai==3.46.0

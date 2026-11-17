@@ -53,6 +53,7 @@ def key_values(attributes: Mapping | None) -> list[dict]:
     return [{"key": str(k), "value": any_value(v)} for k, v in (attributes or {}).items()]
 
 
+LAMBDA_FUNCTION_NAME = "AWS_LAMBDA_FUNCTION_NAME"
 WORKLOAD_NAME_KEYS = (
     "k8s.deployment.name",
     "k8s.statefulset.name",
@@ -84,15 +85,58 @@ def default_service_name(environ: Mapping[str, str]) -> str | None:
     for key in WORKLOAD_NAME_KEYS:
         if attributes.get(key):
             return attributes[key]
-    return None
+    return environ.get(LAMBDA_FUNCTION_NAME) or None
+
+
+# Facts of the platform that the process learns only after it started: a Lambda function's account and ARN arrive with
+# its first invocation (aws_lambda.Function). Empty everywhere else.
+_LATE: dict[str, str] = {}
+
+
+def remember(attributes: Mapping[str, str]) -> None:
+    """Add facts that every resource sent from now on carries (see post)."""
+    _LATE.update({str(k): str(v) for k, v in attributes.items() if v})
+
+
+def platform_attributes(environ: Mapping[str, str]) -> dict[str, str]:
+    """Where the process runs, as OpenTelemetry's resource conventions name it, beyond what the environment's
+    OTEL_RESOURCE_ATTRIBUTES says. On AWS Lambda: the function's name, version and region from Lambda's own settings,
+    and its account and ARN once its first invocation named them. Empty outside Lambda. Names and identifiers only."""
+    name = environ.get(LAMBDA_FUNCTION_NAME)
+    if not name:
+        return {}
+    attributes = {"cloud.provider": "aws", "cloud.platform": "aws_lambda", "faas.name": name}
+    region = environ.get("AWS_REGION") or environ.get("AWS_DEFAULT_REGION")
+    if region:
+        attributes["cloud.region"] = region
+    version = environ.get("AWS_LAMBDA_FUNCTION_VERSION")
+    if version:
+        attributes["faas.version"] = version
+    attributes.update(_LATE)
+    return attributes
+
+
+def with_late_attributes(payload: dict) -> dict:
+    """The payload with the facts learnt after start (remember) on every resource that does not carry them yet."""
+    if not _LATE or not isinstance(payload, dict):
+        return payload
+    for resource_spans in payload.get("resourceSpans") or ():
+        resource = resource_spans.setdefault("resource", {})
+        items = resource.setdefault("attributes", [])
+        present = {item.get("key") for item in items}
+        items.extend({"key": k, "value": any_value(v)} for k, v in _LATE.items() if k not in present)
+    return payload
 
 
 def resource_attributes(environ: Mapping[str, str]) -> dict[str, str]:
     """The workload's resource as the OpenTelemetry SDK builds it from OTEL_RESOURCE_ATTRIBUTES / OTEL_SERVICE_NAME.
 
-    The Operator fills these with the k8s.* placement attributes before the process starts.
+    The Operator fills these with the k8s.* placement attributes before the process starts; on AWS Lambda the
+    function's own are added (platform_attributes).
     """
     attributes = _environment_attributes(environ)
+    for key, value in platform_attributes(environ).items():
+        attributes.setdefault(key, value)
     service = environ.get("OTEL_SERVICE_NAME")
     if service:
         attributes["service.name"] = service
@@ -155,6 +199,33 @@ class Response:
         return 200 <= self.status < 300
 
 
+# One TLS context per CA file, made again when the file changes: building one loads the CA bundle, which costs several
+# milliseconds of CPU, and a host that freezes the process between requests (AWS Lambda) would pay it on every request.
+_TLS_CONTEXTS: dict[tuple, ssl.SSLContext] = {}
+
+
+def _file_stamp(path: str | None) -> tuple | None:
+    if not path:
+        return None
+    try:
+        found = os.stat(path)
+    except OSError:
+        return None
+    return (found.st_mtime_ns, found.st_size, found.st_ino)
+
+
+def tls_context(ca_file: str | None = None) -> ssl.SSLContext:
+    """The client TLS context for the CA file (the system's CAs when None), kept for the process."""
+    key = (ca_file, _file_stamp(ca_file))
+    context = _TLS_CONTEXTS.get(key)
+    if context is None:
+        context = ssl.create_default_context(cafile=ca_file)
+        if len(_TLS_CONTEXTS) >= 8:
+            _TLS_CONTEXTS.clear()
+        _TLS_CONTEXTS[key] = context
+    return context
+
+
 def post(
     url: str,
     payload: dict,
@@ -166,10 +237,12 @@ def post(
     """POST the payload as gzip JSON. Raises OSError (including timeouts) when the endpoint cannot be reached.
 
     http.client is used directly on purpose: HTTP_PROXY and friends must not redirect traffic to the in-cluster gateway.
+    The facts of the platform learnt after start (remember) are added to every resource of the payload that lacks them.
     """
     parts = urllib.parse.urlsplit(url)
     if parts.scheme not in ("http", "https") or not parts.hostname:
         raise ValueError(f"unsupported OTLP endpoint: {url!r}")
+    payload = with_late_attributes(payload)
     body = gzip.compress(json.dumps(payload, separators=(",", ":")).encode("utf-8"), compresslevel=5)
     request_headers = {
         "Content-Type": "application/json",
@@ -179,7 +252,7 @@ def post(
     }
     if parts.scheme == "https":
         connection = http.client.HTTPSConnection(
-            parts.hostname, parts.port, timeout=timeout, context=ssl.create_default_context(cafile=ca_file)
+            parts.hostname, parts.port, timeout=timeout, context=tls_context(ca_file)
         )
     else:
         connection = http.client.HTTPConnection(parts.hostname, parts.port, timeout=timeout)

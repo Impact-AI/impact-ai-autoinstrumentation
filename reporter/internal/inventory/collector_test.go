@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/injector"
+	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/injector"
 )
 
 func wl(s *Snapshot) []string { return keys(s) }
@@ -480,8 +480,8 @@ func TestSnapshotJSONShape(t *testing.T) {
 	}
 }
 
-// AE-3: no secret leaves the cluster.
-func TestAE3NoSecretLeavesTheCluster(t *testing.T) {
+// No secret leaves the cluster.
+func TestNoSecretLeavesTheCluster(t *testing.T) {
 	f := newFake(t)
 	lastApplied := `{"apiVersion":"apps/v1","kind":"Deployment","spec":{"template":{"spec":{"containers":[{"name":"app","env":[{"name":"OPENAI_API_KEY","value":"` + fakeKey + `"}]}]}}}}`
 	noisy := func(extra ...func(obj)) obj {

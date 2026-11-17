@@ -1,0 +1,1484 @@
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "deployment.environment.name",
+            "value": {
+              "stringValue": "harness"
+            }
+          },
+          {
+            "key": "impact.source.decoder",
+            "value": {
+              "stringValue": "datadog/1"
+            }
+          },
+          {
+            "key": "impact.source.id",
+            "value": {
+              "stringValue": "datadog"
+            }
+          },
+          {
+            "key": "impact.source.route",
+            "value": {
+              "stringValue": "relay"
+            }
+          },
+          {
+            "key": "process.runtime.version",
+            "value": {
+              "stringValue": "v24.22.2"
+            }
+          },
+          {
+            "key": "service.name",
+            "value": {
+              "stringValue": "support-assistant"
+            }
+          },
+          {
+            "key": "service.version",
+            "value": {
+              "stringValue": "4.2.0"
+            }
+          },
+          {
+            "key": "telemetry.sdk.language",
+            "value": {
+              "stringValue": "nodejs"
+            }
+          },
+          {
+            "key": "telemetry.sdk.name",
+            "value": {
+              "stringValue": "Datadog"
+            }
+          },
+          {
+            "key": "telemetry.sdk.version",
+            "value": {
+              "stringValue": "6.24.0"
+            }
+          }
+        ]
+      },
+      "scopeSpans": [
+        {
+          "scope": {
+            "name": "Datadog",
+            "version": "6.24.0"
+          },
+          "spans": [
+            {
+              "attributes": [
+                {
+                  "key": "datadog._dd.agent_psr",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog._dd.integration",
+                  "value": {
+                    "stringValue": "openai"
+                  }
+                },
+                {
+                  "key": "datadog._dd.llmobs.artificial_gen_ai_tags",
+                  "value": {
+                    "stringValue": "true"
+                  }
+                },
+                {
+                  "key": "datadog._dd.measured",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog._dd.p.dm",
+                  "value": {
+                    "stringValue": "-0"
+                  }
+                },
+                {
+                  "key": "datadog._dd.sdk.otlp_export",
+                  "value": {
+                    "stringValue": "false"
+                  }
+                },
+                {
+                  "key": "datadog._dd.tags.process",
+                  "value": {
+                    "stringValue": "entrypoint.basedir:app,entrypoint.name:providers,entrypoint.type:script,entrypoint.workdir:app,svc.user:true"
+                  }
+                },
+                {
+                  "key": "datadog._dd.top_level",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.component",
+                  "value": {
+                    "stringValue": "openai"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.metrics.total_tokens",
+                  "value": {
+                    "doubleValue": 12
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.ml_app",
+                  "value": {
+                    "stringValue": "support-assistant"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.name",
+                  "value": {
+                    "stringValue": "OpenAI.createChatCompletion"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.span.kind",
+                  "value": {
+                    "stringValue": "llm"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.tag.integration",
+                  "value": {
+                    "stringValue": "openai"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs_parent_id",
+                  "value": {
+                    "stringValue": "5060747988478895495"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs_trace_id",
+                  "value": {
+                    "stringValue": "6af1f36c00000000547c7dde82c68df6"
+                  }
+                },
+                {
+                  "key": "datadog.openai.request.endpoint",
+                  "value": {
+                    "stringValue": "/openai/v1/chat/completions"
+                  }
+                },
+                {
+                  "key": "datadog.openai.request.method",
+                  "value": {
+                    "stringValue": "POST"
+                  }
+                },
+                {
+                  "key": "datadog.openai.request.model",
+                  "value": {
+                    "stringValue": "gpt-4o-mini"
+                  }
+                },
+                {
+                  "key": "datadog.openai.response.created",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.openai.response.id",
+                  "value": {
+                    "stringValue": "chatcmpl-stub"
+                  }
+                },
+                {
+                  "key": "datadog.openai.response.model",
+                  "value": {
+                    "stringValue": "gpt-4o-mini"
+                  }
+                },
+                {
+                  "key": "datadog.resource",
+                  "value": {
+                    "stringValue": "createChatCompletion"
+                  }
+                },
+                {
+                  "key": "datadog.runtime-id",
+                  "value": {
+                    "stringValue": "f9675ebc-8891-4541-adba-abdc42e559ad"
+                  }
+                },
+                {
+                  "key": "datadog.sampling.priority",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.span.id",
+                  "value": {
+                    "stringValue": "5060747988478895495"
+                  }
+                },
+                {
+                  "key": "datadog.span.name",
+                  "value": {
+                    "stringValue": "openai.request"
+                  }
+                },
+                {
+                  "key": "datadog.span.type",
+                  "value": {
+                    "stringValue": "llm"
+                  }
+                },
+                {
+                  "key": "datadog.trace.id",
+                  "value": {
+                    "stringValue": "5060747988478895495"
+                  }
+                },
+                {
+                  "key": "gen_ai.input.messages",
+                  "value": {
+                    "stringValue": "[{\"parts\":[{\"content\":\"Answer briefly.\",\"type\":\"text\"}],\"role\":\"system\"},{\"parts\":[{\"content\":\"Where is order 1042? CONTENT-CANARY\",\"type\":\"text\"}],\"role\":\"user\"}]"
+                  }
+                },
+                {
+                  "key": "gen_ai.operation.name",
+                  "value": {
+                    "stringValue": "chat"
+                  }
+                },
+                {
+                  "key": "gen_ai.output.messages",
+                  "value": {
+                    "stringValue": "[{\"parts\":[{\"content\":\"Hello from the stub.\",\"type\":\"text\"}],\"role\":\"assistant\"}]"
+                  }
+                },
+                {
+                  "key": "gen_ai.provider.name",
+                  "value": {
+                    "stringValue": "openai"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.model",
+                  "value": {
+                    "stringValue": "gpt-4o-mini"
+                  }
+                },
+                {
+                  "key": "gen_ai.response.model",
+                  "value": {
+                    "stringValue": "gpt-4o-mini"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.input_tokens",
+                  "value": {
+                    "intValue": "7"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.output_tokens",
+                  "value": {
+                    "intValue": "5"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.reasoning.output_tokens",
+                  "value": {
+                    "intValue": "0"
+                  }
+                },
+                {
+                  "key": "process.pid",
+                  "value": {
+                    "intValue": "242227"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794241388237045280",
+              "kind": 3,
+              "name": "chat gpt-4o-mini",
+              "spanId": "463b637b870ea587",
+              "startTimeUnixNano": "1794241388195016960",
+              "traceId": "6af1f36c00000000463b637b870ea587"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "datadog._dd.integration",
+                  "value": {
+                    "stringValue": "fetch"
+                  }
+                },
+                {
+                  "key": "datadog._dd.measured",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.component",
+                  "value": {
+                    "stringValue": "fetch"
+                  }
+                },
+                {
+                  "key": "datadog.network.destination.port",
+                  "value": {
+                    "doubleValue": 27090
+                  }
+                },
+                {
+                  "key": "datadog.out.host",
+                  "value": {
+                    "stringValue": "127.0.0.1"
+                  }
+                },
+                {
+                  "key": "datadog.resource",
+                  "value": {
+                    "stringValue": "POST"
+                  }
+                },
+                {
+                  "key": "datadog.runtime-id",
+                  "value": {
+                    "stringValue": "f9675ebc-8891-4541-adba-abdc42e559ad"
+                  }
+                },
+                {
+                  "key": "datadog.sampling.priority",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.span.id",
+                  "value": {
+                    "stringValue": "5728888043963524150"
+                  }
+                },
+                {
+                  "key": "datadog.span.name",
+                  "value": {
+                    "stringValue": "http.request"
+                  }
+                },
+                {
+                  "key": "datadog.span.type",
+                  "value": {
+                    "stringValue": "http"
+                  }
+                },
+                {
+                  "key": "datadog.trace.id",
+                  "value": {
+                    "stringValue": "5060747988478895495"
+                  }
+                },
+                {
+                  "key": "http.request.method",
+                  "value": {
+                    "stringValue": "POST"
+                  }
+                },
+                {
+                  "key": "http.response.status_code",
+                  "value": {
+                    "stringValue": "200"
+                  }
+                },
+                {
+                  "key": "process.pid",
+                  "value": {
+                    "intValue": "242227"
+                  }
+                },
+                {
+                  "key": "url.full",
+                  "value": {
+                    "stringValue": "http://127.0.0.1:27090/openai/v1/chat/completions"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794241388233128059",
+              "kind": 3,
+              "name": "POST",
+              "parentSpanId": "463b637b870ea587",
+              "spanId": "4f811952b26da436",
+              "startTimeUnixNano": "1794241388206116096",
+              "traceId": "6af1f36c00000000463b637b870ea587"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "datadog._dd.integration",
+                  "value": {
+                    "stringValue": "net"
+                  }
+                },
+                {
+                  "key": "datadog._dd.measured",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.component",
+                  "value": {
+                    "stringValue": "net"
+                  }
+                },
+                {
+                  "key": "datadog.network.destination.port",
+                  "value": {
+                    "stringValue": "27090"
+                  }
+                },
+                {
+                  "key": "datadog.out.host",
+                  "value": {
+                    "stringValue": "127.0.0.1"
+                  }
+                },
+                {
+                  "key": "datadog.resource",
+                  "value": {
+                    "stringValue": "127.0.0.1:27090"
+                  }
+                },
+                {
+                  "key": "datadog.runtime-id",
+                  "value": {
+                    "stringValue": "f9675ebc-8891-4541-adba-abdc42e559ad"
+                  }
+                },
+                {
+                  "key": "datadog.sampling.priority",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.span.id",
+                  "value": {
+                    "stringValue": "866737596412551262"
+                  }
+                },
+                {
+                  "key": "datadog.span.name",
+                  "value": {
+                    "stringValue": "tcp.connect"
+                  }
+                },
+                {
+                  "key": "datadog.tcp.family",
+                  "value": {
+                    "stringValue": "IPv4"
+                  }
+                },
+                {
+                  "key": "datadog.trace.id",
+                  "value": {
+                    "stringValue": "5060747988478895495"
+                  }
+                },
+                {
+                  "key": "network.local.address",
+                  "value": {
+                    "stringValue": "127.0.0.1"
+                  }
+                },
+                {
+                  "key": "network.local.port",
+                  "value": {
+                    "doubleValue": 60236
+                  }
+                },
+                {
+                  "key": "network.peer.address",
+                  "value": {
+                    "stringValue": "127.0.0.1"
+                  }
+                },
+                {
+                  "key": "network.peer.port",
+                  "value": {
+                    "stringValue": "27090"
+                  }
+                },
+                {
+                  "key": "process.pid",
+                  "value": {
+                    "intValue": "242227"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794241388220471886",
+              "kind": 3,
+              "name": "tcp.connect",
+              "parentSpanId": "4f811952b26da436",
+              "spanId": "0c07454073a5605e",
+              "startTimeUnixNano": "1794241388216710656",
+              "traceId": "6af1f36c00000000463b637b870ea587"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "datadog._dd.agent_psr",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog._dd.integration",
+                  "value": {
+                    "stringValue": "anthropic"
+                  }
+                },
+                {
+                  "key": "datadog._dd.llmobs.artificial_gen_ai_tags",
+                  "value": {
+                    "stringValue": "true"
+                  }
+                },
+                {
+                  "key": "datadog._dd.p.dm",
+                  "value": {
+                    "stringValue": "-0"
+                  }
+                },
+                {
+                  "key": "datadog._dd.sdk.otlp_export",
+                  "value": {
+                    "stringValue": "false"
+                  }
+                },
+                {
+                  "key": "datadog._dd.tags.process",
+                  "value": {
+                    "stringValue": "entrypoint.basedir:app,entrypoint.name:providers,entrypoint.type:script,entrypoint.workdir:app,svc.user:true"
+                  }
+                },
+                {
+                  "key": "datadog._dd.top_level",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.anthropic.request.model",
+                  "value": {
+                    "stringValue": "claude-sonnet-4-5"
+                  }
+                },
+                {
+                  "key": "datadog.component",
+                  "value": {
+                    "stringValue": "anthropic"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.metrics.total_tokens",
+                  "value": {
+                    "doubleValue": 12
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.ml_app",
+                  "value": {
+                    "stringValue": "support-assistant"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.name",
+                  "value": {
+                    "stringValue": "anthropic.request"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.span.kind",
+                  "value": {
+                    "stringValue": "llm"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.tag.integration",
+                  "value": {
+                    "stringValue": "anthropic"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs_parent_id",
+                  "value": {
+                    "stringValue": "2385576990412469489"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs_trace_id",
+                  "value": {
+                    "stringValue": "6af1f36c000000001febea041a59ebe2"
+                  }
+                },
+                {
+                  "key": "datadog.resource",
+                  "value": {
+                    "stringValue": "Messages.create"
+                  }
+                },
+                {
+                  "key": "datadog.runtime-id",
+                  "value": {
+                    "stringValue": "f9675ebc-8891-4541-adba-abdc42e559ad"
+                  }
+                },
+                {
+                  "key": "datadog.sampling.priority",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.span.id",
+                  "value": {
+                    "stringValue": "2385576990412469489"
+                  }
+                },
+                {
+                  "key": "datadog.span.name",
+                  "value": {
+                    "stringValue": "anthropic.request"
+                  }
+                },
+                {
+                  "key": "datadog.span.type",
+                  "value": {
+                    "stringValue": "llm"
+                  }
+                },
+                {
+                  "key": "datadog.trace.id",
+                  "value": {
+                    "stringValue": "2385576990412469489"
+                  }
+                },
+                {
+                  "key": "gen_ai.input.messages",
+                  "value": {
+                    "stringValue": "[{\"parts\":[{\"content\":\"Answer briefly.\",\"type\":\"text\"}],\"role\":\"system\"},{\"parts\":[{\"content\":\"Where is order 1042? CONTENT-CANARY\",\"type\":\"text\"}],\"role\":\"user\"}]"
+                  }
+                },
+                {
+                  "key": "gen_ai.operation.name",
+                  "value": {
+                    "stringValue": "chat"
+                  }
+                },
+                {
+                  "key": "gen_ai.output.messages",
+                  "value": {
+                    "stringValue": "[{\"parts\":[{\"content\":\"Hello from the stub.\",\"type\":\"text\"}],\"role\":\"assistant\"}]"
+                  }
+                },
+                {
+                  "key": "gen_ai.provider.name",
+                  "value": {
+                    "stringValue": "anthropic"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.max_tokens",
+                  "value": {
+                    "intValue": "100"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.model",
+                  "value": {
+                    "stringValue": "claude-sonnet-4-5"
+                  }
+                },
+                {
+                  "key": "gen_ai.response.model",
+                  "value": {
+                    "stringValue": "claude-sonnet-4-5"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.input_tokens",
+                  "value": {
+                    "intValue": "7"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.output_tokens",
+                  "value": {
+                    "intValue": "5"
+                  }
+                },
+                {
+                  "key": "process.pid",
+                  "value": {
+                    "intValue": "242227"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794241388247919528",
+              "kind": 3,
+              "name": "chat claude-sonnet-4-5",
+              "spanId": "211b45a229e174f1",
+              "startTimeUnixNano": "1794241388240002048",
+              "traceId": "6af1f36c00000000211b45a229e174f1"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "datadog._dd.integration",
+                  "value": {
+                    "stringValue": "fetch"
+                  }
+                },
+                {
+                  "key": "datadog._dd.measured",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.component",
+                  "value": {
+                    "stringValue": "fetch"
+                  }
+                },
+                {
+                  "key": "datadog.network.destination.port",
+                  "value": {
+                    "doubleValue": 27090
+                  }
+                },
+                {
+                  "key": "datadog.out.host",
+                  "value": {
+                    "stringValue": "127.0.0.1"
+                  }
+                },
+                {
+                  "key": "datadog.resource",
+                  "value": {
+                    "stringValue": "POST"
+                  }
+                },
+                {
+                  "key": "datadog.runtime-id",
+                  "value": {
+                    "stringValue": "f9675ebc-8891-4541-adba-abdc42e559ad"
+                  }
+                },
+                {
+                  "key": "datadog.sampling.priority",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.span.id",
+                  "value": {
+                    "stringValue": "712466772601553445"
+                  }
+                },
+                {
+                  "key": "datadog.span.name",
+                  "value": {
+                    "stringValue": "http.request"
+                  }
+                },
+                {
+                  "key": "datadog.span.type",
+                  "value": {
+                    "stringValue": "http"
+                  }
+                },
+                {
+                  "key": "datadog.trace.id",
+                  "value": {
+                    "stringValue": "2385576990412469489"
+                  }
+                },
+                {
+                  "key": "http.request.method",
+                  "value": {
+                    "stringValue": "POST"
+                  }
+                },
+                {
+                  "key": "http.response.status_code",
+                  "value": {
+                    "stringValue": "200"
+                  }
+                },
+                {
+                  "key": "process.pid",
+                  "value": {
+                    "intValue": "242227"
+                  }
+                },
+                {
+                  "key": "url.full",
+                  "value": {
+                    "stringValue": "http://127.0.0.1:27090/anthropic/v1/messages"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794241388246852427",
+              "kind": 3,
+              "name": "POST",
+              "parentSpanId": "211b45a229e174f1",
+              "spanId": "09e330c13f2f4225",
+              "startTimeUnixNano": "1794241388242590464",
+              "traceId": "6af1f36c00000000211b45a229e174f1"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "datadog._dd.integration",
+                  "value": {
+                    "stringValue": "net"
+                  }
+                },
+                {
+                  "key": "datadog._dd.measured",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.component",
+                  "value": {
+                    "stringValue": "net"
+                  }
+                },
+                {
+                  "key": "datadog.network.destination.port",
+                  "value": {
+                    "stringValue": "27090"
+                  }
+                },
+                {
+                  "key": "datadog.out.host",
+                  "value": {
+                    "stringValue": "127.0.0.1"
+                  }
+                },
+                {
+                  "key": "datadog.resource",
+                  "value": {
+                    "stringValue": "127.0.0.1:27090"
+                  }
+                },
+                {
+                  "key": "datadog.runtime-id",
+                  "value": {
+                    "stringValue": "f9675ebc-8891-4541-adba-abdc42e559ad"
+                  }
+                },
+                {
+                  "key": "datadog.sampling.priority",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.span.id",
+                  "value": {
+                    "stringValue": "8378629628385726861"
+                  }
+                },
+                {
+                  "key": "datadog.span.name",
+                  "value": {
+                    "stringValue": "tcp.connect"
+                  }
+                },
+                {
+                  "key": "datadog.tcp.family",
+                  "value": {
+                    "stringValue": "IPv4"
+                  }
+                },
+                {
+                  "key": "datadog.trace.id",
+                  "value": {
+                    "stringValue": "2385576990412469489"
+                  }
+                },
+                {
+                  "key": "network.local.address",
+                  "value": {
+                    "stringValue": "127.0.0.1"
+                  }
+                },
+                {
+                  "key": "network.local.port",
+                  "value": {
+                    "doubleValue": 60240
+                  }
+                },
+                {
+                  "key": "network.peer.address",
+                  "value": {
+                    "stringValue": "127.0.0.1"
+                  }
+                },
+                {
+                  "key": "network.peer.port",
+                  "value": {
+                    "stringValue": "27090"
+                  }
+                },
+                {
+                  "key": "process.pid",
+                  "value": {
+                    "intValue": "242227"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794241388245473813",
+              "kind": 3,
+              "name": "tcp.connect",
+              "parentSpanId": "09e330c13f2f4225",
+              "spanId": "7446df41507e918d",
+              "startTimeUnixNano": "1794241388243993344",
+              "traceId": "6af1f36c00000000211b45a229e174f1"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "cloud.region",
+                  "value": {
+                    "stringValue": "us-east-1"
+                  }
+                },
+                {
+                  "key": "datadog._dd.agent_psr",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog._dd.integration",
+                  "value": {
+                    "stringValue": "aws-sdk"
+                  }
+                },
+                {
+                  "key": "datadog._dd.llmobs.artificial_gen_ai_tags",
+                  "value": {
+                    "stringValue": "true"
+                  }
+                },
+                {
+                  "key": "datadog._dd.measured",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog._dd.p.dm",
+                  "value": {
+                    "stringValue": "-0"
+                  }
+                },
+                {
+                  "key": "datadog._dd.sdk.otlp_export",
+                  "value": {
+                    "stringValue": "false"
+                  }
+                },
+                {
+                  "key": "datadog._dd.svc_src",
+                  "value": {
+                    "stringValue": "bedrockruntime"
+                  }
+                },
+                {
+                  "key": "datadog._dd.tags.process",
+                  "value": {
+                    "stringValue": "entrypoint.basedir:app,entrypoint.name:providers,entrypoint.type:script,entrypoint.workdir:app,svc.user:true"
+                  }
+                },
+                {
+                  "key": "datadog._dd.top_level",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.aws.bedrock.request.model",
+                  "value": {
+                    "stringValue": "nova-micro-v1:0"
+                  }
+                },
+                {
+                  "key": "datadog.aws.bedrock.request.model_provider",
+                  "value": {
+                    "stringValue": "amazon"
+                  }
+                },
+                {
+                  "key": "datadog.aws.partition",
+                  "value": {
+                    "stringValue": "aws"
+                  }
+                },
+                {
+                  "key": "datadog.aws.region",
+                  "value": {
+                    "stringValue": "us-east-1"
+                  }
+                },
+                {
+                  "key": "datadog.aws_service",
+                  "value": {
+                    "stringValue": "BedrockRuntime"
+                  }
+                },
+                {
+                  "key": "datadog.component",
+                  "value": {
+                    "stringValue": "aws-sdk"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.metadata.temperature",
+                  "value": {
+                    "doubleValue": 0
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.metrics.cache_write_input_tokens",
+                  "value": {
+                    "doubleValue": 0
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.metrics.total_tokens",
+                  "value": {
+                    "doubleValue": 12
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.ml_app",
+                  "value": {
+                    "stringValue": "support-assistant"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.name",
+                  "value": {
+                    "stringValue": "bedrock-runtime.command"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.span.kind",
+                  "value": {
+                    "stringValue": "llm"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs.tag.integration",
+                  "value": {
+                    "stringValue": "bedrock"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs_parent_id",
+                  "value": {
+                    "stringValue": "4048364970253344140"
+                  }
+                },
+                {
+                  "key": "datadog.llmobs_trace_id",
+                  "value": {
+                    "stringValue": "6af1f36c00000000066b32ea115fd007"
+                  }
+                },
+                {
+                  "key": "datadog.resource",
+                  "value": {
+                    "stringValue": "converse"
+                  }
+                },
+                {
+                  "key": "datadog.runtime-id",
+                  "value": {
+                    "stringValue": "f9675ebc-8891-4541-adba-abdc42e559ad"
+                  }
+                },
+                {
+                  "key": "datadog.sampling.priority",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.service",
+                  "value": {
+                    "stringValue": "support-assistant-aws-bedrockruntime"
+                  }
+                },
+                {
+                  "key": "datadog.span.id",
+                  "value": {
+                    "stringValue": "4048364970253344140"
+                  }
+                },
+                {
+                  "key": "datadog.span.name",
+                  "value": {
+                    "stringValue": "aws.request"
+                  }
+                },
+                {
+                  "key": "datadog.span.type",
+                  "value": {
+                    "stringValue": "llm"
+                  }
+                },
+                {
+                  "key": "datadog.trace.id",
+                  "value": {
+                    "stringValue": "4048364970253344140"
+                  }
+                },
+                {
+                  "key": "gen_ai.input.messages",
+                  "value": {
+                    "stringValue": "[{\"parts\":[{\"content\":\"Answer briefly.\",\"type\":\"text\"}],\"role\":\"system\"},{\"parts\":[{\"content\":\"Where is order 1042? CONTENT-CANARY\",\"type\":\"text\"}],\"role\":\"user\"}]"
+                  }
+                },
+                {
+                  "key": "gen_ai.operation.name",
+                  "value": {
+                    "stringValue": "chat"
+                  }
+                },
+                {
+                  "key": "gen_ai.output.messages",
+                  "value": {
+                    "stringValue": "[{\"finish_reason\":\"end_turn\",\"parts\":[{\"content\":\"Hello from the stub.\",\"type\":\"text\"}],\"role\":\"assistant\"}]"
+                  }
+                },
+                {
+                  "key": "gen_ai.provider.name",
+                  "value": {
+                    "stringValue": "aws.bedrock"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.max_tokens",
+                  "value": {
+                    "intValue": "100"
+                  }
+                },
+                {
+                  "key": "gen_ai.response.finish_reasons",
+                  "value": {
+                    "arrayValue": {
+                      "values": [
+                        {
+                          "stringValue": "end_turn"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "key": "gen_ai.response.model",
+                  "value": {
+                    "stringValue": "amazon.nova-micro-v1:0"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.cache_read.input_tokens",
+                  "value": {
+                    "intValue": "0"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.input_tokens",
+                  "value": {
+                    "intValue": "7"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.output_tokens",
+                  "value": {
+                    "intValue": "5"
+                  }
+                },
+                {
+                  "key": "process.pid",
+                  "value": {
+                    "intValue": "242227"
+                  }
+                },
+                {
+                  "key": "rpc.method",
+                  "value": {
+                    "stringValue": "converse"
+                  }
+                },
+                {
+                  "key": "rpc.service",
+                  "value": {
+                    "stringValue": "BedrockRuntime"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794241388276356867",
+              "kind": 3,
+              "name": "chat amazon.nova-micro-v1:0",
+              "spanId": "382eae7dc515dd8c",
+              "startTimeUnixNano": "1794241388252003840",
+              "traceId": "6af1f36c00000000382eae7dc515dd8c"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "datadog._dd.integration",
+                  "value": {
+                    "stringValue": "http"
+                  }
+                },
+                {
+                  "key": "datadog._dd.measured",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.component",
+                  "value": {
+                    "stringValue": "http"
+                  }
+                },
+                {
+                  "key": "datadog.network.destination.port",
+                  "value": {
+                    "doubleValue": 27090
+                  }
+                },
+                {
+                  "key": "datadog.out.host",
+                  "value": {
+                    "stringValue": "127.0.0.1"
+                  }
+                },
+                {
+                  "key": "datadog.resource",
+                  "value": {
+                    "stringValue": "POST"
+                  }
+                },
+                {
+                  "key": "datadog.runtime-id",
+                  "value": {
+                    "stringValue": "f9675ebc-8891-4541-adba-abdc42e559ad"
+                  }
+                },
+                {
+                  "key": "datadog.sampling.priority",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.span.id",
+                  "value": {
+                    "stringValue": "3260796999810049157"
+                  }
+                },
+                {
+                  "key": "datadog.span.name",
+                  "value": {
+                    "stringValue": "http.request"
+                  }
+                },
+                {
+                  "key": "datadog.span.type",
+                  "value": {
+                    "stringValue": "http"
+                  }
+                },
+                {
+                  "key": "datadog.trace.id",
+                  "value": {
+                    "stringValue": "4048364970253344140"
+                  }
+                },
+                {
+                  "key": "http.request.method",
+                  "value": {
+                    "stringValue": "POST"
+                  }
+                },
+                {
+                  "key": "http.response.status_code",
+                  "value": {
+                    "stringValue": "200"
+                  }
+                },
+                {
+                  "key": "process.pid",
+                  "value": {
+                    "intValue": "242227"
+                  }
+                },
+                {
+                  "key": "url.full",
+                  "value": {
+                    "stringValue": "http://127.0.0.1:27090/model/amazon.nova-micro-v1%3A0/converse"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794241388271907842",
+              "kind": 3,
+              "name": "POST",
+              "parentSpanId": "382eae7dc515dd8c",
+              "spanId": "2d40ad984a566485",
+              "startTimeUnixNano": "1794241388266827520",
+              "traceId": "6af1f36c00000000382eae7dc515dd8c"
+            },
+            {
+              "attributes": [
+                {
+                  "key": "datadog._dd.integration",
+                  "value": {
+                    "stringValue": "net"
+                  }
+                },
+                {
+                  "key": "datadog._dd.measured",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.component",
+                  "value": {
+                    "stringValue": "net"
+                  }
+                },
+                {
+                  "key": "datadog.network.destination.port",
+                  "value": {
+                    "doubleValue": 27090
+                  }
+                },
+                {
+                  "key": "datadog.out.host",
+                  "value": {
+                    "stringValue": "127.0.0.1"
+                  }
+                },
+                {
+                  "key": "datadog.resource",
+                  "value": {
+                    "stringValue": "127.0.0.1:27090"
+                  }
+                },
+                {
+                  "key": "datadog.runtime-id",
+                  "value": {
+                    "stringValue": "f9675ebc-8891-4541-adba-abdc42e559ad"
+                  }
+                },
+                {
+                  "key": "datadog.sampling.priority",
+                  "value": {
+                    "doubleValue": 1
+                  }
+                },
+                {
+                  "key": "datadog.span.id",
+                  "value": {
+                    "stringValue": "2041226439599847089"
+                  }
+                },
+                {
+                  "key": "datadog.span.name",
+                  "value": {
+                    "stringValue": "tcp.connect"
+                  }
+                },
+                {
+                  "key": "datadog.tcp.family",
+                  "value": {
+                    "stringValue": "IPv4"
+                  }
+                },
+                {
+                  "key": "datadog.trace.id",
+                  "value": {
+                    "stringValue": "4048364970253344140"
+                  }
+                },
+                {
+                  "key": "network.local.address",
+                  "value": {
+                    "stringValue": "127.0.0.1"
+                  }
+                },
+                {
+                  "key": "network.local.port",
+                  "value": {
+                    "doubleValue": 60242
+                  }
+                },
+                {
+                  "key": "network.peer.address",
+                  "value": {
+                    "stringValue": "127.0.0.1"
+                  }
+                },
+                {
+                  "key": "network.peer.port",
+                  "value": {
+                    "doubleValue": 27090
+                  }
+                },
+                {
+                  "key": "process.pid",
+                  "value": {
+                    "intValue": "242227"
+                  }
+                }
+              ],
+              "endTimeUnixNano": "1794241388269040800",
+              "kind": 3,
+              "name": "tcp.connect",
+              "parentSpanId": "2d40ad984a566485",
+              "spanId": "1c53e4a1c67bf6b1",
+              "startTimeUnixNano": "1794241388267700224",
+              "traceId": "6af1f36c00000000382eae7dc515dd8c"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-20 (image side): a Node.js workload that calls OpenAI or Anthropic is covered by the payload alone, on Node 22,
-24 and 26. Prompt and answer arrive on the span (mock providers), exactly one span per model call, with the placement
-of the
-workload on the resource and the span under the request that made it."""
+"""Node.js coverage (image side): a Node.js workload that calls OpenAI or Anthropic is covered by the payload alone, on
+Node 22, 24 and 26. Prompt and answer arrive on the span (mock providers), exactly one span per model call, with the
+placement of the workload on the resource and the span under the request that made it."""
 
 from __future__ import annotations
 

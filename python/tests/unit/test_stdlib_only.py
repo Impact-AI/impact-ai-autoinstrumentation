@@ -33,9 +33,12 @@ print(json.dumps(sorted(new - set(sys.stdlib_module_names) - {{'impact_instrumen
         "impact_instrumentation.detect",
         "impact_instrumentation.defaults",
         "impact_instrumentation.frameworks",
+        "impact_instrumentation.qualification",
+        "impact_instrumentation.coexistence",
         "impact_instrumentation.otlp",
         "impact_instrumentation.setup_report",
         "impact_instrumentation.bootstrap",
+        "impact_instrumentation.aws_lambda",
     ],
 )
 def test_module_imports_only_the_standard_library(module):

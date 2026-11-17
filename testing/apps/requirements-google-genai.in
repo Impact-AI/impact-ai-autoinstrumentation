@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# The Gemini workload (app_google_genai.py) on google-genai 2, the newest series opentelemetry-instrumentation-google-genai
+# supports (<3): FastAPI under uvicorn and Google's SDK, which brings google-auth for Vertex AI. No other provider SDK, so
+# that a change to this library's pins touches no other library's cells.
+fastapi==0.162.0  # as in requirements.txt
+uvicorn==0.54.0
+google-genai==2.34.0

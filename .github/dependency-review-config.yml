@@ -1,0 +1,22 @@
+# The settings of the dependency review (.github/workflows/dependency-review.yml), in a file of their own so that they
+# change without a change to the workflow. A pull request fails when it adds a dependency with a known vulnerability of
+# moderate severity or above, other than those below.
+fail-on-severity: moderate
+# The known vulnerabilities of the test fixtures, which nothing in an image or the chart carries: the ids of
+# testing/apps/osv-scanner.toml, which says why each stays (chart/tests/test_ci_supply_chain.py keeps the two the same).
+allow-ghsas:
+  # requirements-oldest.txt: the oldest LangGraph, LangChain and langchain-core the kit traces, and their dependencies
+  - GHSA-g48c-2wqr-h844
+  - GHSA-wwqv-p2pp-99h5
+  - GHSA-fjqc-hq36-qh5p
+  - GHSA-mhr3-j7m5-c7c9
+  - GHSA-w39p-vh2g-g8g5
+  - GHSA-fvww-7h3r-vfhp
+  - GHSA-gr75-jv2w-4656
+  - GHSA-qh6h-p6c9-ff54
+  - GHSA-2g6r-c272-w58r
+  - GHSA-fv5p-p927-qmxr
+  - GHSA-r7w7-9xr2-qq2r
+  # requirements-otel-arize-ax.txt and requirements-otel-splunk-otel.txt: the OpenTelemetry those distributions install
+  - GHSA-mf5v-w3w3-f6cg
+  - GHSA-xcq7-p3pf-p88h

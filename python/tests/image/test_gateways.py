@@ -1,16 +1,16 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-18: AI gateways. The calls that pass through a LiteLLM proxy or a Portkey gateway arrive at the kit's gateway
+"""AI gateways. The calls that pass through a LiteLLM proxy or a Portkey gateway arrive at the kit's gateway
 collector as spans with content, attributed to the gateway, once the one setting is made.
 
-The setting is gateways/settings.json: the text Cover your AI shows (the monorepo vendors that file), with {gateway},
-{namespace} and {name} where it puts the kit's collector and the gateway's workload. The tests render it with the mock
-as the collector and run the real gateway images, pinned by digest, against the mock as the model provider.
+The setting is gateways/settings.json: the text Cover your AI shows (the impact.ai service vendors that file), with
+{gateway}, {namespace} and {name} where it puts the kit's collector and the gateway's workload. The tests render it with
+the mock as the collector and run the real gateway images, pinned by digest, against the mock as the model provider.
 
   LiteLLM  `callbacks: ["otel"]` and four variables. It adds /v1/traces to OTEL_ENDPOINT itself, and puts
            OTEL_RESOURCE_ATTRIBUTES on its spans. The content is on the span only with
-           OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=span_only (the value `true` means log events, which
-           ingest does not take). Since 1.108 it refuses to start without a master key.
+           OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=span_only (the value `true` writes it as log events
+           instead). Since 1.108 it refuses to start without a master key.
   Portkey  the open-source image carries no OpenTelemetry export at all; the environment block is the one Portkey
            documents for its Enterprise and self-hosted edition, whose image is not public: the row for a Portkey
            gateway says so.
@@ -209,7 +209,7 @@ def test_litellm_with_the_one_setting_sends_its_calls_with_content_attributed_to
     for span in otlp_spans(mock):
         assert span["resource"]["k8s.namespace.name"] == NAMESPACE, span["resource"]
         assert span["resource"]["k8s.deployment.name"] == WORKLOAD, span["resource"]
-    # no log events: ingest takes none
+    # no log events: the content is on the span
     assert mock.requests("/v1/logs") == []
 
 

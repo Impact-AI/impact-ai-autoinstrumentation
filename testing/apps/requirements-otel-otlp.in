@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# The OpenTelemetry SDK with its OTLP exporter and OpenAI instrumentation: what an app sends to Honeycomb or to a
+# collector such as Grafana Alloy.
+opentelemetry-sdk==1.45.2
+opentelemetry-exporter-otlp-proto-http==1.45.2
+opentelemetry-instrumentation-openai-v2==2.4b0
+httpx==0.28.1  # the instrumentation imports it; openai 3 no longer brings it
+opentelemetry-util-genai==1.1b0  # the instrumentation imports a module 1.2b0 removed
+openai==3.46.0

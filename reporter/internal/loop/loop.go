@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/inventory"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/sender"
+	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/inventory"
+	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/sender"
 )
 
 // DefaultBuildTimeout bounds how long building one snapshot may take.

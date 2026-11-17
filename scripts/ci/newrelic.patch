@@ -1,0 +1,14 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -66,3 +66,11 @@
+       - name: The report
+         if: always()
+         run: cat build/overhead/OVERHEAD.md >> "$GITHUB_STEP_SUMMARY" || true
++  newrelic:
++    runs-on: ubuntu-latest
++    timeout-minutes: 10
++    steps:
++      - uses: actions/checkout@v7
++      - uses: jdx/mise-action@v5
++      - name: New Relic's agents recorded against the collector double, and read by the relay's decoder
++        run: make test-newrelic

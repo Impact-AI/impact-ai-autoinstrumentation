@@ -11,7 +11,9 @@ SHA-256, and reduced to what the kit needs. Nothing else is changed except:
 
   * every object template gets a guard, `opentelemetry-operator.impact.enabled`, so the chart can leave the Operator
     out when another injector owns the cluster (operator.install: auto | "true" | "false");
-  * the image helper honours global.imageRegistry (one value points every image at a mirror);
+  * the image helper honours global.imageRegistry (one value points every image at a mirror), and so does every image
+    argument of the manager (--collector-image=..., --auto-instrumentation-<language>-image=...): they go through the
+    same helper, so that the Deployment names no image outside the mirror either;
   * the webhook configurations, their certificate and the Instrumentation CRD are NOT taken from upstream: the kit
     renders them itself (namespace selection, fail-open settings, CRD kept on uninstall), see chart/impact-ai/templates;
   * the Operator's roles and their bindings are NOT taken from upstream either. Upstream's ClusterRole is made for the
@@ -22,7 +24,9 @@ SHA-256, and reduced to what the kit needs. Nothing else is changed except:
     "forbidden" in the Operator's log.
 
 Bumping the Operator: change VERSION and SHA256 (from the repository's index.yaml), run the script, review the diff of
-the vendored files against the previous version, run `make ci` and `make e2e`.
+the vendored files against the previous version, run `make ci` and `make e2e`. A language the new Operator can inject
+must be switched off by name in operator.manager.extraArgs (chart/impact-ai/values.yaml): chart/tests/test_chart.py
+reads the languages from the vendored deployment template and the Instrumentation CRD and fails on one left to a default.
 """
 
 from __future__ import annotations
@@ -79,6 +83,22 @@ IMAGE_HELPER = """{{- define "opentelemetry-operator.image" -}}
 {{- include "cluster-kit.imageReference" (dict "repository" .Values.manager.image.repository "tag" (default .Chart.AppVersion .Values.manager.image.tag) "registry" (default "" .Values.global.imageRegistry)) }}
 {{- end }}"""
 
+# An image argument of the manager as upstream writes it, `--<name>-image={{ .Values.manager.<image>.repository }}:{{
+# .Values.manager.<image>.tag }}`, and as the kit renders it: through the same helper as the manager's own image.
+IMAGE_ARGUMENT = re.compile(
+    r"(?P<flag>--[a-z0-9-]+-image)=\{\{ (?P<image>\.Values\.manager\.[A-Za-z0-9.]+)\.repository \}\}:\{\{ (?P=image)\.tag \}\}"
+)
+IMAGE_ARGUMENT_HELPER = '{flag}={{{{ include "cluster-kit.imageReference" (dict "repository" {image}.repository "tag" {image}.tag "registry" (default "" .Values.global.imageRegistry)) }}}}'
+
+
+def mirror_image_arguments(deployment: str) -> str:
+    """The deployment template with every image argument of the manager going through the kit's image helper."""
+    mirrored, count = IMAGE_ARGUMENT.subn(lambda m: IMAGE_ARGUMENT_HELPER.format(**m.groupdict()), deployment)
+    if not count or re.search(r"-image=\{\{ \.Values", mirrored):
+        raise SystemExit("upstream image arguments not found as expected; the vendoring script needs an update")
+    return mirrored
+
+
 OPERATOR_VALUES_NOTE = """# Vendored from open-telemetry/opentelemetry-helm-charts, chart opentelemetry-operator {version}
 # (Apache-2.0). See NOTICE and scripts/vendor_operator_chart.py. The kit sets these values in chart/impact-ai/values.yaml
 # under `operator:`; this file only supplies the defaults it does not override.
@@ -107,6 +127,8 @@ def build(target: Path, crd_target: Path, archive: bytes) -> None:
     out = {}
     for name, text in files.items():
         if name in GUARDED:
+            if name == "deployment.yaml":
+                text = mirror_image_arguments(text)
             out[f"templates/{name}"] = GUARD_OPEN + text.rstrip("\n") + GUARD_CLOSE
         else:
             helpers = re.sub(
@@ -136,7 +158,7 @@ def build(target: Path, crd_target: Path, archive: bytes) -> None:
         path.write_text(text)
 
     # The Instrumentation CRD as a static file for the chart's crds/ directory: Helm installs it before anything that
-    # uses it and never deletes it, so uninstalling the kit keeps the definition (AE-8) and a reinstall adopts it.
+    # uses it and never deletes it, so uninstalling the kit keeps the definition and a reinstall adopts it.
     lines = [line for line in crd.splitlines() if "{{" not in line]
     crd_target.parent.mkdir(parents=True, exist_ok=True)
     crd_target.write_text("\n".join(lines) + "\n")

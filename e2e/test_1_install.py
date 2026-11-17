@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-1 install, AE-3 no secret leaves the cluster."""
+"""Install, and no secret leaves the cluster."""
 
 from __future__ import annotations
 
@@ -52,7 +52,7 @@ def snapshot(world):
     return wait_until(lambda: latest_with(world, EXPECTED), timeout=240, message="a snapshot with every workload")
 
 
-def test_ae1_install_with_the_command_the_page_shows(world):
+def test_install_with_the_command_the_page_shows(world):
     result = install()
     assert result.returncode == 0, result.stderr
     world.deploy_workloads()  # after the install: the first snapshot after this lists them, within a cycle
@@ -62,7 +62,7 @@ def test_ae1_install_with_the_command_the_page_shows(world):
     assert instrumentation["spec"]["python"]["image"] == f"{IMAGE_PREFIX}/python:{TAG}"
 
 
-def test_ae1_every_workload_outside_the_system_namespaces_appears_with_the_clusters_id(world, snapshot):
+def test_every_workload_outside_the_system_namespaces_appears_with_the_clusters_id(world, snapshot):
     assert snapshot["schema"] == "impact.inventory.v1"
     assert snapshot["cluster"]["uid"] == world.cluster_uid  # the UID of kube-system
     assert snapshot["cluster"]["name"] == CLUSTER_NAME
@@ -78,7 +78,7 @@ def test_ae1_every_workload_outside_the_system_namespaces_appears_with_the_clust
     assert workload(snapshot, "edge", "CronJob", "nightly-report")["containers"][0]["name"] == "report"
 
 
-def test_ae1_the_webhook_fails_open_and_skips_the_system_namespaces():
+def test_the_webhook_fails_open_and_skips_the_system_namespaces():
     mutating = get("mutatingwebhookconfiguration", "impact-ai-operator-mutation")
     pod = next(w for w in mutating["webhooks"] if w["name"] == "mpod.kb.io")
     assert pod["failurePolicy"] == "Ignore"
@@ -89,14 +89,14 @@ def test_ae1_the_webhook_fails_open_and_skips_the_system_namespaces():
         assert {w["failurePolicy"] for w in configuration["webhooks"]} == {"Ignore"}
 
 
-def test_ae1_helm_and_the_api_server_agree_on_the_release():
+def test_helm_and_the_api_server_agree_on_the_release():
     status = json.loads(helm("status", "impact-ai", "-n", "impact-ai", "-o", "json").stdout)
     assert status["info"]["status"] == "deployed"
     crd = get("crd", "instrumentations.opentelemetry.io")
     assert crd["spec"]["group"] == "opentelemetry.io"
 
 
-def test_ae3_the_snapshot_holds_names_and_executables_never_values(world, snapshot):
+def test_the_snapshot_holds_names_and_executables_never_values(world, snapshot):
     assistant = workload(snapshot, "shop", "Deployment", "support-assistant")
     (container,) = assistant["containers"]
     assert container["executables"] == ["python"]
@@ -118,7 +118,7 @@ def test_ae3_the_snapshot_holds_names_and_executables_never_values(world, snapsh
     assert "kubectl.kubernetes.io/last-applied-configuration" not in json.dumps(snapshot)
 
 
-def test_ae3_no_planted_value_reached_impact_ai(world, snapshot):
+def test_no_planted_value_reached_impact_ai(world, snapshot):
     deployed = get("-n", "shop", "deployment", "support-assistant")
     # the planted values really are in the cluster, in the places the definition lists
     assert PLANTED[0] in deployed["metadata"]["annotations"]["kubectl.kubernetes.io/last-applied-configuration"]
@@ -126,7 +126,7 @@ def test_ae3_no_planted_value_reached_impact_ai(world, snapshot):
     assert leaked == []
 
 
-def test_ae3_the_reporter_cannot_read_secrets_or_configmaps():
+def test_the_reporter_cannot_read_secrets_or_configmaps():
     account = "system:serviceaccount:impact-ai:impact-ai-reporter"
 
     def can(verb, resource, namespace="shop"):

@@ -1,0 +1,13 @@
+{
+  "name": "datadog-cell",
+  "private": true,
+  "description": "The Node.js cell: Datadog's tracer at its pinned version and the provider SDKs the recordings call.",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.75.0",
+    "@aws-sdk/client-bedrock-runtime": "3.1164.0",
+    "@smithy/node-http-handler": "4.14.2",
+    "dd-trace": "6.24.0",
+    "openai": "7.53.0"
+  }
+}

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-7: the application does not depend on impact.ai.
+"""Fail open: the application does not depend on impact.ai.
 
 One condition holds up new pods and is pinned here as it is: the image the Operator injects cannot be pulled.
 """
@@ -54,7 +54,7 @@ def restarts(namespace: str, selector: str) -> int:
     )
 
 
-def test_ae7_a_revoked_key_does_not_touch_the_workload(world: World):
+def test_a_revoked_key_does_not_touch_the_workload(world: World):
     wait_operator_ready()
     world.mock.control(require_key="the-key-that-was-revoked")
     try:
@@ -73,7 +73,7 @@ def test_ae7_a_revoked_key_does_not_touch_the_workload(world: World):
     assert restarts("impact-ai", "app.kubernetes.io/name=reporter") == 0
 
 
-def test_ae7_ingest_down_does_not_touch_the_workload(world: World):
+def test_ingest_down_does_not_touch_the_workload(world: World):
     # The model providers are served by `theirs`, so taking `mock` away takes only impact.ai's ingest away.
     kubectl("-n", "impact-mock", "scale", "deployment/mock", "--replicas=0")
     wait_until(lambda: not get("-n", "impact-mock", "pods", "-l", "app=mock")["items"], timeout=90, message="mock gone")
@@ -90,7 +90,7 @@ def test_ae7_ingest_down_does_not_touch_the_workload(world: World):
         world.mock.control(require_key=KEY)
 
 
-def test_ae7_the_operator_down_new_pods_of_an_annotated_workload_start_uninjected(world: World):
+def test_the_operator_down_new_pods_of_an_annotated_workload_start_uninjected(world: World):
     kubectl("-n", "impact-ai", "scale", "deployment/impact-ai-operator", "--replicas=0")
     wait_until(
         lambda: not get("-n", "impact-ai", "pods", "-l", "app.kubernetes.io/component=controller-manager")["items"],
@@ -124,7 +124,7 @@ def test_ae7_the_operator_down_new_pods_of_an_annotated_workload_start_uninjecte
     cover("support-assistant")
 
 
-def test_ae7_the_injected_image_cannot_be_pulled_new_pods_wait_in_init_and_running_pods_are_untouched(world: World):
+def test_the_injected_image_cannot_be_pulled_new_pods_wait_in_init_and_running_pods_are_untouched(world: World):
     # What the Operator injects is an init container with the python image. If the kubelet cannot pull that image (the
     # registry is unreachable or has dropped it, a mirror is closed to the workload), a new pod of a covered workload
     # does not start its application until the pull works: webhook failures fail open, this one does not. What is
@@ -177,7 +177,7 @@ NODEJS_INIT = "opentelemetry-auto-instrumentation-nodejs"
 INJECT_NODEJS = "instrumentation.opentelemetry.io/inject-nodejs"
 
 
-def test_ae7_the_injected_nodejs_image_cannot_be_pulled_either_the_new_pod_waits_and_the_old_one_runs(world: World):
+def test_the_injected_nodejs_image_cannot_be_pulled_either_the_new_pod_waits_and_the_old_one_runs(world: World):
     # The Node.js image has the same init container, the same copy and the same pull as the Python one: a workload
     # annotated inject-nodejs waits in Init when its image cannot be pulled, and the pod that runs is not touched. A
     # throwaway Deployment stands for the workload; the image the Operator injects is pointed at one nobody can pull

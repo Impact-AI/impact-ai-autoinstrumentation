@@ -1,0 +1,161 @@
+# SPDX-License-Identifier: Apache-2.0
+# uv pip compile --python-version 3.12 --no-header requirements-otel-braintrust.in
+annotated-types==0.8.0
+    # via pydantic
+anyio==4.16.0
+    # via
+    #   httpx
+    #   httpx2
+    #   openai
+attrs==26.1.0
+    # via
+    #   jsonschema
+    #   referencing
+braintrust==0.49.3
+    # via -r requirements-otel-braintrust.in
+certifi==2026.10.23
+    # via
+    #   braintrust
+    #   httpcore
+    #   httpx
+    #   requests
+charset-normalizer==3.5.2
+    # via requests
+chevron==0.14.0
+    # via braintrust
+exceptiongroup==1.3.1
+    # via braintrust
+googleapis-common-protos==1.76.0
+    # via opentelemetry-exporter-otlp-proto-http
+h11==0.16.0
+    # via
+    #   httpcore
+    #   httpcore2
+httpcore==1.0.9
+    # via httpx
+httpcore2==2.16.0
+    # via httpx2
+httpx==0.28.1
+    # via -r requirements-otel-braintrust.in
+httpx2==2.16.0
+    # via openai
+idna==3.20
+    # via
+    #   anyio
+    #   httpx
+    #   httpx2
+    #   requests
+jiter==0.19.0
+    # via openai
+jsonschema==4.26.0
+    # via braintrust
+jsonschema-specifications==2025.9.1
+    # via jsonschema
+openai==3.46.0
+    # via -r requirements-otel-braintrust.in
+opentelemetry-api==1.45.2
+    # via
+    #   braintrust
+    #   opentelemetry-exporter-http-transport
+    #   opentelemetry-exporter-otlp-proto-http
+    #   opentelemetry-instrumentation
+    #   opentelemetry-instrumentation-openai-v2
+    #   opentelemetry-sdk
+    #   opentelemetry-semantic-conventions
+    #   opentelemetry-util-genai
+opentelemetry-exporter-http-transport==0.66b2
+    # via opentelemetry-exporter-otlp-proto-http
+opentelemetry-exporter-otlp-common==0.66b2
+    # via opentelemetry-exporter-otlp-proto-http
+opentelemetry-exporter-otlp-proto-common==1.45.2
+    # via opentelemetry-exporter-otlp-proto-http
+opentelemetry-exporter-otlp-proto-http==1.45.2
+    # via braintrust
+opentelemetry-instrumentation==0.66b2
+    # via
+    #   opentelemetry-instrumentation-openai-v2
+    #   opentelemetry-util-genai
+opentelemetry-instrumentation-openai-v2==2.4b0
+    # via -r requirements-otel-braintrust.in
+opentelemetry-proto==1.45.2
+    # via
+    #   opentelemetry-exporter-otlp-proto-common
+    #   opentelemetry-exporter-otlp-proto-http
+opentelemetry-sdk==1.45.2
+    # via
+    #   braintrust
+    #   opentelemetry-exporter-otlp-common
+    #   opentelemetry-exporter-otlp-proto-http
+opentelemetry-semantic-conventions==0.66b2
+    # via
+    #   opentelemetry-instrumentation
+    #   opentelemetry-instrumentation-openai-v2
+    #   opentelemetry-sdk
+    #   opentelemetry-util-genai
+opentelemetry-util-genai==1.1b0
+    # via
+    #   -r requirements-otel-braintrust.in
+    #   opentelemetry-instrumentation-openai-v2
+packaging==26.3
+    # via
+    #   braintrust
+    #   opentelemetry-instrumentation
+protobuf==7.36.2
+    # via
+    #   googleapis-common-protos
+    #   opentelemetry-proto
+pydantic==2.14.3
+    # via openai
+pydantic-core==2.50.4
+    # via pydantic
+python-slugify==9.1.3
+    # via braintrust
+referencing==0.37.0
+    # via
+    #   jsonschema
+    #   jsonschema-specifications
+requests==2.34.2
+    # via
+    #   braintrust
+    #   opentelemetry-exporter-http-transport
+    #   opentelemetry-exporter-otlp-proto-http
+rpds-py==2026.9.1
+    # via
+    #   jsonschema
+    #   referencing
+sniffio==1.3.1
+    # via openai
+sseclient-py==1.9.0
+    # via braintrust
+text-unidecode==1.3
+    # via python-slugify
+tqdm==4.70.1
+    # via braintrust
+truststore==0.10.5
+    # via
+    #   httpcore2
+    #   httpx2
+typing-extensions==4.16.0
+    # via
+    #   anyio
+    #   braintrust
+    #   exceptiongroup
+    #   httpx2
+    #   openai
+    #   opentelemetry-api
+    #   opentelemetry-exporter-otlp-proto-http
+    #   opentelemetry-sdk
+    #   opentelemetry-semantic-conventions
+    #   pydantic
+    #   pydantic-core
+    #   referencing
+    #   typing-inspection
+typing-inspection==0.4.5
+    # via pydantic
+urllib3==2.8.0
+    # via requests
+wrapt==2.5.2
+    # via
+    #   braintrust
+    #   opentelemetry-instrumentation
+    #   opentelemetry-util-genai

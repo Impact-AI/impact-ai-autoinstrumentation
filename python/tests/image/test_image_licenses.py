@@ -19,19 +19,39 @@ REPORTER_IMAGE = os.environ.get("IMPACT_REPORTER_IMAGE", "localhost/impact-instr
 ROOT = Path(__file__).resolve().parents[3]
 
 
-def licenses_of(image: str) -> dict[str, bytes]:
-    """The files of /licenses, read out of the image without running it (the reporter's image has no shell)."""
+def licenses_archive(image: str) -> bytes:
+    """/licenses as a tar stream, read out of the image without running it (the reporter's image has no shell)."""
     created = subprocess.run(  # noqa: S603
         [CONTAINER, "create", image], capture_output=True, text=True, check=True
     ).stdout.strip()
     try:
-        archive = subprocess.run(  # noqa: S603
+        return subprocess.run(  # noqa: S603
             [CONTAINER, "cp", f"{created}:/licenses", "-"], capture_output=True, check=True
         ).stdout
     finally:
         subprocess.run([CONTAINER, "rm", created], capture_output=True, check=False)  # noqa: S603
-    with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
+
+
+def licenses_of(image: str) -> dict[str, bytes]:
+    """The files of /licenses."""
+    with tarfile.open(fileobj=io.BytesIO(licenses_archive(image))) as tar:
         return {m.name: tar.extractfile(m).read() for m in tar.getmembers() if m.isfile()}
+
+
+@pytest.mark.image
+@pytest.mark.parametrize("image", [IMAGE, REPORTER_IMAGE], ids=["python", "reporter"])
+def test_any_user_can_open_every_directory_of_licenses_and_read_every_file(image):
+    # The images run as a non-root user, and anyone may read what they carry. A directory without read and execute
+    # for others hides its files: COPY --chmod onto a directory that COPY creates gives it the files' mode on some
+    # builders (GitHub's Ubuntu 26.04 runners), so the Dockerfiles set modes in a build stage instead.
+    require_images(image)
+    with tarfile.open(fileobj=io.BytesIO(licenses_archive(image))) as tar:
+        closed = [
+            f"{m.name} {m.mode:04o}"
+            for m in tar.getmembers()
+            if (m.isdir() and (m.mode & 0o555) != 0o555) or (m.isfile() and (m.mode & 0o444) != 0o444)
+        ]
+    assert closed == []
 
 
 @pytest.mark.image

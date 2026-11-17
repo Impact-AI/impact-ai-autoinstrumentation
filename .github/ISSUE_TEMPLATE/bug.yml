@@ -1,0 +1,73 @@
+# SPDX-License-Identifier: Apache-2.0
+name: Bug report
+description: Something the chart or an image does that it should not, or a mistake in the documentation.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A security problem? Do not open an issue: use the private channel in SECURITY.md.
+        Issues are public. Leave out keys, install tokens, prompts, customer data and anything else you consider confidential.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+      description: The steps that show it, the output you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: input
+    id: chart
+    attributes:
+      label: Chart version
+      description: The CHART column of `helm list -n impact-ai`, or the image tag.
+      placeholder: impact-ai-0.3.0
+    validations:
+      required: true
+  - type: input
+    id: kubernetes
+    attributes:
+      label: Kubernetes version and distribution
+      description: "`kubectl version`, and the distribution: EKS, AKS, GKE, kind, OpenShift, another."
+      placeholder: 1.34.2, EKS
+    validations:
+      required: true
+  - type: input
+    id: helm
+    attributes:
+      label: Helm version
+      description: "`helm version --short`"
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How the kit was installed
+      options:
+        - The install command with a token (Cover your AI)
+        - With a key (ingest.key or ingest.existingSecret)
+        - Rendered by a GitOps tool (helm template, Argo CD)
+    validations:
+      required: true
+  - type: textarea
+    id: pods
+    attributes:
+      label: The kit's pods
+      description: Output of `kubectl -n impact-ai get pods`.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: >-
+        `kubectl -n impact-ai logs deploy/impact-ai-reporter --tail=50`, and for a problem with injection
+        `kubectl -n impact-ai logs deploy/impact-ai-operator --tail=50`.
+      render: text
+  - type: textarea
+    id: workload
+    attributes:
+      label: The workload, for a problem with tracing
+      description: >-
+        Its language and version, the AI library and its version, and its pod's annotations and init containers. The
+        state and attributes of its `impact.setup` span, if it sent one.

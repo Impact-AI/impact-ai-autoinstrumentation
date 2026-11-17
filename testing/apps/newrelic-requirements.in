@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# The canonical interaction under New Relic's Python agent (newrelic_app.py): the agent, the OpenAI SDK and LangChain's
+# agent, tool and vector store, at the versions the recordings of the relay's New Relic decoder were made with.
+newrelic==14.2.0
+openai==3.42.1  # as in requirements.txt
+langchain==1.4.7
+langchain-community==0.4.2
+langchain-core==1.6.13
+langchain-openai==1.6.7
+langgraph==1.2.19

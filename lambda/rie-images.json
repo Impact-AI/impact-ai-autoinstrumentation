@@ -1,0 +1,9 @@
+{
+  "description": "AWS's Lambda base images for Python, by the digest of their multi-architecture index, in which make test-lambda and scripts/lambda_timings.py run the layer under the Runtime Interface Emulator. Dependabot does not follow images that no Dockerfile names: a new digest comes with a change here.",
+  "images": {
+    "3.11": "public.ecr.aws/lambda/python:3.11@sha256:1033663584f567857026b01887b55294db4a82440f0e65f4cc2443609173f869",
+    "3.12": "public.ecr.aws/lambda/python:3.12@sha256:21c21867e3c999a5b9471c16e089bb44a4da0e4e4104a26056799dacadeac278",
+    "3.13": "public.ecr.aws/lambda/python:3.13@sha256:9902ae1942c674f964d4106671ebd097c5028835a6436a45c91a166d7ac512b8",
+    "3.14": "public.ecr.aws/lambda/python:3.14@sha256:f34a1d137b3130ec99ff888232960e404428df49c0f3bad91ba751f41439d75f"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "dynatrace-cell-openinference",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The canonical interaction traced by OpenInference, exported as OTLP to a Dynatrace environment",
+  "dependencies": {
+    "@arizeai/openinference-core": "2.8.1",
+    "@arizeai/openinference-instrumentation-openai": "4.4.3",
+    "@opentelemetry/api": "1.10.0",
+    "@opentelemetry/context-async-hooks": "3.1.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "0.301.0",
+    "@opentelemetry/instrumentation": "0.301.0",
+    "@opentelemetry/resources": "3.1.0",
+    "@opentelemetry/sdk-trace": "3.1.0",
+    "openai": "7.54.0"
+  }
+}

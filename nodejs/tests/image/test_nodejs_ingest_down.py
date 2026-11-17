@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-7 (image side): the app never depends on impact.ai. When the gateway is unreachable, refuses the key, is
+"""Fail open (image side): the app never depends on impact.ai. When the gateway is unreachable, refuses the key, is
 overloaded or
 never answers, the workload starts and serves as it does without injection, and says little about it. A process that
 ends does not wait for a gateway that hangs or whose packets are dropped, does not grow while it waits, and does not

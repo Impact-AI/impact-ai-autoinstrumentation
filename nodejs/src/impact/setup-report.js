@@ -16,6 +16,12 @@
 // frameworks among the installed packages, and `impact.setup.untraced`, those of them the image cannot trace. They are on
 // every report, stood down or not, and `[]` when there is nothing to list: OTLP `arrayValue` of `stringValue`, never one
 // joined string and never a missing attribute.
+//
+// When the package found a tool it knows beside it (detect.toolOf; coexistence.js), the report also names it:
+// `impact.setup.tool` (its id, such as `langsmith`), `impact.setup.tool.version`, `impact.setup.exporter` (the kind of
+// exporter its provider uses, such as `otlp-http`, when the names and settings show it) and `impact.setup.alongside`, a
+// boolean: true when the package started beside the tool, false when it stood down. Names, a version and a flag; never a
+// setting's value. A report that names no tool has none of the four.
 
 const fs = require('fs');
 const path = require('path');

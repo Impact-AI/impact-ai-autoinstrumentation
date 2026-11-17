@@ -5,9 +5,9 @@
     python3 scripts/check_spdx.py          # list the files without it, exit 1 if there are any
     python3 scripts/check_spdx.py --add    # put the header into those files
 
-Ours means the files (tracked, or new and not ignored) whose comment syntax is known: Python, Go, JavaScript, shell,
-Dockerfiles, Makefile, TOML, requirement inputs, YAML, and the chart's templates (as template comments, which render to
-nothing).
+Ours means the files (tracked, or new and not ignored) whose comment syntax is known: Python, Go, Java, JavaScript,
+shell, Dockerfiles, Makefile, TOML, requirement inputs, YAML, and the chart's templates (as template comments, which
+render to nothing).
 Not ours, or without comments: the vendored Operator chart and its CRD, license and notice files, JSON, lock files,
 ignore files, Markdown, the workflows (the code owner's) and go.mod. Standard library only.
 """
@@ -54,7 +54,7 @@ def kind_of(path: str) -> str | None:
     name = path.rsplit("/", 1)[-1]
     if path.startswith("chart/impact-ai/templates/"):
         return "template" if name.endswith((".yaml", ".tpl", ".txt")) else None
-    if name.endswith((".go", ".js", ".cjs", ".mjs")):
+    if name.endswith((".go", ".java", ".js", ".cjs", ".mjs")):
         return "slash"
     if name.endswith((".py", ".sh", ".toml", ".in", ".yaml", ".yml")) or name in ("Makefile",):
         return "hash"

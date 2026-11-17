@@ -1,0 +1,32 @@
+{
+  "how": "ddtrace 4.16.3 on Python 3.12 with APM tracing only (LLM Observability off) ran testing/apps/datadog/canonical.py against testing/apps/datadog/canonical_provider.py. Its requests to the Datadog Agent (trace-agent 7.84.3, placeholder key) were captured by a recording pass-through in front of the Agent; only the trace intake is kept.",
+  "packages": {
+    "ddtrace": "4.16.3",
+    "openai": "2.8.1"
+  },
+  "recorded": "2026-11-09",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/v0.5/traces",
+      "query": "",
+      "headers": {
+        "user-agent": "Tracer/11.0.0",
+        "datadog-entity-id": "in-5222770",
+        "datadog-meta-lang": "python",
+        "datadog-meta-lang-version": "3.12.3",
+        "datadog-meta-lang-interpreter": "CPython",
+        "datadog-meta-tracer-version": "4.16.3",
+        "datadog-client-computed-top-level": "true",
+        "datadog-send-real-http-status": "1",
+        "x-datadog-trace-count": "2",
+        "content-type": "application/msgpack",
+        "host": "127.0.0.1:27200",
+        "content-length": "1695"
+      },
+      "contentType": "application/msgpack",
+      "contentEncoding": "",
+      "bodyBase64": "ktwAQ6Cxc3VwcG9ydC1hc3Npc3RhbnSub3BlbmFpLnJlcXVlc3S0Y3JlYXRlQ2hhdENvbXBsZXRpb261X2RkLmxsbW9icy5tb2RlbF9uYW1lsWdwdC00by0yMDI0LTA4LTA2qWNvbXBvbmVudKZvcGVuYWm1b3BlbmFpLnJlc3BvbnNlLm1vZGVs2SFfZGQubGxtb2JzLmFydGlmaWNpYWxfZ2VuX2FpX3RhZ3OkdHJ1ZbRfZGQubGxtb2JzLnNwYW5fa2luZKNsbG20b3BlbmFpLnJlcXVlc3QubW9kZWymZ3B0LTRvo2VudqdoYXJuZXNzt29wZW5haS5yZXF1ZXN0LnByb3ZpZGVypk9wZW5BSapydW50aW1lLWlk2SBkYmRkNjU4MzQ2Y2I0ODk4OTY3MjUxMjIzOGIxZDczMqhfZGQucC5kbaItMLRnZW5fYWkucmVxdWVzdC5tb2RlbLdvcGVuYWkucmVxdWVzdC5lbmRwb2ludLQvdjEvY2hhdC9jb21wbGV0aW9uc7RnZW5fYWkucHJvdmlkZXIubmFtZbVvcGVuYWkucmVxdWVzdC5tZXRob2SkUE9TVLVnZW5fYWkub3BlcmF0aW9uLm5hbWW5X2RkLmxsbW9icy5tb2RlbF9wcm92aWRlcqhsYW5ndWFnZaZweXRob26pX2RkLnAudGlksDZhZjFlZTg1MDAwMDAwMDCrX2RkLnN2Y19zcmOhbad2ZXJzaW9upTQuMi4wsF9kZC50YWdzLnByb2Nlc3PZbGVudHJ5cG9pbnQuYmFzZWRpcjphcHAsZW50cnlwb2ludC5uYW1lOmNhbm9uaWNhbCxlbnRyeXBvaW50LnR5cGU6c2NyaXB0LGVudHJ5cG9pbnQud29ya2RpcjphcHAsc3ZjLnVzZXI6dHJ1ZbhfZGQubGxtb2JzLm91dHB1dF90b2tlbnO6Z2VuX2FpLnVzYWdlLm91dHB1dF90b2tlbnO3X2RkLmxsbW9icy5pbnB1dF90b2tlbnO3X2RkLmxsbW9icy50b3RhbF90b2tlbnOyX2RkLmxsbW9icy5lbmFibGVkrV9kZC50cmFjZXJfa3KsX2RkLm1lYXN1cmVkuWdlbl9haS51c2FnZS50b3RhbF90b2tlbnOqcHJvY2Vzc19pZLVfc2FtcGxpbmdfcHJpb3JpdHlfdjGtX2RkLnRvcF9sZXZlbLlnZW5fYWkudXNhZ2UuaW5wdXRfdG9rZW5zrGh0dHAucmVxdWVzdKtodHRwLm1ldGhvZKVodHRweKhvdXQuaG9zdKkxMjcuMC4wLjGuaHR0cC51c2VyYWdlbnSzT3BlbkFJL1B5dGhvbiAyLjguMbBodHRwLnN0YXR1c19jb2RlozIwMKlzcGFuLmtpbmSmY2xpZW50qGh0dHAudXJs2TFodHRwOi8vMTI3LjAuMC4xOjI3MDkxL29wZW5haS92MS9jaGF0L2NvbXBsZXRpb25zpGh0dHCSkpwBAgPPNGOFM8nhvl/PYelCrbqyKFoAzxjma+UO67GRzgWxhdAA3gAVDxAaBxgZHQweByEiDQ4EBQgFFwUbHBUWHyAJChESExQGByMkJSYLDCcojCzLQGGAAAAAAAA0y0BeAAAAAAAALcsAAAAAAAAAAC7LP/AAAAAAAAAxy0D5woAAAAAAK8tAXgAAAAAAACrLQDQAAAAAAAAzyz/wAAAAAAAAMss/8AAAAAAAAC/LP/AAAAAAAAAwy0BhgAAAAAAAKctANAAAAAAAAACcATU1zzRjhTPJ4b5fz/et26kB70WSz2HpQq26sihazxjma+UTeCrLzgDJU9IAijo7PD1AQSUmODk+PyM3Bjc2HA8QgS/LP/AAAAAAAABCkpwBAgPPUD9DgVs4n/bPkmpQmZoLI9IAzxjma+UUr4CkzgL6VmQA3gAVCwwREh8gGgcbHCUmGBkTFAQFDxAnKB0MCQoIBR4HFwUhIg0OFRYjJAYHjC3LAAAAAAAAAAAvyz/wAAAAAAAAM8s/8AAAAAAAADHLQPnCgAAAAAAuyz/wAAAAAAAAMss/8AAAAAAAACzLQHfAAAAAAAAqy0BUAAAAAAAANMtAcsAAAAAAADDLQHfAAAAAAAAry0BywAAAAAAAKctAVAAAAAAAAACcATU1z1A/Q4FbOJ/2z0rTfTlpnkPAz5JqUJmaCyPSzxjma+UU1P06zgLJARoAigY3Pj8jNzo7ODklJg8QPD1AQTYcgS/LP/AAAAAAAABC"
+    }
+  ]
+}

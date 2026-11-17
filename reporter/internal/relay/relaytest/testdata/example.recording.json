@@ -1,0 +1,32 @@
+{
+  "how": "Written by hand for the tests of relaytest: the made-up wire format of the example decoder in relaytest_test.go. Not a recording of any tool.",
+  "packages": {},
+  "recorded": "2026-11-09",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/info",
+      "query": "",
+      "headers": {
+        "X-Example-Lang": "python"
+      },
+      "contentType": "",
+      "contentEncoding": "",
+      "bodyBase64": ""
+    },
+    {
+      "method": "POST",
+      "path": "/v1/example/spans",
+      "query": "license_key=sk-live-abcdefghijklmnop&protocol=2",
+      "headers": {
+        "X-Example-Lang": "python",
+        "X-Api-Key": "sk-live-abcdefghijklmnop",
+        "Content-Type": "application/json",
+        "Content-Encoding": "gzip"
+      },
+      "contentType": "application/json",
+      "contentEncoding": "gzip",
+      "bodyBase64": "H4sIAAAAAAAC/42Q0QrCMAxFf0XyvEJX5hS/wzeRUdYwh1tTugwG4r+buYFlKNiXNveetLl9QMSaohvgdHlA6+AEte06lUMG3vY41zfLuyawKkgZbQqlj0qX4lPAaLklv0Ii9eSwk/Ib3vow8pnu6OWxwmi5YOREyrVIA9vIcj6UB2P2pf6sDNC7xMkTp6Y+kEcvnYCT7UOHanB3eGZrJiZaMgUbF2ybEiesR8ZqJncNciWfgnGTMoXEem8SNqG38+e/5zd/zH99vgDNysNwoQEAAA=="
+    }
+  ]
+}

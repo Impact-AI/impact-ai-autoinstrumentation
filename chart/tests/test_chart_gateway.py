@@ -74,9 +74,16 @@ def test_the_gateway_image_is_the_core_distribution_pinned_by_digest():
     assert gateway["image"] == reference
 
 
-def test_the_operators_default_collector_image_is_the_same_image_so_that_no_contrib_image_is_named():
+@pytest.mark.parametrize("registry", ["", "registry.example.com/mirror"], ids=["ghcr.io", "a mirror"])
+def test_the_operators_default_collector_image_is_the_same_image_so_that_no_contrib_image_is_named(registry):
+    # Behind a mirror too: both references follow global.imageRegistry, so the Operator names no image outside it.
+    documents = render(f"global.imageRegistry={registry}")
     reference = f"{CORE_IMAGE}:0.164.0@{VALUES['images']['collector']['digest']}"
-    operator = find(render(), "Deployment", "impact-ai-operator")["spec"]["template"]["spec"]["containers"][0]
+    if registry:
+        reference = reference.replace("ghcr.io", registry, 1)
+    gateway = find(documents, "Deployment", "impact-ai-gateway")["spec"]["template"]["spec"]["containers"][0]
+    operator = find(documents, "Deployment", "impact-ai-operator")["spec"]["template"]["spec"]["containers"][0]
+    assert gateway["image"] == reference
     assert f"--collector-image={reference}" in operator["args"]
 
 

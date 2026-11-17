@@ -89,6 +89,12 @@ for (const [name, expected] of [
   ['@traceloop/instrumentation-openai', true],
   ['@arizeai/openinference-instrumentation-openai', true],
   ['newrelic', true],
+  ['@elastic/opentelemetry-node', true],
+  ['@arizeai/phoenix-otel', true],
+  ['@pydantic/logfire-node', true],
+  ['impact-ai', true],
+  ['@impact-ai/sdk', true],
+  ['@pydantic/logfire-api', false],
   ['@opentelemetry/sdk-node', false],
   ['@opentelemetry/api', false],
   ['openai', false],
@@ -211,4 +217,90 @@ test('package managers are recognised by the program they run, and the applicati
     assert.equal(detect.isPackageManager(program), true, program);
   }
   for (const program of ['/app/server.js', '/app/node_modules/.bin/next', undefined, '']) assert.equal(detect.isPackageManager(program), false, String(program));
+});
+
+// --- the tool the setup report names: the tool beside the package ---------------------------------------------------
+
+function named(packages, overrides) {
+  const findings = find(Object.assign({ packages }, overrides || {}));
+  return detect.toolOf(findings, packages, (overrides && overrides.env) || {});
+}
+
+for (const [packages, tool] of [
+  [{ 'dd-trace': '5.60.0' }, { id: 'datadog', version: '5.60.0', exporter: null }],
+  [{ '@traceloop/node-server-sdk': '0.19.0', '@traceloop/instrumentation-openai': '0.19.0' }, { id: 'traceloop', version: '0.19.0', exporter: null }],
+  [{ langfuse: '3.38.0' }, { id: 'langfuse', version: '3.38.0', exporter: null }],
+  [{ '@langfuse/otel': '4.2.0' }, { id: 'langfuse', version: '4.2.0', exporter: null }],
+  [{ openlit: '1.9.0' }, { id: 'openlit', version: '1.9.0', exporter: null }],
+  [{ newrelic: '13.4.0' }, { id: 'newrelic', version: '13.4.0', exporter: null }],
+  [{ '@elastic/opentelemetry-node': '1.3.0' }, { id: 'elastic-edot', version: '1.3.0', exporter: null }],
+  [{ '@splunk/otel': '3.1.0' }, { id: 'splunk-otel', version: '3.1.0', exporter: null }],
+  [{ '@honeycombio/opentelemetry-node': '0.7.0' }, { id: 'honeycomb', version: '0.7.0', exporter: null }],
+  [{ '@arizeai/phoenix-otel': '0.3.0' }, { id: 'phoenix', version: '0.3.0', exporter: null }],
+  [{ '@pydantic/logfire-node': '0.9.0' }, { id: 'logfire', version: '0.9.0', exporter: null }],
+]) {
+  test('a tracer names its tool by the source id and its version: ' + Object.keys(packages)[0], () => {
+    assert.deepEqual(named(packages), tool);
+  });
+}
+
+for (const packages of [
+  { '@arizeai/openinference-instrumentation-openai': '4.4.2' }, // OpenInference's instrumentation alone: several tools start it
+  { '@traceloop/instrumentation-openai': '0.19.0' },
+  { '@aws/aws-distro-opentelemetry-node-autoinstrumentation': '0.8.0' },
+]) {
+  test('a tracer of no known tool names none: ' + Object.keys(packages)[0], () => {
+    assert.equal(named(packages), null);
+  });
+}
+
+test('a preload names its tool, with the version of its package when it is installed', () => {
+  assert.deepEqual(named({ 'dd-trace': '5.60.0' }, { nodeOptions: '--require dd-trace/init' }), { id: 'datadog', version: '5.60.0', exporter: null });
+  assert.deepEqual(named({}, { nodeOptions: '--require /app/node_modules/newrelic/index.js' }), { id: 'newrelic', version: null, exporter: null });
+  assert.deepEqual(named({}, { nodeOptions: '--require @opentelemetry/auto-instrumentations-node/register' }), { id: 'opentelemetry', version: null, exporter: null });
+});
+
+test('a tracer loaded before this package, or a provider registered before it, names its tool', () => {
+  assert.deepEqual(named({}, { cache: { '/app/node_modules/dd-trace/index.js': {} } }), { id: 'datadog', version: null, exporter: null });
+  const globalState = { 'opentelemetry.js.api.1': { trace: {} } };
+  assert.deepEqual(named({ '@opentelemetry/sdk-trace-node': '2.1.0' }, { globalState }), { id: 'opentelemetry', version: '2.1.0', exporter: null });
+});
+
+test('no finding names no tool', () => {
+  assert.equal(named({ openai: '7.50.0', langsmith: '0.11.8' }), null);
+});
+
+for (const [env, exporter] of [
+  [{ OTEL_EXPORTER_OTLP_PROTOCOL: 'http/protobuf' }, 'otlp-http'],
+  [{ OTEL_EXPORTER_OTLP_PROTOCOL: 'http/json' }, 'otlp-http'],
+  [{ OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc' }, 'otlp-grpc'],
+  [{ OTEL_EXPORTER_OTLP_PROTOCOL: 'http/protobuf', OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: 'grpc' }, 'otlp-grpc'],
+  [{ OTEL_TRACES_EXPORTER: 'zipkin', OTEL_EXPORTER_OTLP_PROTOCOL: 'grpc' }, 'zipkin'],
+  [{ OTEL_TRACES_EXPORTER: 'Console' }, 'console'],
+  [{ OTEL_TRACES_EXPORTER: 'otlp', OTEL_EXPORTER_ZIPKIN_ENDPOINT: 'http://zipkin:9411' }, 'zipkin'],
+  [{}, null], // set up in code, or the SDK's default: not shown by the settings
+  [{ OTEL_EXPORTER_OTLP_PROTOCOL: 'carrier-pigeon' }, null],
+  [{ OTEL_TRACES_EXPORTER: 'none' }, null],
+]) {
+  test('an OpenTelemetry pipeline names its exporter kind and never a value: ' + JSON.stringify(env), () => {
+    const packages = { '@opentelemetry/sdk-node': '0.300.0' };
+    const tool = named(packages, { env: Object.assign({ IMPACT_OTLP_ENDPOINT: 'http://gw:4318', OTEL_EXPORTER_OTLP_ENDPOINT: 'http://c:4318' }, env) });
+    assert.deepEqual(tool, { id: 'opentelemetry', version: '0.300.0', exporter });
+  });
+}
+
+test('the first finding, in the detail\'s order, that shows a tool names it', () => {
+  const env = { IMPACT_OTLP_ENDPOINT: 'http://gw:4318', OTEL_EXPORTER_OTLP_ENDPOINT: 'http://c:4318' };
+  const packages = { '@arizeai/openinference-instrumentation-openai': '4.4.2', 'dd-trace': '5.60.0', '@opentelemetry/sdk-node': '0.300.0' };
+  assert.deepEqual(named(packages, { env }), { id: 'datadog', version: '5.60.0', exporter: null });
+});
+
+for (const version of ['1.0 beta', 'x'.repeat(65), '-1', '1.0\n', 'é1']) {
+  test('a version impact.ai would not keep is left out: ' + JSON.stringify(version), () => {
+    assert.deepEqual(named({ openlit: version }), { id: 'openlit', version: null, exporter: null });
+  });
+}
+
+test('scan reads LangSmith\'s version, so the report can name it', () => {
+  assert.equal(detect.wantedNames(() => false)('langsmith'), true);
 });

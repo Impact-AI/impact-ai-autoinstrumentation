@@ -1,0 +1,992 @@
+{
+  "about": "A copy of the span attribute keys impact.ai withholds in Metadata only mode (keys, prefixes and RE2 patterns) and of its span attribute vectors, which say whether a key is content. A decoder never renames a withheld key to one that is not withheld. Refresh this copy when the intake list changes.",
+  "keys": [
+    "gen_ai.input.messages",
+    "gen_ai.output.messages",
+    "gen_ai.system_instructions",
+    "gen_ai.tool.call.arguments",
+    "gen_ai.tool.call.result",
+    "gen_ai.retrieval.query.text",
+    "gen_ai.retrieval.documents",
+    "gen_ai.evaluation.explanation",
+    "gen_ai.prompt",
+    "gen_ai.completion",
+    "traceloop.entity.input",
+    "traceloop.entity.output",
+    "traceloop.prompt.template",
+    "traceloop.prompt.template_variables",
+    "gen_ai.task.input",
+    "gen_ai.task.output",
+    "llm.content.completion.chunk",
+    "gen_ai.content.completion.chunk",
+    "mcp.request.argument",
+    "mcp.response.value",
+    "input.value",
+    "output.value",
+    "llm.prompt_template.template",
+    "llm.prompt_template.variables",
+    "llm.function_call",
+    "reranker.query",
+    "audio.transcript",
+    "langfuse.observation.input",
+    "langfuse.observation.output",
+    "langfuse.trace.input",
+    "langfuse.trace.output",
+    "langfuse.observation.metadata",
+    "langfuse.trace.metadata",
+    "langfuse.experiment.metadata",
+    "langfuse.experiment.item.metadata",
+    "langfuse.experiment.item.expected_output",
+    "logfire.msg",
+    "final_result",
+    "pydantic_ai.all_messages",
+    "tool_arguments",
+    "tool_response",
+    "request_data",
+    "response_data",
+    "gcp.vertex.agent.llm_request",
+    "gcp.vertex.agent.llm_response",
+    "gcp.vertex.agent.tool_call_args",
+    "gcp.vertex.agent.tool_response",
+    "gcp.vertex.agent.data",
+    "adk.experimental.grounding.web_search_queries"
+  ],
+  "prefixes": [
+    "gen_ai.prompt.variable.",
+    "traceloop.prompt.template_variables.",
+    "datadog.content.",
+    "newrelic.content.",
+    "dynatrace.content.",
+    "langsmith.content.",
+    "langfuse.observation.metadata.",
+    "langfuse.trace.metadata."
+  ],
+  "patterns": [
+    "^gen_ai\\.(prompt|completion)\\.[0-9]+\\.(content|refusal)$",
+    "^gen_ai\\.(prompt|completion)\\.[0-9]+\\.tool_calls\\.[0-9]+\\.arguments$",
+    "^llm\\.(input|output)_messages\\.[0-9]+\\.message\\.content$",
+    "^llm\\.(input|output)_messages\\.[0-9]+\\.message\\.contents\\.[0-9]+\\.message_content\\.(text|data|encrypted_content)$",
+    "^llm\\.(input|output)_messages\\.[0-9]+\\.message\\.contents\\.[0-9]+\\.message_content\\.(audio\\.audio\\.transcript|document\\.document\\.content)$",
+    "^llm\\.prompts\\.[0-9]+\\.prompt\\.text$",
+    "^llm\\.choices\\.[0-9]+\\.completion\\.text$",
+    "(^|\\.)tool_call\\.function\\.arguments$",
+    "(^|\\.)message\\.function_call_arguments_json$",
+    "^(retrieval\\.documents|reranker\\.(input|output)_documents|input\\.documents|output\\.documents)\\.[0-9]+\\.document\\.content$",
+    "^embedding\\.embeddings\\.[0-9]+\\.embedding\\.text$",
+    "(^|\\.)(image|audio|video|document)\\.url$"
+  ],
+  "vectors": [
+    {
+      "key": "gen_ai.input.messages",
+      "content": true
+    },
+    {
+      "key": "gen_ai.output.messages",
+      "content": true
+    },
+    {
+      "key": "gen_ai.system_instructions",
+      "content": true
+    },
+    {
+      "key": "gen_ai.tool.call.arguments",
+      "content": true
+    },
+    {
+      "key": "gen_ai.tool.call.result",
+      "content": true
+    },
+    {
+      "key": "gen_ai.prompt.variable.user_name",
+      "content": true
+    },
+    {
+      "key": "gen_ai.retrieval.query.text",
+      "content": true
+    },
+    {
+      "key": "gen_ai.evaluation.explanation",
+      "content": true
+    },
+    {
+      "key": "gen_ai.operation.name",
+      "content": false
+    },
+    {
+      "key": "gen_ai.provider.name",
+      "content": false
+    },
+    {
+      "key": "gen_ai.request.model",
+      "content": false
+    },
+    {
+      "key": "gen_ai.response.model",
+      "content": false
+    },
+    {
+      "key": "gen_ai.response.finish_reasons",
+      "content": false
+    },
+    {
+      "key": "gen_ai.response.id",
+      "content": false
+    },
+    {
+      "key": "gen_ai.usage.input_tokens",
+      "content": false
+    },
+    {
+      "key": "gen_ai.usage.output_tokens",
+      "content": false
+    },
+    {
+      "key": "gen_ai.tool.name",
+      "content": false
+    },
+    {
+      "key": "gen_ai.tool.call.id",
+      "content": false
+    },
+    {
+      "key": "gen_ai.agent.name",
+      "content": false
+    },
+    {
+      "key": "gen_ai.conversation.id",
+      "content": false
+    },
+    {
+      "key": "gen_ai.evaluation.name",
+      "content": false
+    },
+    {
+      "key": "gen_ai.evaluation.score.value",
+      "content": false
+    },
+    {
+      "key": "gen_ai.evaluation.score.label",
+      "content": false
+    },
+    {
+      "key": "gen_ai.agent.description",
+      "content": false
+    },
+    {
+      "key": "gen_ai.tool.definitions",
+      "content": false
+    },
+    {
+      "key": "gen_ai.tool.description",
+      "content": false
+    },
+    {
+      "key": "gen_ai.input.messages_ref",
+      "content": false
+    },
+    {
+      "key": "gen_ai.system_instructions_ref",
+      "content": false
+    },
+    {
+      "key": "gen_ai.prompt.name",
+      "content": false
+    },
+    {
+      "key": "gen_ai.prompt.variable",
+      "content": false
+    },
+    {
+      "key": "gen_ai.retrieval.query",
+      "content": false
+    },
+    {
+      "key": "gen_ai.retrieval.documents",
+      "content": true
+    },
+    {
+      "key": "gen_ai.retrieval.documents.count",
+      "content": false
+    },
+    {
+      "key": "gen_ai.retrieval.top_k",
+      "content": false
+    },
+    {
+      "key": "gen_ai.data_source.id",
+      "content": false
+    },
+    {
+      "key": "gen_ai.prompt",
+      "content": true
+    },
+    {
+      "key": "gen_ai.completion",
+      "content": true
+    },
+    {
+      "key": "content",
+      "content": false
+    },
+    {
+      "key": "message",
+      "content": false
+    },
+    {
+      "key": "gen_ai.prompt.0.content",
+      "content": true
+    },
+    {
+      "key": "gen_ai.prompt.12.content",
+      "content": true
+    },
+    {
+      "key": "gen_ai.completion.0.content",
+      "content": true
+    },
+    {
+      "key": "gen_ai.completion.3.refusal",
+      "content": true
+    },
+    {
+      "key": "gen_ai.prompt.1.tool_calls.0.arguments",
+      "content": true
+    },
+    {
+      "key": "gen_ai.completion.0.tool_calls.2.arguments",
+      "content": true
+    },
+    {
+      "key": "gen_ai.prompt.0.role",
+      "content": false
+    },
+    {
+      "key": "gen_ai.completion.0.role",
+      "content": false
+    },
+    {
+      "key": "gen_ai.completion.0.finish_reason",
+      "content": false
+    },
+    {
+      "key": "gen_ai.completion.0.content_filter_results",
+      "content": false
+    },
+    {
+      "key": "gen_ai.prompt.1.tool_call_id",
+      "content": false
+    },
+    {
+      "key": "gen_ai.prompt.1.tool_calls.0.id",
+      "content": false
+    },
+    {
+      "key": "gen_ai.prompt.1.tool_calls.0.name",
+      "content": false
+    },
+    {
+      "key": "gen_ai.completion.0.tool_calls.0.name",
+      "content": false
+    },
+    {
+      "key": "gen_ai.completion.0.tool_calls.0.id",
+      "content": false
+    },
+    {
+      "key": "gen_ai.prompt.content",
+      "content": false
+    },
+    {
+      "key": "gen_ai.completion.0.content.extra",
+      "content": false
+    },
+    {
+      "key": "xgen_ai.prompt.0.content",
+      "content": false
+    },
+    {
+      "key": "traceloop.entity.input",
+      "content": true
+    },
+    {
+      "key": "traceloop.entity.output",
+      "content": true
+    },
+    {
+      "key": "traceloop.prompt.template",
+      "content": true
+    },
+    {
+      "key": "traceloop.prompt.template_variables",
+      "content": true
+    },
+    {
+      "key": "traceloop.prompt.template_variables.user_name",
+      "content": true
+    },
+    {
+      "key": "gen_ai.task.input",
+      "content": true
+    },
+    {
+      "key": "gen_ai.task.output",
+      "content": true
+    },
+    {
+      "key": "llm.content.completion.chunk",
+      "content": true
+    },
+    {
+      "key": "gen_ai.content.completion.chunk",
+      "content": true
+    },
+    {
+      "key": "mcp.request.argument",
+      "content": true
+    },
+    {
+      "key": "mcp.response.value",
+      "content": true
+    },
+    {
+      "key": "traceloop.span.kind",
+      "content": false
+    },
+    {
+      "key": "traceloop.workflow.name",
+      "content": false
+    },
+    {
+      "key": "traceloop.entity.name",
+      "content": false
+    },
+    {
+      "key": "traceloop.entity.path",
+      "content": false
+    },
+    {
+      "key": "traceloop.prompt.key",
+      "content": false
+    },
+    {
+      "key": "traceloop.prompt.version",
+      "content": false
+    },
+    {
+      "key": "gen_ai.task.name",
+      "content": false
+    },
+    {
+      "key": "mcp.method.name",
+      "content": false
+    },
+    {
+      "key": "mcp.session.id",
+      "content": false
+    },
+    {
+      "key": "mcp.request",
+      "content": false
+    },
+    {
+      "key": "mcp.response.is_error",
+      "content": false
+    },
+    {
+      "key": "traceloop.prompt.template_variablesX",
+      "content": false
+    },
+    {
+      "key": "traceloop.prompt.templates",
+      "content": false
+    },
+    {
+      "key": "traceloop.entity.input.size",
+      "content": false
+    },
+    {
+      "key": "input.value",
+      "content": true
+    },
+    {
+      "key": "output.value",
+      "content": true
+    },
+    {
+      "key": "llm.prompts.0.prompt.text",
+      "content": true
+    },
+    {
+      "key": "llm.choices.0.completion.text",
+      "content": true
+    },
+    {
+      "key": "llm.prompt_template.template",
+      "content": true
+    },
+    {
+      "key": "llm.prompt_template.variables",
+      "content": true
+    },
+    {
+      "key": "llm.input_messages.0.message.content",
+      "content": true
+    },
+    {
+      "key": "llm.output_messages.1.message.content",
+      "content": true
+    },
+    {
+      "key": "llm.input_messages.2.message.content",
+      "content": true
+    },
+    {
+      "key": "llm.input_messages.0.message.contents.0.message_content.text",
+      "content": true
+    },
+    {
+      "key": "llm.output_messages.0.message.contents.1.message_content.text",
+      "content": true
+    },
+    {
+      "key": "llm.input_messages.0.message.contents.1.message_content.image.image.url",
+      "content": true
+    },
+    {
+      "key": "llm.input_messages.0.message.contents.2.message_content.audio.audio.url",
+      "content": true
+    },
+    {
+      "key": "llm.input_messages.0.message.contents.2.message_content.audio.audio.transcript",
+      "content": true
+    },
+    {
+      "key": "llm.input_messages.0.message.contents.3.message_content.video.video.url",
+      "content": true
+    },
+    {
+      "key": "llm.input_messages.0.message.contents.4.message_content.document.document.url",
+      "content": true
+    },
+    {
+      "key": "llm.input_messages.0.message.contents.4.message_content.document.document.content",
+      "content": true
+    },
+    {
+      "key": "llm.output_messages.0.message.contents.0.message_content.data",
+      "content": true
+    },
+    {
+      "key": "llm.output_messages.0.message.contents.0.message_content.encrypted_content",
+      "content": true
+    },
+    {
+      "key": "llm.input_messages.0.message.role",
+      "content": false
+    },
+    {
+      "key": "llm.output_messages.0.message.role",
+      "content": false
+    },
+    {
+      "key": "llm.input_messages.0.message.name",
+      "content": false
+    },
+    {
+      "key": "llm.input_messages.1.message.tool_call_id",
+      "content": false
+    },
+    {
+      "key": "llm.output_messages.0.message.function_call_name",
+      "content": false
+    },
+    {
+      "key": "llm.output_messages.0.message.tool_calls.0.tool_call.id",
+      "content": false
+    },
+    {
+      "key": "llm.output_messages.0.message.tool_calls.0.tool_call.function.name",
+      "content": false
+    },
+    {
+      "key": "llm.output_messages.0.message.tool_calls.0.tool_call.reasoning_signature",
+      "content": false
+    },
+    {
+      "key": "llm.input_messages.0.message.contents.0.message_content.type",
+      "content": false
+    },
+    {
+      "key": "llm.output_messages.0.message.contents.0.message_content.signature",
+      "content": false
+    },
+    {
+      "key": "llm.input_messages.0.message.contents.4.message_content.document.document.mime_type",
+      "content": false
+    },
+    {
+      "key": "llm.input_messages.0.message.contents.4.message_content.document.document.name",
+      "content": false
+    },
+    {
+      "key": "llm.input_messages.0.message.content_type",
+      "content": false
+    },
+    {
+      "key": "llm.prompts.0.prompt.id",
+      "content": false
+    },
+    {
+      "key": "llm.choices.0.completion.index",
+      "content": false
+    },
+    {
+      "key": "openinference.span.kind",
+      "content": false
+    },
+    {
+      "key": "llm.model_name",
+      "content": false
+    },
+    {
+      "key": "llm.provider",
+      "content": false
+    },
+    {
+      "key": "llm.token_count.prompt",
+      "content": false
+    },
+    {
+      "key": "llm.token_count.completion",
+      "content": false
+    },
+    {
+      "key": "llm.prompt_template.version",
+      "content": false
+    },
+    {
+      "key": "llm.invocation_parameters",
+      "content": false
+    },
+    {
+      "key": "llm.prompts",
+      "content": false
+    },
+    {
+      "key": "llm.prompt_template",
+      "content": false
+    },
+    {
+      "key": "llm.choices",
+      "content": false
+    },
+    {
+      "key": "llm.input_messages",
+      "content": false
+    },
+    {
+      "key": "llm.output_messages_total",
+      "content": false
+    },
+    {
+      "key": "llm.function_call",
+      "content": true
+    },
+    {
+      "key": "tool_call.function.arguments",
+      "content": true
+    },
+    {
+      "key": "message.function_call_arguments_json",
+      "content": true
+    },
+    {
+      "key": "llm.output_messages.0.message.tool_calls.0.tool_call.function.arguments",
+      "content": true
+    },
+    {
+      "key": "llm.input_messages.1.message.function_call_arguments_json",
+      "content": true
+    },
+    {
+      "key": "tool.name",
+      "content": false
+    },
+    {
+      "key": "tool.description",
+      "content": false
+    },
+    {
+      "key": "tool.parameters",
+      "content": false
+    },
+    {
+      "key": "tool.json_schema",
+      "content": false
+    },
+    {
+      "key": "tool.id",
+      "content": false
+    },
+    {
+      "key": "tool_call.id",
+      "content": false
+    },
+    {
+      "key": "tool_call.function.name",
+      "content": false
+    },
+    {
+      "key": "message.tool_call_id",
+      "content": false
+    },
+    {
+      "key": "message.function_call_name",
+      "content": false
+    },
+    {
+      "key": "llm.tools.0.tool.json_schema",
+      "content": false
+    },
+    {
+      "key": "llm.tools.0.tool.name",
+      "content": false
+    },
+    {
+      "key": "tool_call.function.arguments.count",
+      "content": false
+    },
+    {
+      "key": "retrieval.documents.0.document.content",
+      "content": true
+    },
+    {
+      "key": "reranker.input_documents.1.document.content",
+      "content": true
+    },
+    {
+      "key": "reranker.output_documents.0.document.content",
+      "content": true
+    },
+    {
+      "key": "input.documents.0.document.content",
+      "content": true
+    },
+    {
+      "key": "output.documents.0.document.content",
+      "content": true
+    },
+    {
+      "key": "embedding.embeddings.0.embedding.text",
+      "content": true
+    },
+    {
+      "key": "input.images.0.image.url",
+      "content": true
+    },
+    {
+      "key": "output.images.0.image.url",
+      "content": true
+    },
+    {
+      "key": "audio.transcript",
+      "content": true
+    },
+    {
+      "key": "reranker.query",
+      "content": true
+    },
+    {
+      "key": "image.url",
+      "content": true
+    },
+    {
+      "key": "audio.url",
+      "content": true
+    },
+    {
+      "key": "video.url",
+      "content": true
+    },
+    {
+      "key": "document.url",
+      "content": true
+    },
+    {
+      "key": "retrieval.documents.0.document.url",
+      "content": true
+    },
+    {
+      "key": "reranker.output_documents.0.document.url",
+      "content": true
+    },
+    {
+      "key": "input.documents.0.document.url",
+      "content": true
+    },
+    {
+      "key": "output.documents.0.document.url",
+      "content": true
+    },
+    {
+      "key": "retrieval.documents.0.document.id",
+      "content": false
+    },
+    {
+      "key": "retrieval.documents.0.document.score",
+      "content": false
+    },
+    {
+      "key": "retrieval.documents.0.document.metadata",
+      "content": false
+    },
+    {
+      "key": "input.documents.0.document.mime_type",
+      "content": false
+    },
+    {
+      "key": "embedding.embeddings.0.embedding.vector",
+      "content": false
+    },
+    {
+      "key": "embedding.model_name",
+      "content": false
+    },
+    {
+      "key": "audio.mime_type",
+      "content": false
+    },
+    {
+      "key": "input.images",
+      "content": false
+    },
+    {
+      "key": "output.images",
+      "content": false
+    },
+    {
+      "key": "retrieval.documents",
+      "content": false
+    },
+    {
+      "key": "retrieval.documents.0.document.content_type",
+      "content": false
+    },
+    {
+      "key": "audio.transcript.language",
+      "content": false
+    },
+    {
+      "key": "embedding.embeddings.0.embedding.text_length",
+      "content": false
+    },
+    {
+      "key": "reranker.model_name",
+      "content": false
+    },
+    {
+      "key": "reranker.top_k",
+      "content": false
+    },
+    {
+      "key": "prompt.url",
+      "content": false
+    },
+    {
+      "key": "url.full",
+      "content": false
+    },
+    {
+      "key": "audio.url.scheme",
+      "content": false
+    },
+    {
+      "key": "xdocument.url",
+      "content": false
+    },
+    {
+      "key": "datadog.content.input.value",
+      "content": true
+    },
+    {
+      "key": "newrelic.content.request.message",
+      "content": true
+    },
+    {
+      "key": "dynatrace.content.body",
+      "content": true
+    },
+    {
+      "key": "langsmith.content.inputs",
+      "content": true
+    },
+    {
+      "key": "datadog.component",
+      "content": false
+    },
+    {
+      "key": "newrelic.transaction.name",
+      "content": false
+    },
+    {
+      "key": "dynatrace.content",
+      "content": false
+    },
+    {
+      "key": "langsmith.contents.inputs",
+      "content": false
+    },
+    {
+      "key": "langfuse.observation.input",
+      "content": true
+    },
+    {
+      "key": "langfuse.observation.output",
+      "content": true
+    },
+    {
+      "key": "langfuse.trace.output",
+      "content": true
+    },
+    {
+      "key": "langfuse.experiment.item.expected_output",
+      "content": true
+    },
+    {
+      "key": "langfuse.observation.metadata",
+      "content": true
+    },
+    {
+      "key": "langfuse.observation.metadata.top_k",
+      "content": true
+    },
+    {
+      "key": "langfuse.trace.metadata.user_note",
+      "content": true
+    },
+    {
+      "key": "langfuse.observation.type",
+      "content": false
+    },
+    {
+      "key": "langfuse.observation.model.name",
+      "content": false
+    },
+    {
+      "key": "langfuse.observation.usage_details",
+      "content": false
+    },
+    {
+      "key": "langfuse.observation.prompt.name",
+      "content": false
+    },
+    {
+      "key": "langfuse.trace.input",
+      "content": true
+    },
+    {
+      "key": "langfuse.trace.metadata",
+      "content": true
+    },
+    {
+      "key": "langfuse.experiment.metadata",
+      "content": true
+    },
+    {
+      "key": "langfuse.experiment.item.metadata",
+      "content": true
+    },
+    {
+      "key": "langfuse.observation.inputs",
+      "content": false
+    },
+    {
+      "key": "langfuse.observation.metadatas",
+      "content": false
+    },
+    {
+      "key": "logfire.msg",
+      "content": true
+    },
+    {
+      "key": "final_result",
+      "content": true
+    },
+    {
+      "key": "pydantic_ai.all_messages",
+      "content": true
+    },
+    {
+      "key": "tool_arguments",
+      "content": true
+    },
+    {
+      "key": "tool_response",
+      "content": true
+    },
+    {
+      "key": "request_data",
+      "content": true
+    },
+    {
+      "key": "response_data",
+      "content": true
+    },
+    {
+      "key": "logfire.msg_template",
+      "content": false
+    },
+    {
+      "key": "logfire.span_type",
+      "content": false
+    },
+    {
+      "key": "logfire.json_schema",
+      "content": false
+    },
+    {
+      "key": "gcp.vertex.agent.llm_request",
+      "content": true
+    },
+    {
+      "key": "gcp.vertex.agent.llm_response",
+      "content": true
+    },
+    {
+      "key": "gcp.vertex.agent.tool_call_args",
+      "content": true
+    },
+    {
+      "key": "gcp.vertex.agent.tool_response",
+      "content": true
+    },
+    {
+      "key": "gcp.vertex.agent.data",
+      "content": true
+    },
+    {
+      "key": "adk.experimental.grounding.web_search_queries",
+      "content": true
+    },
+    {
+      "key": "gcp.vertex.agent.event_id",
+      "content": false
+    },
+    {
+      "key": "gcp.vertex.agent.invocation_id",
+      "content": false
+    },
+    {
+      "key": "gcp.vertex.agent.session_id",
+      "content": false
+    },
+    {
+      "key": "gcp.vertex.agent.associated_event_ids",
+      "content": false
+    },
+    {
+      "key": "adk.experimental.grounding.source_uris",
+      "content": false
+    }
+  ]
+}

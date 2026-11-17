@@ -3,10 +3,13 @@
 """Post-import hooks on the standard library only.
 
 wrapt offers the same, but importing it costs ~100 ms and this package starts in every Python process of the
-container (exec probes included). The finder below sits first on sys.meta_path and only acts for the top-level
-modules it was asked to watch: it asks the other finders for the real spec, lets the real loader execute the module
-(restoring it before anything runs, so the module and the import system only ever see the real loader), and then calls
-the hooks. A failing hook never reaches the import.
+container (exec probes included). The finder below sits first on sys.meta_path and only acts for the modules it was
+asked to watch: it asks the other finders for the real spec, lets the real loader execute the module (restoring it
+before anything runs, so the module and the import system only ever see the real loader), and then calls the hooks. A
+failing hook never reaches the import.
+
+A watched module is a top-level module (`openai`) or a package inside another one (`google.genai`, whose parent `google`
+is a namespace package that many distributions share and that has no loader to wait for).
 """
 
 from __future__ import annotations
@@ -39,14 +42,14 @@ class _Loader:
 
 
 class Finder:
-    """A meta path finder that calls hooks once, after a watched top-level module has been imported."""
+    """A meta path finder that calls hooks once, after a watched module has been imported."""
 
     def __init__(self) -> None:
         self._hooks: dict[str, list] = {}
         self._fired: set[str] = set()
 
     def watch(self, name: str, hook) -> None:
-        """Call hook(module) after `name` is imported; at once if it already is."""
+        """Call hook(module) after `name` (a module's full dotted name) is imported; at once if it already is."""
         self._hooks.setdefault(name, []).append(hook)
         module = sys.modules.get(name)
         spec = getattr(module, "__spec__", None)
@@ -64,7 +67,9 @@ class Finder:
                 pass
 
     def find_spec(self, fullname, path=None, target=None):
-        if path is not None or fullname not in self._hooks or fullname in self._fired:
+        # `path` is None for a top-level module and the parent's __path__ for a submodule: either way it goes to the
+        # other finders unchanged.
+        if fullname not in self._hooks or fullname in self._fired:
             return None
         for finder in sys.meta_path:
             if finder is self:

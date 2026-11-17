@@ -1,0 +1,117 @@
+{
+  "how": "canonical.mjs langfuse (testing/apps/otel_tools) against the kit's recording mock as the tool's backend and provider.py as the model provider",
+  "packages": {
+    "@langfuse/openai": "6.1.1",
+    "@langfuse/otel": "6.1.1",
+    "@langfuse/tracing": "6.1.1",
+    "openai": "7.53.0"
+  },
+  "recorded": "2026-11-09",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/api/public/otel/v1/traces",
+      "query": "",
+      "headers": {
+        "Authorization": "Basic cGstbGYtcGxhbnRlZDpzay1sZi1wbGFudGVk",
+        "x-langfuse-sdk-name": "javascript",
+        "x-langfuse-sdk-version": "6.1.1",
+        "x-langfuse-public-key": "pk-lf-planted",
+        "x-langfuse-ingestion-version": "4",
+        "Content-Type": "application/json",
+        "User-Agent": "OTel-OTLP-Exporter-JavaScript/0.223.0",
+        "Host": "127.0.0.1:54661",
+        "Content-Encoding": "gzip",
+        "Connection": "keep-alive",
+        "Transfer-Encoding": "chunked"
+      },
+      "contentType": "application/json",
+      "contentEncoding": "gzip",
+      "bodyBase64": "H4sIAAAAAAAAA61W227bOBD9FWOeJVmS6Yv0sgiCPhQoUmCb7WIRBgZNjm3WEqklqWwCw/9ekL4msa0UXfuJw3MOZ+YMaa/BoNWt4fitYcpC+bA+RKBcA3POyFnrcLu1whcoYamtSxSrESJ4YlUbkNYZqRbft0uwTImZfo4li90gLibFmMznw/EMNpvolQwzfHlZhtViRN5xpLjMOAU3RnO0NmleE6RyO3Q2IPl4coaBz8hbx2YVdtSptMBzR54INMxdqbDfWtOfSdW/pMR1XTMlpsws7KkMM4a9fN+vQnjr0VX96N3+zql+g8ZK6/qubvqybrRxaGysDV/2LTfM8WVfpvkg6PQ5U1pJzqqk/mHPqFZMLeatRdg8bs7UZFrlZI3Jkz9Tq8vdyUmS50l+ri97jW5/fIaX+QItN7JxV/O40wKT8zo7f644/H90+P25+j+FpvMCnjItmifJP9B1kuRJeo7ZcefbxhcVM+vLZMqdSjissEZnXhIrVomfj5Ytfsm41wrXU9ENqgP+skj3/CXZthWPEQijmwbFzeFFvNWtclCmmwgs183JCxqWXi1kebwOsRUrf9ju2BJGSZZk4AUOXGcYx8/C25AW83Q4YemIjHHAhoITks8Hw/FkkM8EIbClBWwxysmYjEhKBiKbCb/XMIPKfdsjsowXEzEZFCTjxajIINpn97VBdfM54UvmIIKVVALKLALrmHH3ssa/lHy+Y0p7kXFBcpKSIssG4zR8IAJU4jJuWKR5NklziM7/mOx7kxiskNkrpr4bywNVz/yEMn+HE/fSXNFYoEITgJ1CUjWtu6y0plCjtWyBlvpyKBhdIYWSQmvRUIgocK0cKheCfy/RYE/anjYCTS9LSf5H7/br3f2nu/v49ubu5s9/KGweIwpO62qv6asJ9HmruE8r6B4X5ZoGGwNmgW4a1APo5GELu1+0XvXapsfULoXZS08625MiCfiGGVajf5O2soej9ewHcrfFGN2gcRJ3mCA0leINY9sp6ltMweC/rTToMQ+nDP/L8LjptKHWAquO675oXEx0nKc5idNJnI4+qHos+arPBm2jlcXpXJuabe2k0J26bl3XCB1m5vBovhkc1VZVaOK8taw6BvyQTDmrDpMSTKDgQ9MsiPzG7DCzaGtUzoa9NaUnxlEfoxT8BL8dYEph423/gK+tvzpTgY7J6nr7w0WkUGZ5GlHYNpVCGVZOu9CVjKSbjmc6AnzyJUH5cIR9CqEjxDrmWuvT4P7/UnjcK6lWr1lffORImldsYaHMh+PNY/j+BASbI+5WCwAA"
+    },
+    {
+      "method": "POST",
+      "path": "/api/public/otel/v1/traces",
+      "query": "",
+      "headers": {
+        "Authorization": "Basic cGstbGYtcGxhbnRlZDpzay1sZi1wbGFudGVk",
+        "x-langfuse-sdk-name": "javascript",
+        "x-langfuse-sdk-version": "6.1.1",
+        "x-langfuse-public-key": "pk-lf-planted",
+        "x-langfuse-ingestion-version": "4",
+        "Content-Type": "application/json",
+        "User-Agent": "OTel-OTLP-Exporter-JavaScript/0.223.0",
+        "Host": "127.0.0.1:54661",
+        "Content-Encoding": "gzip",
+        "Connection": "keep-alive",
+        "Transfer-Encoding": "chunked"
+      },
+      "contentType": "application/json",
+      "contentEncoding": "gzip",
+      "bodyBase64": "H4sIAAAAAAAAA61VW2vbMBT+K+M8O74njv1WSh8GI4O1K4ylFEU6SbTYkpDkrCHkvw85d+LYGyx50vF3OTfZW9BoZK0pPisiDBQ/t6cIFFsg1mo+qy3uH61wAwUspbG+IBWCB2tS1g3SWM3F4nV/BEMEm8mPAScDmwzycZ6l8/kwm8Fu513JEE2X92VIxUbpDYez+4xLsNKSojG+uiZwYQ/oKEnjbNzCwA+ktSWzEnvqFJJhm+WFgCK2o8KgNjqYcRHcU6Kyqohg70QvzKUM0ZpsXo+nJryfUae+d/P8MKlAoTbc2MBWKuCVktqiNgOp6TIwVBNLlwEP46TRCSgRUnBKSr/6ZVpUSyIW89og7N52LTXpWlheob92nlLc706c+nHsx219OWr0z8dleJ/P0FDNle3MYyIZ+u06h/l0TPh/dPjWV/4WqHsv4CXToF5z+hddT/3YD9uYPXe+Vq6oATGuTCLspYTFEiu0euMbtvLdftRk8U+Du1boTkUqFCf8fZH+/fOjfSvePGBaKoXs4fRGfJS1sFCEOw8MleriDdocnVqT5fk6DAxbObODbQEjP/IjcAInrtWE4mfmxhDm83A4JuEozTAhQ0bTNJ4nw2ycxDOWprCnNdiEJumYxnE+CrN5Eo7AA0U0Cvt8REQRzcdsnORpRPNRHoF3zG6B9l1q1mzTigsGReSBsUTbF17hd8E/JkRIJ5HlaZyGaR5Fo3D/Aw9QsC5cPI6GwwS89k/JsTO+xhKJ6RjpzVKeqHLm9pO4G+zbjerQsFKWvRJcqNre19hOoWnWO2dTKKYQhWn86fHr5OVp8jJ4fJg8fPsxhV2vi6xtn42xxNamMTFL7nZvCt4UhLTYBNtMu/bUA1yjsK79Z9hTEzpD9qYuH+o+GM12l1ysrllfXORMmpdkYaCIh9nurfn/AWmdp6xXCAAA"
+    },
+    {
+      "method": "POST",
+      "path": "/api/public/otel/v1/traces",
+      "query": "",
+      "headers": {
+        "Authorization": "Basic cGstbGYtcGxhbnRlZDpzay1sZi1wbGFudGVk",
+        "x-langfuse-sdk-name": "javascript",
+        "x-langfuse-sdk-version": "6.1.1",
+        "x-langfuse-public-key": "pk-lf-planted",
+        "x-langfuse-ingestion-version": "4",
+        "Content-Type": "application/json",
+        "User-Agent": "OTel-OTLP-Exporter-JavaScript/0.223.0",
+        "Host": "127.0.0.1:54661",
+        "Content-Encoding": "gzip",
+        "Connection": "keep-alive",
+        "Transfer-Encoding": "chunked"
+      },
+      "contentType": "application/json",
+      "contentEncoding": "gzip",
+      "bodyBase64": "H4sIAAAAAAAAA62VW2+jOBTHvwryM3cIBF5GVTUPK+1mpJ3ujFaTanWwTxJvwEa2SRtV+e4jk0tpm8CstMkT5vx/525eiEItO0XxawtCk/LHy+WElC8EjFG86gweX21xT0qykdr4AhokLtlB3fWW2igu1t+Oj0SDYJV89jh4JvGKeZGnq9Usr8jh4L7BgKKb2xhoWJZ+0HB2WzE0bpWkqLXfvhVwYU7WUZLG+fyKAp+RdgaqGifyFJLhNZcDQAtmJMOg0yqouAhukahsGhDsH1BrPcSAUrD/dn7qj489GuW7H96fOhW0qDTXJjBNG/Cmlcqg0p5UdBNoqsDQTcDDOOk5AQUhBadQ+82/+gq1BrFedRrJ4fFwJSfVCcMb9HfWpxS3qxOnfhz78bW6nBnT/bER3tYz1FTx1ozGsZAM/eucU39GOvx/VPijX/kkUE0u4FCpUe04/YWqp37sh9eUEzvftTYpD7RNE4QZIgzW2KBRe1+zrW/no4P1f2rcW8J4KLJFcbG/DZmePz86luLRJUzJtkV2d7kR72UnDCnDg0s0le3gBu0fLa2P8nUdPM221tnJbUkyP/IjYgEXrVFA8Tdm2xAWq3A2hzBLc0xgxmiaxqtkls+TuGJpSo6y3naVMJplVRIV2TwJVwVxSQsKhfl6togiWszZPCnSiBZZERH3HN0G69ajKIyyFd1ywUgZuUQbUOaBN/iX4M8LENJC8iKN0zAtoigLjz/iEhRszC5KszSKiXv9Y3Kuja+wRtAjTf0wlheprOyEgt1h3+zbEYZCozjuUE1yuGg7cxv0fYPCYRK1A8KRiqFy9Ia3n5z7L4uHz4sH7/5ucffn35NuZGdG/fx4WRLOlqRckm3lRVG8JO7SDpjCJSlDv4jcJTH4bHqTLzYQ3UfiPHGz4cIxT9JhsNf+u8iW9toestMwf8fOkyH7QQHdcrF2RNdU1gsoxXfoVHsHvQZ4PekhjIp3Hmbx0MN3xC0KdiznKQspnD+kYLC/Qn+cWEyX4A6FsdP2ava5P3o10QZMp23hqf1C9utcc7F9q/rdnryKVjWsNSnjWX547P8/AWPLoPVICQAA"
+    },
+    {
+      "method": "POST",
+      "path": "/api/public/otel/v1/traces",
+      "query": "",
+      "headers": {
+        "Authorization": "Basic cGstbGYtcGxhbnRlZDpzay1sZi1wbGFudGVk",
+        "x-langfuse-sdk-name": "javascript",
+        "x-langfuse-sdk-version": "6.1.1",
+        "x-langfuse-public-key": "pk-lf-planted",
+        "x-langfuse-ingestion-version": "4",
+        "Content-Type": "application/json",
+        "User-Agent": "OTel-OTLP-Exporter-JavaScript/0.223.0",
+        "Host": "127.0.0.1:54661",
+        "Content-Encoding": "gzip",
+        "Connection": "keep-alive",
+        "Transfer-Encoding": "chunked"
+      },
+      "contentType": "application/json",
+      "contentEncoding": "gzip",
+      "bodyBase64": "H4sIAAAAAAAAA62V24rbMBCGXyXo2pGPOTg3ZVn2olCy0G5bSlmWsTRJ1NiSkOR0lyXvXuScie200ORK8vzfzOgf2e/EoFW1YfhFg7Rk9vP9uENm7wScM6KoHe4erfGNzMhKWUclVEgCsoGybiKtM0Iuv+2WxILkhXodChi6dJhP80m2WIwmBdlugwsMGLbqxkDFx9mVRvBuxXmwNoqhtVRfCoR0++g4zZLJtEWBr8hqB0WJN/qUimNbyjOABtfTYVhbExZChl0kpqoKJH8Bs7TnGDAG3r4dVs32zqNefnD1fO9UqNFYYV3oKh2KSivj0NihMmwVWmbAsVUooiRtOCEDqaRgUNLql22hliCXi9oi2T5vW3oytXSiQrrxOZXsPp0ko0lCk7ZzOTBu++Mr7NZztMwI7XrrmCuOtJ2z96fH4f9xwtd51W+J5uYFPFdaNBvB/uLUM5rQqE15487X2jc1BOvbBOnOEQ5LrNCZN2r5mvr5qGH5T8ZdEvpLURrlMb4bcnv+aLw7iueAcKO0Rn53fCPeq1o6Mou2AbFM6bM3aLP0tKbK03UYWr72yfZpZ2RMYxoTDzhqnQGGH7m3IcoX0WgK0TibYAojzrIsWaSjyTRNCp5lZCdrYuOY5VM+TfMsZvk4j0lwyL13hQRkLSQnszgg1oFxT6LCr1K8zkEqD5jkWZJFWR7lozhqfiQgKHlXXBxP0jhP41FKgvbPxKFrarBEsD12XQ3cUSqkQyOhpMK+gNYvRil3zimUKvcUZ2psQ6jCjy/4C07dm+4pA5Z4ObStDCF17boh31docCDsQBmOZhBHWfJhcP84f3qYPw3v7+Z3n3/cTKFq15vj8YgerMAO7Er4yaTXafrGNiC4Qem8Y6ewh2brFGIduNr6Cpj/fjTDXgq5vlR98jsn0aKEpSWzZDTZPjf/P3yAuRZmCAAA"
+    },
+    {
+      "method": "POST",
+      "path": "/api/public/otel/v1/traces",
+      "query": "",
+      "headers": {
+        "Authorization": "Basic cGstbGYtcGxhbnRlZDpzay1sZi1wbGFudGVk",
+        "x-langfuse-sdk-name": "javascript",
+        "x-langfuse-sdk-version": "6.1.1",
+        "x-langfuse-public-key": "pk-lf-planted",
+        "x-langfuse-ingestion-version": "4",
+        "Content-Type": "application/json",
+        "User-Agent": "OTel-OTLP-Exporter-JavaScript/0.223.0",
+        "Host": "127.0.0.1:54661",
+        "Content-Encoding": "gzip",
+        "Connection": "keep-alive",
+        "Transfer-Encoding": "chunked"
+      },
+      "contentType": "application/json",
+      "contentEncoding": "gzip",
+      "bodyBase64": "H4sIAAAAAAAAA61WW2/iOBT+K8jPScitQPKyqqp5GGnUSjvdWa3qCjn2ATwkttd2uq0Q/31kBwIMl8xqFySU2Of7znduNhukwchWU/iqiDCofNn0K6jcIGKt5lVrodtawwcq0UoaGwnSAArQG6lbb2ms5mL5rXtFhghWyfeQk9BmYTErpvlicTet0HYbnNAQTVfXaUjDJvkZhrPriGNjpSUFYyJ1CuDC7qyTLE+nswsIeAfaWlLVMBCnkAwuuTwiUMTeiHDcGj2uuBhfY6KyaYhgc6KX5piGaE0+vu3f/HJXo5v8wdn+rlJjBdpwY8e2UWPeKKktaBNKTVdjQzWxdDXmcZp5njElQgpOSR01380F1pqI5aI1gLav2wsx6VZY3kD05nxKcT07aR6laZReysueY7g+TuF1PANDNVf2po5HySC6zLOrz40K/x8ZPvcr/xGgBwfwGGlAv3H6C1nPozSKLyEHZr5VLqiQGBcmEfaYwkINDVj9ERm2jlx/tGT5rwp3ynBbilQgevvrJMP9FyVdKl4DxLRUCth9fyI+yFZYVMbbABkq1dEJ6l8dm1d5GIfQsLVztnNbokmURAlyBD3WakLhM3NliItFfDcj8SSfQkbuGM3zdJHdTWdZWrE8Rx3M26bVtJhWsyzNMkZomqIAKaJB2K97iyShxYzNsiJPaDEpEhTs1T0pEPefI7oiFgVozQVDZRIgY4m2z7yBPwR/fyRCOpJpkad5nBdJMom7DwoQCHbdbpoWkzjJnNqLl8k+N5GGGoi5UdSztuyhsnIdStwMR/ZD3eBYggDtDQeJuFCtvc60wagBY8gSDHbhYKRlDRiVGLUGNEYBRlQKC8L6xT9XoGHEzUhqBnqUxHn62+jh6fH50+Nz+HD/eP/7X9idpEc8/SD9RCbaug4wslLWc0rqei+AMw9zS/PEY1wy/NqiFdRF5VcPL+UG+y7wNkuwcy/OGxG9bBsQ1vi9DcYY+c05Z+65dD8uiJ9jwBhtsZuY01ic2E7SXvX8XO5xvrxHY4ltTe/PrLgbQfcYuB8hLfSbl3W87lzuc/QfMnJ0U/jdL1KuR60aEbGrafUx4taMOIu8vSKaNOAO+Y62dy2r70C7oiotFWjLYWfTp/gU0bWeS2uAkYa/W67B2bwcI9xV+7od7OtGMqgHzs+lsmEuwzRO8zCehfHkF1kPId8cHA1GSWFgvpC6IV29MRqWLls7NJODw4PRUz+AoxUxo11TRWfD6FO9aA2pdzM3LLB158GcgSW8vp0Cf7pgVGZxHGDUBYZROYt9v1rvM5vF24G7J0Dw5oYUlS8Hs09+6WDSTZGTQd2fQH9j1VysT1Ff3MoBtKjJ0qAyvZtuX/33B/W9+bgrDAAA"
+    }
+  ]
+}

@@ -16,7 +16,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kubetest"
+	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/kubetest"
 )
 
 type obj = map[string]any

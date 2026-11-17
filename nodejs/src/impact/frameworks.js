@@ -7,7 +7,7 @@
 // one is either traced by an instrumentation this image ships or it is not; `untraced` names the ones the image cannot
 // trace (yet), so that Cover your AI can say what is missing rather than show the workload as covered.
 //
-// The wire shape is fixed by the monorepo, which drops an entry that does not fit it: at most 20 entries per list, each
+// The wire shape is fixed by the impact.ai service, which drops an entry that does not fit it: at most 20 entries per list, each
 // "name" or "name version", one space between, a name of letters, digits, dot, underscore and hyphen. npm names with a
 // scope are written without the `@` and with a hyphen for the slash: `@anthropic-ai/sdk` is `anthropic-ai-sdk`.
 

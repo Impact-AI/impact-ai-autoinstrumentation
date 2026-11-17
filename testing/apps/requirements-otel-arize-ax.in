@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# Arize AX's OpenTelemetry package with OpenInference's OpenAI instrumentation.
+arize-otel==0.14.1
+openinference-instrumentation-openai==0.1.69
+openai==3.46.0
+# arize-otel 0.14.1 reads the HTTP exporter's _headers, which OpenTelemetry 1.45 removed: its HTTP transport needs 1.44.
+opentelemetry-sdk==1.44.0
+opentelemetry-exporter-otlp-proto-http==1.44.0
+opentelemetry-exporter-otlp-proto-grpc==1.44.0

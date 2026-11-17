@@ -163,7 +163,7 @@ func TestImpactLabelsAreASliceOfTaggedPairsNotAMap(t *testing.T) {
 }
 
 // impact.ai refuses a whole snapshot when one workload holds more than 16 impact.ai labels or a label whose name or value
-// is not a Kubernetes label's (capabilities/ai-coverage/src/inventory.ts, go/inventory.go). The API server only lets
+// is not a Kubernetes label's. The API server only lets
 // valid labels exist, but one odd object must never cost a cluster its inventory: the reporter keeps to the grammar.
 func TestAnObjectReportsAtMostSixteenImpactLabelsAndOnlyValidOnes(t *testing.T) {
 	var in strings.Builder

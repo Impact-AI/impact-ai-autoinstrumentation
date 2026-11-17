@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: Apache-2.0
 
-# Measure the overhead of the injected workloads (AE-17) and judge it by the budget: +1.5 ms of CPU per model call, +40 MiB of
+# Measure the overhead of the injected workloads and judge it by the budget: +1.5 ms of CPU per model call, +40 MiB of
 # memory and +2 s to start, each on the median of paired differences, a failing workload measured once more.
 #
 #   scripts/overhead.sh canary             what `make ci` runs: Python 3.12 under uvicorn and Node 22, one round each
+#                                          (OVERHEAD_COMBOS=python3.12-uvicorn or node22-express: one of them, as the
+#                                          parts of `make ci` do)
 #   scripts/overhead.sh covering           seven workloads, two rounds each: every Python, every Node and both servers at least
 #                                          once (for `make ci`, if the full matrix is not a job of its own)
-#   scripts/overhead.sh full [DIRECTORY]   what `make overhead` and `make release` run: all eleven workloads, three rounds each
+#   scripts/overhead.sh full [DIRECTORY]   what `make overhead` and `make release` run: all twelve workloads, three rounds each
 #
 # The records, results.json and OVERHEAD.md are written to DIRECTORY (default build/overhead). The images are built first
 # (scripts/build-images.sh overhead) unless OVERHEAD_BUILD=0 says they are there. Exits non-zero when a workload is over its
@@ -24,7 +26,7 @@ rm -rf "$out"
 mkdir -p "$out/combos"
 
 case "$mode" in
-  canary) export OVERHEAD_ROUNDS=1 OVERHEAD_COMBOS="python3.12-uvicorn,node22-express" ;;
+  canary) export OVERHEAD_ROUNDS=1 OVERHEAD_COMBOS="${OVERHEAD_COMBOS:-python3.12-uvicorn,node22-express}" ;;
   covering)
     export OVERHEAD_ROUNDS="${OVERHEAD_ROUNDS:-2}"
     export OVERHEAD_COMBOS="python3.11-uvicorn,python3.12-gunicorn,python3.13-uvicorn,python3.14-gunicorn,node22-express,node24-express,node26-express"

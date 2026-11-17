@@ -1,90 +1,107 @@
-# impact.ai instrumentation
+# Impact AI auto-instrumentation
 
-What customers install so that impact.ai receives their AI applications' traces without code changes.
+[![ci](https://github.com/Impact-AI/impact-ai-autoinstrumentation/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Impact-AI/impact-ai-autoinstrumentation/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Impact-AI/impact-ai-autoinstrumentation/badge)](https://scorecard.dev/viewer/?uri=github.com/Impact-AI/impact-ai-autoinstrumentation)
+[![release](https://img.shields.io/github/v/release/Impact-AI/impact-ai-autoinstrumentation)](https://github.com/Impact-AI/impact-ai-autoinstrumentation/releases)
+[![license](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
-- **Cluster kit** (Kubernetes): a Helm chart with the OpenTelemetry Operator, impact.ai's Python and Node.js
-  instrumentation images, a gateway collector that adds placement, and a names-only reporter that lists the cluster's
-  workloads. It covers Python 3.11 to 3.14 and Node.js 22.15 or later; an older Node starts the application as without
-  the kit, and the setup report says why. Tested on Node.js 22, 24 and 26, CommonJS and ES modules.
-- Later: Lambda layers, container init images and a launcher for virtual machines, sharing the same instrumentation
-  packages.
+A Helm chart that instruments the Python and Node.js workloads of a Kubernetes cluster that call AI models, without a
+code change or a new image, and sends their traces and a names-only inventory of the cluster to Impact AI.
 
-Customers get the install command from **Cover your AI** in impact.ai; they never edit this repository. The chart's
-[README](chart/impact-ai/README.md) is the reference for whoever reviews or runs the kit: what it installs and
-requests, what it may do in the cluster, what leaves the cluster, what the cluster must allow, which platforms it is
-tested on, how to verify a release, upgrade and uninstall.
+**Zero-code, or in your code.** This repository is the zero-code route: nothing in the application changes. To trace
+in the application's code instead, or outside Kubernetes, send OpenTelemetry traces from it yourself: point its OTLP
+exporter at your ingest endpoint with your product's key, both of which Impact AI shows when you create a product. A
+workload that already has a tracer of its own keeps it: the kit stands down ([coexistence](docs/coexistence.md)).
 
-## Layout
+**Prompts and answers are captured by default.** A covered workload's model-call spans carry the prompt, the answer,
+and the arguments and results of tool calls. Set `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=NO_CONTENT` on a
+workload to send none of it. [What leaves the cluster](docs/what-leaves-the-cluster.md) lists every field.
 
-| Path | Holds |
+## What it installs
+
+One release per cluster, in the namespace `impact-ai`:
+
+* the OpenTelemetry Operator 0.162.0, with Python and Node.js injection only, and an `Instrumentation` resource that
+  points it at Impact AI's images;
+* a gateway (OpenTelemetry Collector 0.164.0, core distribution) that adds the cluster's identity to spans and log
+  events and forwards them to Impact AI;
+* a reporter that sends the cluster's workloads by name every 5 minutes: names of workloads, images, environment
+  variables and Secret references, never their values;
+* with an install token, a cover pod that annotates new pods of the workloads Impact AI lists, and Helm hooks that make
+  the cluster's ingest key at install and remove it at uninstall.
+
+The pods request 90m CPU and 224 Mi in total (100m and 248 Mi with the cover pod). Nothing is privileged, and every
+webhook fails open: a workload starts uninstrumented rather than wait for the kit. Details:
+[chart README](chart/impact-ai/README.md#what-it-installs).
+
+## Requirements
+
+| | |
 |---|---|
-| `python/` | The Python image in the OpenTelemetry Operator's auto-instrumentation layout, its tests, the AI gateway tests (`tests/image/test_gateways.py`) and the overhead measurements (`tests/overhead/`) |
-| `nodejs/` | The Node.js image in the same layout: a preload (`src/`), a payload tree pinned by lock file (`trees/`), the build that assembles and licenses it (`tools/`), the qualification of what it traces (`qualification.json`), and its tests |
-| `reporter/` | The in-cluster reporter (Go) that sends the names-only inventory to `POST /v1/inventory` |
-| `chart/impact-ai/` | The Helm chart (`chart/tests/`: its render checks) |
-| `e2e/` | End-to-end tests on a kind cluster |
-| `testing/` | Mock ingest and model providers, and the Python and Node.js fixture workloads the container and end-to-end tests use |
-| `Makefile`, `scripts/`, `mise.toml` | Everything CI and releases run; tool versions |
+| Kubernetes | 1.27 or later, Linux nodes. CI tests 1.27, 1.34 and 1.37 ([compatibility](docs/compatibility.md#kubernetes)) |
+| Helm | 3.18 or later (tested with 3.22 and 4.3) |
+| Installing user | `cluster-admin`: the chart creates a CRD, ClusterRoles and webhook configurations |
+| Network | Egress on 443 to the Impact AI ingest host; image pulls from `ghcr.io` or a mirror; the API server to port 9443 in the release namespace |
+| Workloads | Python 3.11 to 3.14; Node.js 22.15 or later |
 
-## Build, test, release
+## Install
 
-- `make ci`: lint (style, license headers, nothing internal in the source or the rendered chart), unit tests (the
-  Node.js package's run in a container, `make test-nodejs-unit`), chart checks, image builds, the trivy scan of the
-  three released images, the container tests that reproduce the Operator's injection (Python 3.11 to 3.14 under uvicorn
-  and gunicorn, a Starlette and Bedrock Nova workload; Node.js 22, 24 and 26, `make test-nodejs`: layout, a
-  preload that never throws on Node 16 to 26, one span with content per model call, stand-down beside another tracer,
-  ingest down, ES modules where the qualification proves them), and an overhead canary (`make overhead-canary`).
-  `make e2e`: the kind end-to-end suite, then the container tests that need the largest fixtures, those of the tracers, of the
-  agent frameworks (OpenAI Agents SDK, LangChain, LangGraph; `make test-agents` alone, on the Pythons of
-  `AGENTS_PYTHONS`, default "3.12 3.13 3.14"), the Node.js qualification matrix (`make test-nodejs-matrix`: Node 22,
-  24 and 26 as CommonJS and as ES modules against OpenAI's SDK 4 to 7 and Anthropic's from 0.134) and the AI gateways (a
-  LiteLLM proxy and a Portkey gateway, by digest, against the mock). The jobs and their time limits are in
-  `.github/workflows/ci.yml`. All need a container engine (`CONTAINER=docker`, or `podman`), and the tools of `mise.toml` (`mise install`, trivy
-  included).
-- `make overhead`: what an injected workload costs more than the same workload without injection, for every runtime and
-  server the images claim (Python 3.11 to 3.14 under uvicorn and gunicorn, Node.js 22, 24 and 26 under Express): three
-  paired rounds each, the median of the differences held to +1.5 ms of CPU per model call, +40 MiB and +2 s to start, a
-  failing workload measured once more. A Node.js workload's memory is read after both sides have collected all their
-  garbage, because before a collection the reading says how far V8's heap has grown and not what the instrumentation
-  holds: V8's young generation grows by doubling and does not shrink on its own, and two identical plain processes
-  differ by -22 to +23 MiB (with ten times the calls the two readings are within 3 MiB). The raw reading is kept in the
-  record (`memory_unsettled_mib`) beside the one judged, and the budget is unchanged at +40 MiB: five runs in a row put
-  the median difference at 5.5 to 7.4 MiB on Node.js 22, 6.4 to 9.9 on 24 and 6.3 to 10.8 on 26. It needs the machine to
-  itself. `make release` runs it before anything is pushed and publishes the numbers in the chart (`OVERHEAD.md` and the
-  `impact.ai/overhead` annotation of `Chart.yaml`).
-- `make qualify` runs the Node.js matrix again and rewrites `nodejs/qualification.json`: the preload traces an ES module
-  application only where that file proves it, and `make test-nodejs-matrix` fails when a cell no longer says what it
-  did. A workload can override the file with `IMPACT_NODEJS_ESM=on` (try an ES module anyway) or `off`.
-- `make e2e` on a workstation: kind runs a whole cluster inside the user's own process limits, and the Linux default of
-  128 inotify instances per user (`fs.inotify.max_user_instances`) is easily used up by a desktop plus a cluster; the
-  Operator then crash-loops with "couldn't initialize inotify: too many open files". `scripts/e2e.sh` raises the limit
-  with `sudo -n` when it may (CI can); elsewhere run `sudo sysctl -w fs.inotify.max_user_instances=1024` once.
-- Releases: push a tag `vX.Y.Z`; the release workflow runs `make release`, which publishes multi-architecture images
-  (`autoinstrumentation-python`, `autoinstrumentation-nodejs`, `kubernetes-reporter`) with provenance and SBOM to
-  `ghcr.io/impact-ai/<image>` and the chart to `oci://ghcr.io/impact-ai/charts/impact-ai`, with image digests written into
-  the chart. They go to the root of the organisation: the registry host and the lowercased owner of the repository the
-  release runs in (`PUBLISH_ROOT` replaces it; `scripts/names.sh`). Before anything is pushed, every image is built for
-  both platforms and scanned: a fixable CRITICAL or HIGH vulnerability (trivy), or an internal detail in its files,
-  stops the release. After the push the chart and the three images are
-  signed by digest with cosign (keyless: the workflow's own identity, no key to keep), each image gets a signed SPDX bill
-  of materials, and GitHub records the build provenance of all four. `make verify-release VERSION=vX.Y.Z` checks a
-  published release the way a customer does; the commands are in the chart README under "Verify what you install". A
-  release also stops while [SECURITY.md](SECURITY.md) holds a placeholder.
+Cover your AI in Impact AI shows this command with its values filled in. The install token is valid for 15 minutes and
+for one use; the cluster trades it for its own ingest key.
 
-## Bugs, security and contributions
+```sh
+helm upgrade --install impact-ai oci://ghcr.io/impact-ai/charts/impact-ai --version <version> \
+  --namespace impact-ai --create-namespace --wait \
+  --set-string product.id=<product> \
+  --set-string ingest.endpoint=<ingest origin, no path> \
+  --set-string cluster.name=<name> \
+  --set-string install.token=<one-time install token>
+```
 
-* A bug, or something wrong in the documentation: open an issue in this repository. Say the chart or image version
-  (`helm list -n impact-ai`) and what you saw; for a problem in a cluster, add the output of
-  `kubectl -n impact-ai get pods` and `kubectl -n impact-ai logs deploy/impact-ai-reporter --tail=50`.
-* A security problem: do not open an issue; use the private channel in [SECURITY.md](SECURITY.md).
-* Which versions of Python, Node.js and Kubernetes the kit supports, and how it stays current: [SUPPORT.md](SUPPORT.md).
-* A contribution from outside impact.ai needs a contributor agreement with impact.ai. Open an issue before you start,
-  and we tell you how to sign it.
+To install without a token (GitOps, a key you manage), see [install options](docs/install.md).
+
+## Verify a release
+
+The chart and the images `autoinstrumentation-python`, `autoinstrumentation-nodejs` and `kubernetes-reporter` are
+signed with cosign by the release workflow's identity, with signed SBOMs and GitHub build provenance. For the chart:
+
+```sh
+version=<version>
+digest=$(helm pull oci://ghcr.io/impact-ai/charts/impact-ai --version "$version" 2>&1 | sed -n 's/^Digest: //p')
+cosign verify "ghcr.io/impact-ai/charts/impact-ai@$digest" \
+  --certificate-identity "https://github.com/Impact-AI/impact-ai-autoinstrumentation/.github/workflows/release.yml@refs/tags/v$version" \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
+The images, the SBOMs and the provenance: [verify what you install](chart/impact-ai/README.md#verify-what-you-install).
+Each [GitHub release](https://github.com/Impact-AI/impact-ai-autoinstrumentation/releases) carries the chart package, the
+SBOM of each image and platform, and `SHA256SUMS` with its cosign signature `SHA256SUMS.sigstore.json` and its build
+provenance; its notes give the command that checks them.
+This repository also builds a Java image, `autoinstrumentation-java`; releases do not publish it yet.
+
+## Documentation
+
+* [Chart README](chart/impact-ai/README.md): requirements, install, values, verify, upgrade, uninstall
+* [Install options](docs/install.md): the install token, giving the key yourself, cloud identity, image mirrors
+* [How injection works](docs/how-injection-works.md): the annotation, automatic coverage, what is traced
+* [Coexistence and stand-down](docs/coexistence.md): beside another injector or tracer
+* [What leaves the cluster](docs/what-leaves-the-cluster.md)
+* [Failure modes](docs/failure-modes.md)
+* [Security model](docs/security-model.md): RBAC, network flows, admission rules
+* [Troubleshooting](docs/troubleshooting.md)
+* [Compatibility](docs/compatibility.md): runtimes, libraries, Kubernetes, overhead, versions
+* [Changelog](CHANGELOG.md) and [how a release is made](RELEASING.md)
+
+## Support, security and contributing
+
+* Bugs and questions: [SUPPORT.md](SUPPORT.md). Vulnerabilities: [SECURITY.md](SECURITY.md), never a public issue.
+* Releases come here from Impact AI's development repository, one reviewed pull request each. Issues and pull
+  requests are welcome; sign off your commits (DCO). How the kit is built and tested: [CONTRIBUTING.md](CONTRIBUTING.md).
+* [Code of conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
 Apache License 2.0: see [LICENSE](LICENSE) and [NOTICE](NOTICE). Every image carries both in `/licenses`, with the
 license and notice files of everything it bundles (the Python distributions, the npm packages, the Go modules and
-runtime, BusyBox) and an index, all collected by the build from the packages themselves; the chart carries them too,
-with the Operator chart's own. Every source file of ours has an `SPDX-License-Identifier: Apache-2.0` header, which
-`make lint` checks.
+runtime, BusyBox) and an index, all collected by the build from the packages themselves; the chart carries them too, with the Operator chart's own. Every source file of ours has an
+`SPDX-License-Identifier: Apache-2.0` header, which `make lint` checks.

@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-17: for every runtime and server the images claim, an injected workload costs no more than +1.5 ms of CPU per
-model call, +40 MiB of memory and +2 s to start than the same workload without injection. Real images, real containers:
-`make overhead` for all eleven combinations (and `make release`, which publishes the numbers), `make ci` for a canary
-of two, one round each.
+"""The overhead budget: for every runtime and server the images claim, an injected workload costs no more than +1.5 ms
+of CPU per model call, +40 MiB of memory and +2 s to start than the same workload without injection. Real images, real
+containers: `make overhead` for all twelve (combos.py) (and `make release`, which publishes the numbers), `make ci`
+for a canary of two, one round each.
 
 OVERHEAD_COMBOS (comma-separated ids) and OVERHEAD_ROUNDS pick what runs; OVERHEAD_DIR is where each combination's
 record goes (scripts/overhead_report.py makes the report of them).
@@ -54,6 +54,7 @@ def test_the_injected_workload_is_within_the_budget(combo):
                 "runtime": combo.runtime,
                 "version": combo.version,
                 "server": combo.server,
+                "library": combo.library,
                 "rounds": ROUNDS,
                 "calls": harness.CALLS,
                 "warmup": harness.WARMUP,

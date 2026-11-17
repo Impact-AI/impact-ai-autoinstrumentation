@@ -144,6 +144,11 @@ class BoundedBatchSpanProcessor(SpanProcessor):
         return self._exporter
 
     @property
+    def last_export_failed(self) -> bool:
+        """True when the exporter's last answer was a failure (ingest out of reach, refused or not answering)."""
+        return self._last_export_failed
+
+    @property
     def queued_spans(self) -> int:
         return len(self._queue)
 

@@ -315,7 +315,7 @@ def test_a_healthy_gateway_is_still_given_every_batch_while_exiting(sink):
 
 
 def test_unreachable_endpoint_fails_quickly_and_quietly(caplog):
-    # AE-7: ingest being down must never reach the application. Port 9 on loopback refuses connections.
+    # Fail open: ingest being down must never reach the application. Port 9 on loopback refuses connections.
     exporter = impact_exporter.ImpactSpanExporter(
         environ={"IMPACT_OTLP_ENDPOINT": "http://127.0.0.1:9", "OTEL_EXPORTER_OTLP_TIMEOUT": "1000"},
         sleep=lambda s: None,

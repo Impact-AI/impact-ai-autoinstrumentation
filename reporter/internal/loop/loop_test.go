@@ -17,8 +17,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/inventory"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/sender"
+	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/inventory"
+	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/sender"
 )
 
 var start = time.Date(2026, 11, 3, 12, 0, 0, 0, time.UTC)

@@ -13,8 +13,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kube"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kubetest"
+	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/kube"
+	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/kubetest"
 )
 
 const secretPath = "/api/v1/namespaces/impact-ai/secrets/impact-ai-install-key"

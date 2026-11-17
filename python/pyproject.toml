@@ -9,9 +9,9 @@ dependencies = []
 
 [dependency-groups]
 dev = [
-  "pytest==9.0.3",
+  "pytest==9.2.0",
   "pytest-xdist==3.8.0",  # the container tests run in parallel
-  "ruff==0.15.12",
+  "ruff==0.17.4",
   # The SDK and instrumentation base the payload is built on; the unit tests run the real code.
   "opentelemetry-sdk==1.45.2",
   "opentelemetry-instrumentation==0.66b2",
@@ -32,9 +32,14 @@ markers = [
   "tracers: needs the fixtures that carry Datadog or Traceloop (run by make e2e)",
   "agents: needs the agent framework fixtures, which are large (make test-agents, and make e2e)",
   "nodejs: runs the Node.js image and its fixture workloads in containers (make test-nodejs, make test-nodejs-matrix)",
+  "java: runs the Java image and its fixture workloads in containers (make test-java)",
+  "dotnet: the .NET proofs: the upstream agent and the kit's startup hook injected into fixture workloads in containers (make test-dotnet)",
   "matrix: one cell of the Node.js qualification matrix (make test-nodejs-matrix, make qualify, and make e2e)",
+  "cells: one cell of the Python qualification matrix (make test-python-cells, make qualify-python, make release, and make e2e for the libraries a change touches)",
   "gateways: runs LiteLLM and Portkey images against the mock (make e2e)",
+  "langsmith: workloads that trace with LangSmith, with and without the package (make test-langsmith)",
   "overhead: measures an injected workload against the same one without injection (make overhead)",
+  "lambda_rie: the Python layer in AWS's Lambda images under the Runtime Interface Emulator (make test-lambda)",
 ]
 
 [tool.ruff]
@@ -43,7 +48,7 @@ target-version = "py311"
 src = ["src", "tests"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["impact_instrumentation", "helpers", "containers", "conftest", "kube", "assemble_payload", "gate", "combos", "harness", "nodejs_support"]
+known-first-party = ["impact_instrumentation", "helpers", "containers", "conftest", "kube", "assemble_payload", "gate", "combos", "harness", "nodejs_support", "qualify_python", "qualify_nodejs"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "S", "BLE"]

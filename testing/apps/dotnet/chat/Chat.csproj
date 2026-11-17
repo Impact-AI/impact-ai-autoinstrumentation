@@ -1,0 +1,20 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- The proofs' support assistant. DotnetVersion is the .NET it is built for (testing/apps/dotnet/Dockerfile, DOTNET).
+     Exact versions; the Dockerfile restores them, and what they depend on, from a folder of packages pinned by SHA-256. -->
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <DotnetVersion Condition="'$(DotnetVersion)' == ''">10.0</DotnetVersion>
+    <TargetFramework>net$(DotnetVersion)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseAppHost>false</UseAppHost>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Agents.AI" Version="[1.28.0]" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="[10.11.0]" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="[10.11.0]" />
+    <PackageReference Include="OpenAI" Version="[2.15.0]" />
+  </ItemGroup>
+</Project>

@@ -1,3 +1,3 @@
-module github.com/impact-ai/impact-ai-k8s/reporter
+module github.com/impact-ai/impact-ai-autoinstrumentation/reporter
 
 go 1.27

@@ -2,7 +2,8 @@
 """scripts/check_internal_details.py: nothing internal reaches the repository, the chart or the images.
 
 The check has two parts. The built-in one finds what is internal to anybody: private top-level names, tailnet names,
-e-mail addresses, account IDs, private addresses, tokens, increment ids and the other repositories of the organisation.
+e-mail addresses, account IDs, private addresses, tokens, the ids and words of impact.ai's planning and the other
+repositories of the organisation.
 The names that are internal to one company (its hosts, its environments, its customers) are in a deny-list that lives
 outside the repository, and the check reads it when it is given (--denylist FILE, or the variable named in
 check.DENYLIST_ENV) and says so when it is not.
@@ -307,7 +308,7 @@ def test_the_repository_holds_nothing_the_denylist_of_the_company_names(monkeypa
 # The checker names no organisation: it is published with the tree it checks.
 PRIVATE_ORG = "example-private-org"
 ORG_ENTRY = f"internal-reference: \\b{PRIVATE_ORG}/[A-Za-z0-9._-]*\n"
-INCREMENT = "I-" + "123"  # the letter I, a hyphen and three digits; not an increment of any plan
+PLAN_ID = "I-" + "123"  # the letter I, a hyphen and three digits; not an id of any plan
 PRIVATE_REPOSITORIES = [
     PRIVATE_ORG + "/" + name for name in ("example-kit", "example-service", "example-docs", "x")
 ]  # the development repository included: nothing of the private organisation is in what is published
@@ -327,8 +328,8 @@ def private_org(private_org_file):
         yield
 
 
-@pytest.mark.parametrize("text", [f"The first increment is {INCREMENT}.", f"({INCREMENT}: the cluster kit)"])
-def test_increment_ids_are_found(text):
+@pytest.mark.parametrize("text", [f"The first one is {PLAN_ID}.", f"({PLAN_ID}: the cluster kit)"])
+def test_plan_ids_are_found(text):
     assert categories(text) == {"internal-reference"}
 
 
@@ -344,8 +345,14 @@ def test_without_the_denylist_an_organisation_means_nothing_to_the_checker(repos
 
 
 def test_the_checker_holds_no_pattern_for_any_organisation():
-    # It is published with the tree it checks: the only reference it knows by itself is an increment id.
-    assert [pattern.pattern for pattern in check.REFERENCES] == [r"\bI-\d{3}\b"]
+    # It is published with the tree it checks: the references it knows by itself are the ids and words of a plan.
+    assert [pattern.pattern for pattern in check.REFERENCES] == [
+        r"\bI-\d{3}\b",
+        r"\bAE-\d+\b",
+        r"(?<![0-9A-Za-z])test_ae\d+_",
+        r"\bincrements?\b",
+        r"\bmonorepo\b",
+    ]
     assert check.DENYLIST == ()
 
 
@@ -354,8 +361,8 @@ def test_the_checker_holds_no_pattern_for_any_organisation():
     [
         "ghcr.io/impact-ai/autoinstrumentation-python:0.2.2",
         "oci://ghcr.io/impact-ai/charts/impact-ai",
-        "https://github.com/impact-ai/impact-ai-k8s/security/advisories/new",
-        "Impact-AI/impact-ai-k8s/.github/workflows/release.yml",
+        "https://github.com/Impact-AI/impact-ai-autoinstrumentation/security/advisories/new",
+        "Impact-AI/impact-ai-autoinstrumentation/.github/workflows/release.yml",
         "I-" + "1230",  # not an id of three digits
         "I-" + "12",
         "AI-" + "123",  # the letter has to stand alone
@@ -366,12 +373,44 @@ def test_this_repository_and_ordinary_text_are_not_internal_references(text, pri
     assert "internal-reference" not in categories(text)
 
 
-def test_the_private_repository_is_found_in_the_documentation_by_its_plain_name_in_any_case():
-    word = "monorepo"
+def test_the_private_repository_is_found_by_its_plain_name_in_any_case_and_in_any_file():
+    word = "mono" + "repo"
     assert categories(f"the {word} drops an entry", "README.md") == {"internal-reference"}
     assert categories(f"The {word.capitalize()} stores it", "chart/impact-ai/README.md") == {"internal-reference"}
-    # A comment in code may say what the service does with the word; the repository's address is found everywhere.
-    assert categories(f"the {word} drops an entry", "python/src/frameworks.py") == set()
+    assert categories(f"the {word} drops an entry", "python/src/frameworks.py") == {"internal-reference"}
+
+
+# The acceptance examples of a plan and its word for a unit of delivery, put together at run time like the rest.
+EXAMPLE = "AE" + "-17"
+WORD = "incr" + "ement"
+
+
+@pytest.mark.parametrize(
+    ("text", "source"),
+    [
+        (f"The overhead gate ({EXAMPLE}): the budget", "python/tests/overhead/gate.py"),
+        (f"kind end to end ({EXAMPLE}, AE-{3})", "Makefile"),
+        (f"def test_{EXAMPLE.lower().replace('-', '')}_ingest_down_does_not_touch_the_workload(world):", "e2e/x.py"),
+        (f"The values this {WORD} adds", "chart/tests/test_chart_schema.py"),
+        (f"one {WORD.upper()}S list", "README.md"),
+    ],
+)
+def test_the_ids_and_words_of_a_plan_are_found_in_any_file(text, source):
+    assert categories(text, source) == {"internal-reference"}
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "the setting is incremental",  # another word
+        "MAE-17 of the model",  # not an id that stands alone
+        "def test_aes_key_is_refused():",  # no number after test_ae
+        "contest_ae7_x",  # not the start of a test name
+        "sha256:0d7639c3287d4efcdc2c8837f1854d1ecf27aae761714ba3d95e61fe8eb48db3",  # ae7 inside a digest
+    ],
+)
+def test_ordinary_text_that_looks_like_a_plan_is_not_found(text):
+    assert "internal-reference" not in categories(text)
 
 
 def test_the_paths_of_the_private_organisation_are_found_in_image_names_urls_and_module_paths(private_org):
@@ -388,7 +427,7 @@ def test_the_check_can_scan_the_tree_of_another_repository(tmp_path, private_org
     published = tmp_path / "published"
     published.mkdir()
     subprocess.run(["git", "init", "-q", str(published)], check=True)  # noqa: S603, S607
-    (published / "README.md").write_text("see github.com/impact-ai/impact-ai-k8s\n")
+    (published / "README.md").write_text("see github.com/impact-ai/impact-ai-autoinstrumentation\n")
     arguments = ["--source", "--root", str(published), "--denylist", str(private_org_file)]
     assert check.main(arguments) == 0
     (published / "NOTES.md").write_text(f"built in {PRIVATE_ORG}/example-kit\n")
@@ -400,10 +439,10 @@ def test_the_check_can_scan_a_commit_message_on_standard_input(monkeypatch, caps
     arguments = ["--stdin", "--denylist", str(private_org_file)]
     monkeypatch.setattr(sys, "stdin", io.StringIO("Release 0.3.0\n"))
     assert check.main(arguments) == 0
-    monkeypatch.setattr(sys, "stdin", io.StringIO(f"Release 0.3.0\n\nfrom {INCREMENT} in {PRIVATE_ORG}/x\n"))
+    monkeypatch.setattr(sys, "stdin", io.StringIO(f"Release 0.3.0\n\nfrom {PLAN_ID} in {PRIVATE_ORG}/x\n"))
     assert check.main(arguments) == 1
     out = capsys.readouterr().out
-    assert "stdin:3: internal-reference: " + INCREMENT in out and f"stdin:3: internal-reference: {PRIVATE_ORG}/" in out
+    assert "stdin:3: internal-reference: " + PLAN_ID in out and f"stdin:3: internal-reference: {PRIVATE_ORG}/" in out
 
 
 def test_findings_say_where_and_what():

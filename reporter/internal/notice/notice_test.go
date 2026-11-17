@@ -20,11 +20,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/inventory"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kube"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/kubetest"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/loop"
-	"github.com/impact-ai/impact-ai-k8s/reporter/internal/sender"
+	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/inventory"
+	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/kube"
+	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/kubetest"
+	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/loop"
+	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/sender"
 )
 
 const (
@@ -573,7 +573,7 @@ func TestBuildingTheNoticeIsRetriedAndThenGivenUp(t *testing.T) {
 	})
 }
 
-// AE-3 for the notice: no workload names, no env names, no values.
+// Names only, for the notice: no workload names, no env names, no values.
 func TestTheNoticeCarriesNoNamesOfWorkloadsAndNoValues(t *testing.T) {
 	r := newRig(t)
 	app := map[string]any{

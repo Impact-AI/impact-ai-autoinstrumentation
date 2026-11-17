@@ -102,11 +102,14 @@ def test_the_payload_stays_small():
 
 
 @pytest.mark.nodejs
-def test_every_file_can_be_read_by_any_user_and_none_written_by_others():
+@pytest.mark.parametrize("path", ["/autoinstrumentation", "/licenses"])
+def test_every_file_can_be_read_by_any_user_and_none_written_by_others(path):
+    # /licenses too: COPY --chmod onto a directory that COPY creates gives it the files' mode on some builders (GitHub's
+    # Ubuntu 26.04 runners), which no one can enter, so the Dockerfile sets modes in a build stage instead.
     require_images(IMAGE)
-    assert listing("/autoinstrumentation", "-not", "-perm", "-o+r") == []
-    assert listing("/autoinstrumentation", "-type", "d", "-not", "-perm", "-o+x") == []
-    assert listing("/autoinstrumentation", "-perm", "-o+w") == []
+    assert listing(path, "-not", "-perm", "-o+r") == []
+    assert listing(path, "-type", "d", "-not", "-perm", "-o+x") == []
+    assert listing(path, "-perm", "-o+w") == []
 
 
 @pytest.mark.nodejs

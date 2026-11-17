@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-5: the package stands down when the workload already has a tracer.
+"""Stand down: the package stands down when the workload already has a tracer.
 
 Detection must use the standard library only and must never import a candidate package, because it runs from
 sitecustomize before the application starts.
@@ -48,6 +48,12 @@ def test_clean_environment_finds_nothing(tmp_path):
     assert find(tmp_path, app) == []
 
 
+def test_only_impact_ais_sdk_is_a_tracer_not_the_kits_own_package(tmp_path):
+    # "impact" is the distribution of Impact AI's SDK; the kit's own package, impact-instrumentation, is not it.
+    app = site(tmp_path, "app", "fastapi-0.115.0", "impact_instrumentation-0.3.0")
+    assert find(tmp_path, app) == []
+
+
 @pytest.mark.parametrize(
     ("dist", "name", "version"),
     [
@@ -60,6 +66,10 @@ def test_clean_environment_finds_nothing(tmp_path):
         ("opentelemetry_instrumentation_openai-0.62.4", "opentelemetry-instrumentation-openai", "0.62.4"),
         ("opentelemetry_instrumentation_bedrock-0.62.4", "opentelemetry-instrumentation-bedrock", "0.62.4"),
         ("openinference_instrumentation_openai-0.1.30", "openinference-instrumentation-openai", "0.1.30"),
+        ("elastic_opentelemetry-1.19.0", "elastic-opentelemetry", "1.19.0"),
+        ("arize_otel-0.14.1", "arize-otel", "0.14.1"),
+        ("arize_phoenix_otel-0.17.3", "arize-phoenix-otel", "0.17.3"),
+        ("impact-1.2.0rc8", "impact", "1.2.0rc8"),
     ],
 )
 def test_installed_tracers_are_found_by_distribution_name(tmp_path, dist, name, version):
@@ -272,3 +282,106 @@ def test_find_foreign_can_reuse_a_scan(tmp_path):
 )
 def test_normalize_follows_pep_503(raw, normalized):
     assert detect.normalize(raw) == normalized
+
+
+# --- the tool the setup report names: the tool beside the package ----------------------------------------------------
+
+
+def named(tmp_path: Path, *dists: str, environ=None, argv=("python", "app.py"), modules: tuple[str, ...] = ()):
+    root = site(tmp_path, "named", *dists, modules=modules)
+    env = environ if environ is not None else {}
+    scan = detect.scan([str(root)], own_roots=[])
+    findings = detect.find_foreign(environ=env, sys_path=[], argv=list(argv), own_roots=[], scan=scan)
+    return detect.tool(findings, scan.dists, env)
+
+
+@pytest.mark.parametrize(
+    ("dists", "tool"),
+    [
+        (("ddtrace-4.16.1",), ("datadog", "4.16.1", None)),
+        (("traceloop_sdk-0.46.0", "opentelemetry_instrumentation_openai-0.62.4"), ("traceloop", "0.46.0", None)),
+        (("langfuse-3.2.1",), ("langfuse", "3.2.1", None)),
+        (("openlit-1.34.0",), ("openlit", "1.34.0", None)),
+        (("logfire-4.3.0",), ("logfire", "4.3.0", None)),
+        (("arize_phoenix_otel-0.13.0",), ("phoenix", "0.13.0", None)),
+        (("arize_otel-0.10.0",), ("arize-ax", "0.10.0", None)),
+        (("newrelic-11.0.1",), ("newrelic", "11.0.1", None)),
+        (("splunk_opentelemetry-2.7.0",), ("splunk-otel", "2.7.0", None)),
+        (("honeycomb_opentelemetry-0.6.0",), ("honeycomb", "0.6.0", None)),
+        (("elastic_opentelemetry-1.4.0",), ("elastic-edot", "1.4.0", None)),
+    ],
+)
+def test_a_tracer_names_its_tool_by_the_span_source_id_and_its_version(tmp_path, dists, tool):
+    assert named(tmp_path, *dists) == detect.Tool(*tool)
+
+
+@pytest.mark.parametrize(
+    ("argv", "dists", "tool"),
+    [
+        (("ddtrace-run", "python", "app.py"), ("ddtrace-4.16.1",), ("datadog", "4.16.1", None)),
+        (("newrelic-admin", "run-program"), (), ("newrelic", None, None)),
+        (("splunk-py-trace", "python"), (), ("splunk-otel", None, None)),
+        (("opentelemetry-instrument", "uvicorn"), ("opentelemetry_sdk-1.45.2",), ("opentelemetry", "1.45.2", None)),
+    ],
+)
+def test_a_launcher_names_its_tool(tmp_path, argv, dists, tool):
+    assert named(tmp_path, *dists, argv=argv) == detect.Tool(*tool)
+
+
+def test_a_tracer_found_by_its_module_alone_names_its_tool_without_a_version(tmp_path):
+    assert named(tmp_path, modules=("ddtrace",)) == detect.Tool("datadog")
+
+
+@pytest.mark.parametrize(
+    "dists",
+    [
+        ("agentops-0.4.21",),
+        ("opentelemetry_instrumentation_openai-0.62.4",),  # OpenLLMetry's instrumentation alone: several tools start it
+        ("openinference_instrumentation_openai-0.1.30",),
+        ("elastic_apm-6.24.0",),
+    ],
+)
+def test_a_tracer_of_no_known_tool_names_none(tmp_path, dists):
+    assert named(tmp_path, *dists) is None
+
+
+def test_no_finding_names_no_tool(tmp_path):
+    assert named(tmp_path, "openai-3.42.1", "langsmith-0.14.17") is None
+
+
+@pytest.mark.parametrize(
+    ("environ", "exporter"),
+    [
+        ({"OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf"}, "otlp-http"),
+        ({"OTEL_EXPORTER_OTLP_PROTOCOL": "http/json"}, "otlp-http"),
+        ({"OTEL_EXPORTER_OTLP_PROTOCOL": "grpc"}, "otlp-grpc"),
+        ({"OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf", "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL": "grpc"}, "otlp-grpc"),
+        ({"OTEL_TRACES_EXPORTER": "zipkin", "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc"}, "zipkin"),
+        ({"OTEL_TRACES_EXPORTER": "Console"}, "console"),
+        ({"OTEL_TRACES_EXPORTER": "otlp", "OTEL_EXPORTER_ZIPKIN_ENDPOINT": "http://zipkin:9411"}, "zipkin"),
+        ({}, None),  # set up in code, or the SDK's default: not shown by the settings
+        ({"OTEL_EXPORTER_OTLP_PROTOCOL": "carrier-pigeon"}, None),
+        ({"OTEL_TRACES_EXPORTER": "none"}, None),
+    ],
+)
+def test_an_opentelemetry_pipeline_names_its_exporter_kind_and_never_a_value(tmp_path, environ, exporter):
+    tool = named(tmp_path, argv=("opentelemetry-instrument", "uvicorn"), environ=environ)
+    assert tool == detect.Tool("opentelemetry", None, exporter)
+
+
+def test_the_workloads_own_pipeline_names_opentelemetry(tmp_path):
+    env = {**KIT_ENV, "OTEL_EXPORTER_OTLP_ENDPOINT": "http://collector:4317", "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc"}
+    tool = named(tmp_path, "opentelemetry_sdk-1.45.2", environ=env)
+    assert tool == detect.Tool("opentelemetry", "1.45.2", "otlp-grpc")
+
+
+def test_the_first_finding_that_shows_a_tool_names_it(tmp_path):
+    env = {**KIT_ENV, "OTEL_EXPORTER_OTLP_ENDPOINT": "http://collector:4318"}
+    tool = named(tmp_path, "agentops-0.4.21", "ddtrace-4.16.1", "opentelemetry_sdk-1.45.2", environ=env)
+    assert tool == detect.Tool("datadog", "4.16.1")
+
+
+@pytest.mark.parametrize("version", ["1.0 beta", "x" * 65, "-1", "1.0\n", "é1"])
+def test_a_version_impact_ai_would_not_keep_is_left_out(tmp_path, version):
+    findings = [detect.Finding("distribution", "openlit", version)]
+    assert detect.tool(findings, {"openlit": version}, {}) == detect.Tool("openlit")

@@ -1,5 +1,5 @@
 {{- /* SPDX-License-Identifier: Apache-2.0 */ -}}
-impact.ai cluster kit {{ .Chart.Version }} is installed in namespace {{ .Release.Namespace }}.
+Impact AI cluster kit {{ .Chart.Version }} is installed in namespace {{ .Release.Namespace }}.
 
 Cluster ID : {{ include "cluster-kit.clusterUID" . }}
 Product    : {{ .Values.product.id }}

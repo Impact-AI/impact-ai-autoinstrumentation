@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""AE-10: the key is revoked, the customer installs again with a new one, and snapshots and traces resume.
+"""A new key: the key is revoked, the customer installs again with a new one, and snapshots and traces resume.
 
 Cover your AI mints a new key for a reinstall. `helm upgrade --install` with it must replace the gateway and the
 reporter, which read the key when they start, so that nobody has to delete a pod to get the cluster reporting again.
@@ -27,7 +27,7 @@ def refused_routes(world, since: int) -> set[str]:
     return {r["path"] for r in world.mock.requests(since=since) if r.get("status") == 401}
 
 
-def test_ae10_reinstalling_with_a_new_key_resumes_snapshots_and_spans(world):
+def test_reinstalling_with_a_new_key_resumes_snapshots_and_spans(world):
     gateway, reporter = live_pods("gateway"), live_pods("reporter")
     assert len(gateway) == len(reporter) == 1
     try:

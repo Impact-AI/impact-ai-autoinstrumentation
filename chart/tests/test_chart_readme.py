@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
-"""The figures and names the chart README states are the ones the chart renders.
+"""The figures and names the chart README and the documentation pages state are the ones the chart renders.
 
-A reviewer reads the README first. A number that drifted from the chart is a claim that stopped being true, so the
-requests, ports, user IDs, annotation keys and the gateway queue it names are read from the render and from the code
-here, and a limit it promised to state cannot be deleted without this file failing.
+A reviewer reads the README first, then the pages under docs/ it links to. A number that drifted from the chart is a
+claim that stopped being true, so the requests, ports, user IDs, annotation keys and the gateway queue they name are
+read from the render and from the code here, and a limit they promised to state cannot be deleted without this file
+failing.
 """
 
 from __future__ import annotations
@@ -15,7 +16,9 @@ import yaml
 from test_chart import CHART, find, pod_specs, render
 
 ROOT = CHART.parents[1]
-README = (CHART / "README.md").read_text()
+# The chart README and the pages it links to, read as one text: a fact may move between them, never out of them.
+README = "\n".join(path.read_text() for path in [CHART / "README.md", *sorted((ROOT / "docs").glob("*.md"))])
+FAILURE_MODES = (ROOT / "docs" / "failure-modes.md").read_text()
 TOKEN = "impactinstall_e2e_" + "AbCdEfGhIjKlMnOpQrStUvWxYz0123456789-_AbCdE"
 WITH_TOKEN = ("ingest.key=", f"install.token={TOKEN}")
 
@@ -145,7 +148,22 @@ def test_the_gateway_queue_the_readme_describes_is_the_one_configured():
     exporter = configuration["exporters"]["otlp_http"]
     assert exporter["sending_queue"] == {"enabled": True, "queue_size": 2000}
     assert exporter["retry_on_failure"]["max_elapsed_time"] == "120s"
-    assert "(2,000 batches)" in README and "up to 120 seconds" in README
+    # the one exporter serves both pipelines, and the Collector makes a queue of that size for each signal (read from
+    # the pinned Collector's own metrics in python/tests/image/test_kit_gateway_logs.py)
+    assert sorted(configuration["service"]["pipelines"]) == ["logs", "traces"]
+    flat = " ".join(README.split())
+    assert "each in a queue in memory (2,000 batches each)" in flat and "up to 120 seconds" in flat
+
+
+def test_the_log_endpoint_the_readme_gives_is_the_one_the_gateway_listens_on():
+    documents = render()
+    env = {e["name"]: e.get("value") for e in find(documents, "Instrumentation")["spec"]["python"]["env"]}
+    assert f"OTEL_EXPORTER_OTLP_LOGS_ENDPOINT={env['IMPACT_OTLP_ENDPOINT']}/v1/logs" in README
+    # OTLP over HTTP on 4318 and nothing else, as the README says: no gRPC port
+    assert {port["port"] for port in find(documents, "Service", "impact-ai-gateway")["spec"]["ports"]} == {4318}
+    receiver = yaml.safe_load(find(documents, "ConfigMap", "impact-ai-gateway")["data"]["config.yaml"])["receivers"]
+    assert receiver == {"otlp": {"protocols": {"http": {"endpoint": "0.0.0.0:4318"}}}}
+    assert "OTLP over HTTP, protobuf or JSON, on port 4318" in " ".join(README.split())
 
 
 def test_the_annotations_the_readme_says_the_cover_pod_may_add_are_the_five_it_may():
@@ -176,11 +194,12 @@ STATED = (
     "kubectl apply --server-side",
     "masterIpv4CidrBlock",
     "pkg-containers.githubusercontent.com",
-    "OpenShift: planned",
+    "OpenShift is not supported",
     "fs.inotify.max_user_instances",
     "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=NO_CONTENT",
     "query string",
     "impact.ai/opt-out",
+    "impact.ai/trust-caller-baggage",
     "namespaces.include",
     "cover.enabled=false",
     "Helm 3.18",
@@ -189,6 +208,8 @@ STATED = (
     "Linux nodes",
     "operator.imagePullSecrets",
     "--collector-image",
+    "oras cp -r <src> <dst>",
+    "PowerShell and cmd have no `/dev/stdin`",
     "No long-lived role of the kit reads a Secret",
     "KSV-0113",
     "Where the token can be read",
@@ -200,6 +221,10 @@ STATED = (
     "automatic coverage needs the matching impact.ai release",
     "It writes to no pod",
     "`cover.timeoutSeconds`",
+    "log events to `<ingest.endpoint>/v1/logs`",
+    "## Log events",
+    "The gateway forwards every log record it receives",
+    "The kit's packages send no log records",
 )
 
 
@@ -213,18 +238,18 @@ def test_the_readme_states_every_limit_it_promised():
 # the cases it says it does not run are the ones no test makes: they follow from the webhook settings and the init
 # container.
 RUN_IN_THE_SUITE = {
-    "the Operator down": "test_ae7_the_operator_down",
+    "the Operator down": "test_the_operator_down",
     "the cover pod down": "with_the_cover_pod_down",
-    "ingest down": "test_ae7_ingest_down",
-    "a revoked key": "test_ae7_a_revoked_key",
-    "an image that cannot be pulled": "test_ae7_the_injected_image_cannot_be_pulled",
+    "ingest down": "test_ingest_down",
+    "a revoked key": "test_a_revoked_key",
+    "an image that cannot be pulled": "test_the_injected_image_cannot_be_pulled",
     "a policy that refuses the init container": "when_a_policy_refuses_the_injected_init_container",
 }
 NOT_RUN = ("a webhook that is slow", "cannot reach", "a copy that fails in the init container")
 
 
 def test_the_failure_table_says_which_cases_the_suite_runs_and_which_it_does_not():
-    flat = " ".join(README.split())
+    flat = " ".join(FAILURE_MODES.split())
     section = flat[flat.index("## When part of the kit is unavailable") :]
     sentence = section[: section.index("| What is unavailable")]
     assert "the end-to-end suite runs each case below" not in flat
@@ -232,7 +257,7 @@ def test_the_failure_table_says_which_cases_the_suite_runs_and_which_it_does_not
     suite = "".join(path.read_text() for path in (ROOT / "e2e").glob("test_*.py"))
     for case, test in RUN_IN_THE_SUITE.items():
         assert case in sentence, case
-        assert f"def {test}" in suite or test in suite, f"the README says the suite runs {case}: no test {test}"
+        assert f"def {test}" in suite or test in suite, f"the failure modes say the suite runs {case}: no test {test}"
     assert "are not run" in sentence
     for case in NOT_RUN:
         assert case in sentence, case
