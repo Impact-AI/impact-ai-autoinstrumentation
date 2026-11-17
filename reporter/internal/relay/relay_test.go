@@ -15,7 +15,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay/otlp"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay/otlp"
 )
 
 // planted is the fake key the reporter's tests plant to prove that no value is ever passed on.

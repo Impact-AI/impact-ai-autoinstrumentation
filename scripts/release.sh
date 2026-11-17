@@ -4,7 +4,7 @@
 # Publish a release: multi-architecture images (linux/amd64 and linux/arm64) with provenance and an SBOM, then the chart
 # with the images' digests written into it, and the overhead of the injected workloads measured by this very build.
 #
-#   REGISTRY=ghcr.io/Impact-AI/impact-ai-autoinstrumentation VERSION=v0.3.0 REGISTRY_USER=... REGISTRY_TOKEN=... make release
+#   REGISTRY=ghcr.io/Impact-AI/impact-autoinstrumentation VERSION=v0.3.0 REGISTRY_USER=... REGISTRY_TOKEN=... make release
 #
 # REGISTRY is the repository the release runs in (the workflow's ghcr.io/${{ github.repository }}, with the owner's
 # capitals): the host to log in to, and where the publish root comes from. The release pushes at the root of the
@@ -35,7 +35,7 @@
 # way a customer does (scripts/verify-release.sh). The workflow adds the build provenance of GitHub's artifact
 # attestations afterwards, from the digests in build/release/*.digest.
 #
-# A release is made in one place: the release workflow of the public repository, Impact-AI/impact-ai-autoinstrumentation, on a tree that
+# A release is made in one place: the release workflow of the public repository, Impact-AI/impact-autoinstrumentation, on a tree that
 # scripts/publish-public.sh put there. A tag in the development repository starts the same workflow, and this script
 # would push the images and the chart under that organisation's name, so it refuses, before it builds anything, to run
 # where GITHUB_REPOSITORY is not the public repository. RELEASE_REHEARSAL=1 lifts that for a rehearsal against a registry of
@@ -56,7 +56,7 @@ if [ "${RELEASE_REHEARSAL:-}" != 1 ] && [ -z "${INSECURE_REGISTRY:-}" ] && [ "${
   exit 1
 fi
 
-: "${REGISTRY:?REGISTRY is required, for example ghcr.io/Impact-AI/impact-ai-autoinstrumentation}"
+: "${REGISTRY:?REGISTRY is required, for example ghcr.io/Impact-AI/impact-autoinstrumentation}"
 : "${VERSION:?VERSION is required, for example v0.3.0}"
 : "${REGISTRY_USER:?REGISTRY_USER is required}"
 : "${REGISTRY_TOKEN:?REGISTRY_TOKEN is required}"

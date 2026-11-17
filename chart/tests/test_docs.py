@@ -20,7 +20,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 CHART = ROOT / "chart" / "impact-ai"
-REPOSITORY = "https://github.com/Impact-AI/impact-ai-autoinstrumentation/blob/main/"
+REPOSITORY = "https://github.com/Impact-AI/impact-autoinstrumentation/blob/main/"
 SWITCH = "OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=NO_CONTENT"
 INLINE = re.compile(r"\]\(([^)\s]+)\)")
 REFERENCE = re.compile(r"^\[[^\]]+\]:\s*(\S+)", re.MULTILINE)

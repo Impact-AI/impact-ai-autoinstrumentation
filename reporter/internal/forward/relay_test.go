@@ -11,9 +11,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay"
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay/otlp"
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay/relaytest"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay/otlp"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay/relaytest"
 )
 
 // Every relay source's recorded requests, sent through a relay route: each reaches the backend byte for byte with its

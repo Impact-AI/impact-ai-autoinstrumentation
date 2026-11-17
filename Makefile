@@ -218,7 +218,7 @@ release-files: ## the files of VERSION's GitHub release, after make release: the
 github-release: ## publish VERSION's GitHub release from a draft with the files of make release-files (PROVENANCE_BUNDLE adds the build provenance); needs GH_TOKEN allowed to write contents
 	scripts/github-release.sh publish "$$VERSION"
 
-verify-release: ## check a published release (VERSION=vX.Y.Z; REGISTRY, default ghcr.io/Impact-AI/impact-ai-autoinstrumentation): cosign signatures against the release workflow's identity, SBOMs, GitHub build provenance (needs cosign, helm, gh)
+verify-release: ## check a published release (VERSION=vX.Y.Z; REGISTRY, default ghcr.io/Impact-AI/impact-autoinstrumentation): cosign signatures against the release workflow's identity, SBOMs, GitHub build provenance (needs cosign, helm, gh)
 	scripts/verify-release.sh
 
 lock: ## resolve python/requirements.in into python/requirements.lock with hashes

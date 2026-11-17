@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay/otlp"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay/otlp"
 )
 
 // newrelicSpanKeys are the span event attributes that already have an OpenTelemetry semantic convention outside GenAI,

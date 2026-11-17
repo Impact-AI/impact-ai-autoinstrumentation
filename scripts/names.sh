@@ -9,7 +9,7 @@
 #            <root>/kubernetes-reporter
 #
 # <root> is the registry and the owner, at the root of the organisation: ghcr.io/impact-ai. A registry reference names the
-# repository the release runs in, with the owner's capitals (ghcr.io/Impact-AI/impact-ai-autoinstrumentation, which is what GitHub's
+# repository the release runs in, with the owner's capitals (ghcr.io/Impact-AI/impact-autoinstrumentation, which is what GitHub's
 # workflows call ghcr.io/${{ github.repository }}), and an image reference has to be lowercase. So the root is the registry
 # host and the lowercased owner of REGISTRY, unless PUBLISH_ROOT says otherwise.
 # shellcheck shell=bash
@@ -18,7 +18,7 @@ CHART_NAME=impact-ai
 
 # The repository releases are made in: its release workflow runs make release, on a tree that scripts/publish-public.sh put
 # there. release.sh refuses to run anywhere else (GITHUB_REPOSITORY, compared without regard to case).
-RELEASE_REPOSITORY=Impact-AI/impact-ai-autoinstrumentation
+RELEASE_REPOSITORY=Impact-AI/impact-autoinstrumentation
 
 # published_image <key>: the name an image is published under, for the key it has in the values of the chart
 published_image() {
@@ -45,7 +45,7 @@ publish_root() {
   fi
   case "$registry" in
     */*) ;;
-    *) echo "REGISTRY $registry has no owner: expected host/owner[/repository], for example ghcr.io/Impact-AI/impact-ai-autoinstrumentation" >&2; return 1 ;;
+    *) echo "REGISTRY $registry has no owner: expected host/owner[/repository], for example ghcr.io/Impact-AI/impact-autoinstrumentation" >&2; return 1 ;;
   esac
   rest="${registry#*/}"
   owner="${rest%%/*}"

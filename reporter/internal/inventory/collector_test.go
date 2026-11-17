@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/injector"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/injector"
 )
 
 func wl(s *Snapshot) []string { return keys(s) }

@@ -10,10 +10,10 @@ version: 0.0.0-dev
 appVersion: 0.0.0-dev
 kubeVersion: ">=1.27.0-0"
 keywords: [opentelemetry, observability, ai, llm]
-home: https://github.com/Impact-AI/impact-ai-autoinstrumentation
-icon: https://raw.githubusercontent.com/Impact-AI/impact-ai-autoinstrumentation/main/docs/images/impact-ai.png
+home: https://github.com/Impact-AI/impact-autoinstrumentation
+icon: https://raw.githubusercontent.com/Impact-AI/impact-autoinstrumentation/main/docs/images/impact-ai.png
 sources:
-  - https://github.com/Impact-AI/impact-ai-autoinstrumentation
+  - https://github.com/Impact-AI/impact-autoinstrumentation
 maintainers:
   - name: Impact AI
     url: https://github.com/Impact-AI
@@ -21,11 +21,11 @@ annotations:
   artifacthub.io/license: Apache-2.0
   artifacthub.io/links: |
     - name: Documentation
-      url: https://github.com/Impact-AI/impact-ai-autoinstrumentation/tree/main/docs
+      url: https://github.com/Impact-AI/impact-autoinstrumentation/tree/main/docs
     - name: Support
-      url: https://github.com/Impact-AI/impact-ai-autoinstrumentation/blob/main/SUPPORT.md
+      url: https://github.com/Impact-AI/impact-autoinstrumentation/blob/main/SUPPORT.md
     - name: Security policy
-      url: https://github.com/Impact-AI/impact-ai-autoinstrumentation/blob/main/SECURITY.md
+      url: https://github.com/Impact-AI/impact-autoinstrumentation/blob/main/SECURITY.md
 dependencies:
   # Vendored, pinned and reduced by scripts/vendor_operator_chart.py. No repository: it lives in charts/.
   - name: opentelemetry-operator

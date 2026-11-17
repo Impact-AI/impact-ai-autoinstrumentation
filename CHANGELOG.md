@@ -58,7 +58,7 @@ the [chart README](chart/impact-ai/README.md#upgrade) shows.
 - The Operator switches off every language it can inject other than Python and Node.js by name.
 - A release is published only from the public repository, and only after the end-to-end suite passed on the tagged
   commit. A final release can follow its release candidate on the same tree.
-- The public repository is `Impact-AI/impact-ai-autoinstrumentation` (it was `Impact-AI/impact-ai-k8s`). The signing
+- The public repository is `Impact-AI/impact-autoinstrumentation` (it was `Impact-AI/impact-ai-k8s`). The signing
   identity of a release is that repository's release workflow; the chart and image names under `ghcr.io/impact-ai` do
   not change. A release arrives there as a pull request that CI checks and a maintainer reviews, and is published only
   from a tag on main. Contributions are signed off (Developer Certificate of Origin) instead of a contributor agreement.

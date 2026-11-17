@@ -1,8 +1,8 @@
 # Impact AI auto-instrumentation
 
-[![ci](https://github.com/Impact-AI/impact-ai-autoinstrumentation/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Impact-AI/impact-ai-autoinstrumentation/actions/workflows/ci.yml)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Impact-AI/impact-ai-autoinstrumentation/badge)](https://scorecard.dev/viewer/?uri=github.com/Impact-AI/impact-ai-autoinstrumentation)
-[![release](https://img.shields.io/github/v/release/Impact-AI/impact-ai-autoinstrumentation)](https://github.com/Impact-AI/impact-ai-autoinstrumentation/releases)
+[![ci](https://github.com/Impact-AI/impact-autoinstrumentation/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Impact-AI/impact-autoinstrumentation/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Impact-AI/impact-autoinstrumentation/badge)](https://scorecard.dev/viewer/?uri=github.com/Impact-AI/impact-autoinstrumentation)
+[![release](https://img.shields.io/github/v/release/Impact-AI/impact-autoinstrumentation)](https://github.com/Impact-AI/impact-autoinstrumentation/releases)
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 A Helm chart that instruments the Python and Node.js workloads of a Kubernetes cluster that call AI models, without a
@@ -69,12 +69,12 @@ signed with cosign by the release workflow's identity, with signed SBOMs and Git
 version=<version>
 digest=$(helm pull oci://ghcr.io/impact-ai/charts/impact-ai --version "$version" 2>&1 | sed -n 's/^Digest: //p')
 cosign verify "ghcr.io/impact-ai/charts/impact-ai@$digest" \
-  --certificate-identity "https://github.com/Impact-AI/impact-ai-autoinstrumentation/.github/workflows/release.yml@refs/tags/v$version" \
+  --certificate-identity "https://github.com/Impact-AI/impact-autoinstrumentation/.github/workflows/release.yml@refs/tags/v$version" \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
 The images, the SBOMs and the provenance: [verify what you install](chart/impact-ai/README.md#verify-what-you-install).
-Each [GitHub release](https://github.com/Impact-AI/impact-ai-autoinstrumentation/releases) carries the chart package, the
+Each [GitHub release](https://github.com/Impact-AI/impact-autoinstrumentation/releases) carries the chart package, the
 SBOM of each image and platform, and `SHA256SUMS` with its cosign signature `SHA256SUMS.sigstore.json` and its build
 provenance; its notes give the command that checks them.
 This repository also builds a Java image, `autoinstrumentation-java`; releases do not publish it yet.

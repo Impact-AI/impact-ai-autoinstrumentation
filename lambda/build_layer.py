@@ -55,7 +55,7 @@ LIMITS = {
     "layers": 5,
     "environmentBytes": 4096,
 }
-PROJECT_URL = "https://github.com/Impact-AI/impact-ai-autoinstrumentation"
+PROJECT_URL = "https://github.com/Impact-AI/impact-autoinstrumentation"
 
 
 def archive_name(arch: str) -> str:

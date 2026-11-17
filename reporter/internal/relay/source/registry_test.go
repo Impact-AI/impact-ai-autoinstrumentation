@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay"
 )
 
 // Every registered source declares a valid id, name and headers, has the file of

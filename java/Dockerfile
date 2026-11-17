@@ -49,7 +49,7 @@ FROM docker.io/library/busybox:1.37@sha256:a7dbc319b1438115a207e11930dc4bb3e643d
 ARG VERSION=0.0.0-dev
 LABEL org.opencontainers.image.title="impact.ai Java auto-instrumentation" \
       org.opencontainers.image.description="OpenTelemetry Operator auto-instrumentation image for Java: the OpenTelemetry Java agent 2.33.1, cut to request roots and AI" \
-      org.opencontainers.image.source="https://github.com/Impact-AI/impact-ai-autoinstrumentation" \
+      org.opencontainers.image.source="https://github.com/Impact-AI/impact-autoinstrumentation" \
       org.opencontainers.image.version="${VERSION}"
 COPY --from=build --chmod=0644 /out/javaagent.jar /javaagent.jar
 # /licenses: ours, the upstream agent's (its own and those of everything it bundles, as it ships them), and BusyBox's.

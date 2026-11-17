@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/cover"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/cover"
 )
 
 const (

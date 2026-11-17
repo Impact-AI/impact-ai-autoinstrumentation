@@ -11,7 +11,7 @@ jobs:
   reviewed:
     # A release is published only from a commit that was reviewed and merged: the tag has to be on main, where only a
     # merged pull request puts it (scripts/publish-public.sh).
-    if: github.repository == 'Impact-AI/impact-ai-autoinstrumentation'
+    if: github.repository == 'Impact-AI/impact-autoinstrumentation'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -30,7 +30,7 @@ jobs:
     # once a day, not for each change; a release waits for it here. The cells of the Python qualification and the
     # overhead are make release's own. Only in the repository releases are made in: make release refuses to run anywhere
     # else.
-    if: github.repository == 'Impact-AI/impact-ai-autoinstrumentation'
+    if: github.repository == 'Impact-AI/impact-autoinstrumentation'
     permissions:
       contents: read
     uses: ./.github/workflows/ci.yml

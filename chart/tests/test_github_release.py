@@ -20,7 +20,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ("github-release.sh", "release_notes.py", "lib.sh", "names.sh")
-REPOSITORY = "Impact-AI/impact-ai-autoinstrumentation"
+REPOSITORY = "Impact-AI/impact-autoinstrumentation"
 DIGEST = "sha256:" + "a" * 64
 CHANGELOG = """# Changelog
 

@@ -19,7 +19,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay"
 )
 
 // DefaultMaxBatchBytes is the largest request body the gateway keeps for a copy. A larger one is forwarded whole and

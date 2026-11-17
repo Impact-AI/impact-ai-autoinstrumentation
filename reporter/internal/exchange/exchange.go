@@ -47,8 +47,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/kubesecret"
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/sender"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kubesecret"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/sender"
 )
 
 // Path is the ingest route of the exchange.

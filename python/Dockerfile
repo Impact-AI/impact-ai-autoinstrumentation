@@ -64,7 +64,7 @@ FROM docker.io/library/busybox:1.37@sha256:a7dbc319b1438115a207e11930dc4bb3e643d
 ARG VERSION=0.0.0+dev
 LABEL org.opencontainers.image.title="impact.ai Python auto-instrumentation" \
       org.opencontainers.image.description="OpenTelemetry Operator auto-instrumentation image for Python: GenAI content on the span" \
-      org.opencontainers.image.source="https://github.com/Impact-AI/impact-ai-autoinstrumentation" \
+      org.opencontainers.image.source="https://github.com/Impact-AI/impact-autoinstrumentation" \
       org.opencontainers.image.version="${VERSION}"
 COPY --from=merged /out/autoinstrumentation /autoinstrumentation
 COPY --from=merged /out/autoinstrumentation-musl /autoinstrumentation-musl

@@ -20,11 +20,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/inventory"
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/kube"
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/kubetest"
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/loop"
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/sender"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/inventory"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kube"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kubetest"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/loop"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/sender"
 )
 
 const (

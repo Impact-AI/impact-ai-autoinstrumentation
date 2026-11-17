@@ -17,7 +17,7 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay/otlp"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay/otlp"
 )
 
 // Request is the copy of a relayed request that a decoder reads. It never holds

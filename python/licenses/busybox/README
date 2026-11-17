@@ -3,4 +3,4 @@ binary of docker.io/library/busybox:1.37 (digest sha256:a7dbc319b1438115a207e119
 licensed under the GNU General Public License version 2 only (COPYING, next to this file).
 
 The corresponding source code is at https://busybox.net/downloads/busybox-1.37.0.tar.bz2 and, for as long as this release
-is supported and for at least three years after it, from Impact AI on request (https://github.com/Impact-AI/impact-ai-autoinstrumentation).
+is supported and for at least three years after it, from Impact AI on request (https://github.com/Impact-AI/impact-autoinstrumentation).

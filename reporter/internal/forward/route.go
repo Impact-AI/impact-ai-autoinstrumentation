@@ -22,8 +22,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay"
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay/source"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay/source"
 )
 
 // Protocol is how a route's workload exports.

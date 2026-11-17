@@ -12,8 +12,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay"
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay/otlp"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay/otlp"
 )
 
 // planted is the fake key testdata/example.recording.json carries in a header and in the query.

@@ -38,8 +38,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay"
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay/otlp"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay/otlp"
 )
 
 // Recording is a file of recorded requests.

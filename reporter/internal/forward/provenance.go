@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"math"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay/otlp"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay/otlp"
 )
 
 // A copy of an OTLP export says where its spans came from: every resource gets the attributes impact.source.id and

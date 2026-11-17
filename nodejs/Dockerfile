@@ -41,7 +41,7 @@ FROM docker.io/library/busybox:1.37@sha256:a7dbc319b1438115a207e11930dc4bb3e643d
 ARG VERSION=0.0.0+dev
 LABEL org.opencontainers.image.title="impact.ai Node.js auto-instrumentation" \
       org.opencontainers.image.description="OpenTelemetry Operator auto-instrumentation image for Node.js: model calls on the span, content included" \
-      org.opencontainers.image.source="https://github.com/Impact-AI/impact-ai-autoinstrumentation" \
+      org.opencontainers.image.source="https://github.com/Impact-AI/impact-autoinstrumentation" \
       org.opencontainers.image.version="${VERSION}"
 COPY --from=payload /out/autoinstrumentation /autoinstrumentation
 # /licenses: ours, the generated nodejs/ (every bundled package's own files and the index), and BusyBox's.

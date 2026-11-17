@@ -35,7 +35,7 @@ from pathlib import Path
 
 DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 # Where the chart README links to the documents of the public repository (scripts/names.sh, RELEASE_REPOSITORY).
-DOCUMENTS = "https://github.com/Impact-AI/impact-ai-autoinstrumentation/blob/"
+DOCUMENTS = "https://github.com/Impact-AI/impact-autoinstrumentation/blob/"
 SEMVER = re.compile(r"^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$")
 
 

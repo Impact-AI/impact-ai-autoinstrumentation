@@ -4,7 +4,7 @@
 
 Please report a vulnerability privately, not as a public issue:
 
-* In GitHub: [Report a vulnerability](https://github.com/Impact-AI/impact-ai-autoinstrumentation/security/advisories/new), under
+* In GitHub: [Report a vulnerability](https://github.com/Impact-AI/impact-autoinstrumentation/security/advisories/new), under
   the Security tab of this repository.
 * By e-mail: security@impact.ai
 

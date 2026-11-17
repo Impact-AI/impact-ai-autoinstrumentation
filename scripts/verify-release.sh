@@ -8,7 +8,7 @@
 #
 #   VERSION=v0.3.0 scripts/verify-release.sh           (make verify-release)
 #
-# REGISTRY defaults to ghcr.io/Impact-AI/impact-ai-autoinstrumentation, the repository the release runs in, which is also where the
+# REGISTRY defaults to ghcr.io/Impact-AI/impact-autoinstrumentation, the repository the release runs in, which is also where the
 # signing identity comes from (REPOSITORY overrides it). The chart and the images are looked for under the publish root:
 # the registry host and the lowercased owner, ghcr.io/impact-ai (PUBLISH_ROOT overrides it; scripts/names.sh). Needs helm,
 # cosign and, for the provenance, the GitHub CLI signed in (GH_TOKEN). VERIFY_GITHUB_ATTESTATION=0 leaves the provenance
@@ -20,9 +20,9 @@ set -euo pipefail
 source "$(dirname "$0")/names.sh"
 
 : "${VERSION:?VERSION is required, for example v0.3.0}"
-REGISTRY="${REGISTRY:-ghcr.io/Impact-AI/impact-ai-autoinstrumentation}"
+REGISTRY="${REGISTRY:-ghcr.io/Impact-AI/impact-autoinstrumentation}"
 number="${VERSION#v}"
-repository="${REPOSITORY:-${REGISTRY#*/}}" # Impact-AI/impact-ai-autoinstrumentation
+repository="${REPOSITORY:-${REGISTRY#*/}}" # Impact-AI/impact-autoinstrumentation
 root="$(publish_root "$REGISTRY")"
 chart="oci://$root/charts/$CHART_NAME"
 plain=()

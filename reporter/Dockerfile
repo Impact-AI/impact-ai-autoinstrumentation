@@ -24,7 +24,7 @@ FROM gcr.io/distroless/static:nonroot@sha256:25ac8f0c3b2334a9eb05452266bd4697864
 ARG VERSION=dev
 LABEL org.opencontainers.image.title="impact.ai cluster reporter" \
       org.opencontainers.image.description="Reports a cluster's workloads by name (never values) to impact.ai" \
-      org.opencontainers.image.source="https://github.com/Impact-AI/impact-ai-autoinstrumentation" \
+      org.opencontainers.image.source="https://github.com/Impact-AI/impact-autoinstrumentation" \
       org.opencontainers.image.version="${VERSION}"
 COPY --from=build /out/reporter /reporter
 COPY --from=build /out/licenses/go /licenses/go

@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/kubetest"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kubetest"
 )
 
 var update = flag.Bool("update", false, "rewrite testdata/golden-snapshot.json")

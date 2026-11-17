@@ -130,14 +130,14 @@ runs the same checks ([`scripts/verify-release.sh`][verify-script]).
 version=<version>   # the chart version, for example the one helm list shows
 registry=ghcr.io/impact-ai
 chart=oci://$registry/charts/impact-ai
-identity="https://github.com/Impact-AI/impact-ai-autoinstrumentation/.github/workflows/release.yml@refs/tags/v$version"
+identity="https://github.com/Impact-AI/impact-autoinstrumentation/.github/workflows/release.yml@refs/tags/v$version"
 issuer=https://token.actions.githubusercontent.com
 
 # The chart: its signature and its provenance, by the digest helm pulls.
 digest=$(helm pull "$chart" --version "$version" 2>&1 | sed -n 's/^Digest: //p')
 cosign verify "$registry/charts/impact-ai@$digest" --certificate-identity "$identity" --certificate-oidc-issuer "$issuer"
-gh attestation verify "oci://$registry/charts/impact-ai@$digest" --repo Impact-AI/impact-ai-autoinstrumentation \
-  --signer-workflow Impact-AI/impact-ai-autoinstrumentation/.github/workflows/release.yml
+gh attestation verify "oci://$registry/charts/impact-ai@$digest" --repo Impact-AI/impact-autoinstrumentation \
+  --signer-workflow Impact-AI/impact-autoinstrumentation/.github/workflows/release.yml
 
 # The digests of the images are in the signed chart:
 helm show values "$chart" --version "$version" |
@@ -147,8 +147,8 @@ helm show values "$chart" --version "$version" |
 # autoinstrumentation-nodejs and kubernetes-reporter): the signature, the signed bill of materials, the provenance.
 cosign verify "$registry/autoinstrumentation-python@<digest>" --certificate-identity "$identity" --certificate-oidc-issuer "$issuer"
 cosign verify-attestation --type spdxjson "$registry/autoinstrumentation-python@<digest>" --certificate-identity "$identity" --certificate-oidc-issuer "$issuer"
-gh attestation verify "oci://$registry/autoinstrumentation-python@<digest>" --repo Impact-AI/impact-ai-autoinstrumentation \
-  --signer-workflow Impact-AI/impact-ai-autoinstrumentation/.github/workflows/release.yml
+gh attestation verify "oci://$registry/autoinstrumentation-python@<digest>" --repo Impact-AI/impact-autoinstrumentation \
+  --signer-workflow Impact-AI/impact-autoinstrumentation/.github/workflows/release.yml
 ```
 
 An admission policy that enforces signatures (Kyverno `verifyImages`, the Sigstore policy-controller) takes the same
@@ -269,14 +269,14 @@ ends at once, so `helm uninstall` of it is quick.
 
 In a released chart these links point at the tag of that release; in this repository they point at `main`.
 
-[install]: https://github.com/Impact-AI/impact-ai-autoinstrumentation/blob/main/docs/install.md
-[injection]: https://github.com/Impact-AI/impact-ai-autoinstrumentation/blob/main/docs/how-injection-works.md
-[coexistence]: https://github.com/Impact-AI/impact-ai-autoinstrumentation/blob/main/docs/coexistence.md
-[leaves]: https://github.com/Impact-AI/impact-ai-autoinstrumentation/blob/main/docs/what-leaves-the-cluster.md
-[failures]: https://github.com/Impact-AI/impact-ai-autoinstrumentation/blob/main/docs/failure-modes.md
-[security]: https://github.com/Impact-AI/impact-ai-autoinstrumentation/blob/main/docs/security-model.md
-[troubleshooting]: https://github.com/Impact-AI/impact-ai-autoinstrumentation/blob/main/docs/troubleshooting.md
-[compatibility]: https://github.com/Impact-AI/impact-ai-autoinstrumentation/blob/main/docs/compatibility.md
-[changelog]: https://github.com/Impact-AI/impact-ai-autoinstrumentation/blob/main/CHANGELOG.md
-[verify-script]: https://github.com/Impact-AI/impact-ai-autoinstrumentation/blob/main/scripts/verify-release.sh
-[uninstall-script]: https://github.com/Impact-AI/impact-ai-autoinstrumentation/blob/main/scripts/uninstall-cluster-kit.sh
+[install]: https://github.com/Impact-AI/impact-autoinstrumentation/blob/main/docs/install.md
+[injection]: https://github.com/Impact-AI/impact-autoinstrumentation/blob/main/docs/how-injection-works.md
+[coexistence]: https://github.com/Impact-AI/impact-autoinstrumentation/blob/main/docs/coexistence.md
+[leaves]: https://github.com/Impact-AI/impact-autoinstrumentation/blob/main/docs/what-leaves-the-cluster.md
+[failures]: https://github.com/Impact-AI/impact-autoinstrumentation/blob/main/docs/failure-modes.md
+[security]: https://github.com/Impact-AI/impact-autoinstrumentation/blob/main/docs/security-model.md
+[troubleshooting]: https://github.com/Impact-AI/impact-autoinstrumentation/blob/main/docs/troubleshooting.md
+[compatibility]: https://github.com/Impact-AI/impact-autoinstrumentation/blob/main/docs/compatibility.md
+[changelog]: https://github.com/Impact-AI/impact-autoinstrumentation/blob/main/CHANGELOG.md
+[verify-script]: https://github.com/Impact-AI/impact-autoinstrumentation/blob/main/scripts/verify-release.sh
+[uninstall-script]: https://github.com/Impact-AI/impact-autoinstrumentation/blob/main/scripts/uninstall-cluster-kit.sh

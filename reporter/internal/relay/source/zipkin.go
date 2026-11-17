@@ -26,8 +26,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay"
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay/otlp"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay/otlp"
 )
 
 // zipkinPath is the route a tracer reports spans to. A relay may be mounted under a prefix of the vendor's, so the

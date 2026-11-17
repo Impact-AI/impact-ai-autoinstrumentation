@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/kubetest"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kubetest"
 )
 
 const (

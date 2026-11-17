@@ -13,9 +13,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay"
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay/otlp"
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay/relaytest"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay/otlp"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay/relaytest"
 )
 
 // The recorded canonical interaction of the Python and Node.js agents decodes to its golden OTLP/JSON.

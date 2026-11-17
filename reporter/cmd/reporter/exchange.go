@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/exchange"
-	"github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/kubesecret"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/exchange"
+	"github.com/impact-ai/impact-autoinstrumentation/reporter/internal/kubesecret"
 )
 
 const (

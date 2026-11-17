@@ -223,7 +223,7 @@ def test_the_readme_shows_the_commands_the_release_is_verified_with():
         assert needle in readme, f"README: {needle}"
         assert needle in script, f"scripts/verify-release.sh: {needle}"
     assert 'cosign verify "$registry/charts/impact-ai@$digest" --certificate-identity "$identity"' in readme
-    assert "Impact-AI/impact-ai-autoinstrumentation/.github/workflows/release.yml" in readme
+    assert "Impact-AI/impact-autoinstrumentation/.github/workflows/release.yml" in readme
     assert 'cosign verify "$registry/autoinstrumentation-python@<digest>"' in readme
     assert "for image in python nodejs java reporter; do" in script  # every image the chart can carry, checked if there
     assert 'published_image "$image"' in script, "and each is looked for under the name it is published under"
@@ -292,7 +292,7 @@ def release_guard_marker() -> str:
     return re.search(r"grep -n '([^']+)' SECURITY\.md", (ROOT / "scripts" / "release.sh").read_text()).group(1)
 
 
-PUBLIC_REPOSITORY = "Impact-AI/impact-ai-autoinstrumentation"
+PUBLIC_REPOSITORY = "Impact-AI/impact-autoinstrumentation"
 
 
 def run_release_in_a_copy(tmp_path: Path, security: str, **env: str | None) -> tuple[subprocess.CompletedProcess, Path]:
@@ -385,7 +385,7 @@ def test_a_release_run_outside_github_actions_is_refused_too(tmp_path):
 
 @pytest.mark.parametrize(
     "repository",
-    [PUBLIC_REPOSITORY, "impact-ai/impact-ai-autoinstrumentation", "IMPACT-AI/IMPACT-AI-AUTOINSTRUMENTATION"],
+    [PUBLIC_REPOSITORY, "impact-ai/impact-autoinstrumentation", "IMPACT-AI/IMPACT-AUTOINSTRUMENTATION"],
 )
 def test_a_release_in_the_public_repository_gets_past_the_guard_whatever_the_case(tmp_path, repository):
     result, calls = run_release_in_a_copy(tmp_path, CLEAN, GITHUB_REPOSITORY=repository)
@@ -460,10 +460,10 @@ def bash_fails(code: str, **env: str) -> str:
     ("registry", "root"),
     [
         (
-            "ghcr.io/Impact-AI/impact-ai-autoinstrumentation",
+            "ghcr.io/Impact-AI/impact-autoinstrumentation",
             "ghcr.io/impact-ai",
         ),  # what ghcr.io/${{ github.repository }} is in the workflow
-        ("ghcr.io/impact-ai/impact-ai-autoinstrumentation", "ghcr.io/impact-ai"),
+        ("ghcr.io/impact-ai/impact-autoinstrumentation", "ghcr.io/impact-ai"),
         ("ghcr.io/Some-Owner/example", "ghcr.io/some-owner"),
         ("localhost:5000/Rehearsal", "localhost:5000/rehearsal"),
         ("localhost:5000/Rehearsal/some/path", "localhost:5000/rehearsal"),
@@ -475,7 +475,7 @@ def test_the_publish_root_is_the_registry_host_and_the_lowercased_owner(registry
 
 def test_an_explicit_publish_root_replaces_it_but_has_to_be_lowercase():
     mirror = "registry.example.test/mirror/"
-    root = bash('publish_root "ghcr.io/Impact-AI/impact-ai-autoinstrumentation"', PUBLISH_ROOT=mirror)
+    root = bash('publish_root "ghcr.io/Impact-AI/impact-autoinstrumentation"', PUBLISH_ROOT=mirror)
     assert root == "registry.example.test/mirror"
     assert "capitals" in bash_fails('publish_root "ghcr.io/x/y"', PUBLISH_ROOT="ghcr.io/Impact-AI")
 
@@ -496,7 +496,7 @@ def test_the_images_and_the_chart_are_published_under_their_public_names():
 
 
 def test_the_defaults_of_the_chart_are_where_the_release_in_the_public_repository_publishes():
-    root = bash('publish_root "ghcr.io/Impact-AI/impact-ai-autoinstrumentation"')
+    root = bash('publish_root "ghcr.io/Impact-AI/impact-autoinstrumentation"')
     images = yaml.safe_load((CHART / "values.yaml").read_text())["images"]
     for key in ("python", "nodejs", "reporter"):
         assert images[key]["repository"] == f"{root}/{bash(f'published_image {key}')}", key
@@ -518,9 +518,9 @@ def test_the_release_pushes_signs_and_verifies_under_the_publish_root_and_names_
 
 def test_the_signing_identity_is_the_release_workflow_of_the_public_repository():
     verify = (ROOT / "scripts" / "verify-release.sh").read_text()
-    assert 'REGISTRY="${REGISTRY:-ghcr.io/Impact-AI/impact-ai-autoinstrumentation}"' in verify
+    assert 'REGISTRY="${REGISTRY:-ghcr.io/Impact-AI/impact-autoinstrumentation}"' in verify
     assert "https://github.com/$repository/.github/workflows/release.yml@refs/tags/$VERSION" in verify
-    assert 'repository="${REPOSITORY:-${REGISTRY#*/}}" # Impact-AI/impact-ai-autoinstrumentation' in verify
+    assert 'repository="${REPOSITORY:-${REGISTRY#*/}}" # Impact-AI/impact-autoinstrumentation' in verify
 
 
 def test_stamping_can_set_where_the_images_are_pulled_from(tmp_path):

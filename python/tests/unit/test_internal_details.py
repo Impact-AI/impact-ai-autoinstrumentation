@@ -361,8 +361,8 @@ def test_the_checker_holds_no_pattern_for_any_organisation():
     [
         "ghcr.io/impact-ai/autoinstrumentation-python:0.2.2",
         "oci://ghcr.io/impact-ai/charts/impact-ai",
-        "https://github.com/Impact-AI/impact-ai-autoinstrumentation/security/advisories/new",
-        "Impact-AI/impact-ai-autoinstrumentation/.github/workflows/release.yml",
+        "https://github.com/Impact-AI/impact-autoinstrumentation/security/advisories/new",
+        "Impact-AI/impact-autoinstrumentation/.github/workflows/release.yml",
         "I-" + "1230",  # not an id of three digits
         "I-" + "12",
         "AI-" + "123",  # the letter has to stand alone
@@ -427,7 +427,7 @@ def test_the_check_can_scan_the_tree_of_another_repository(tmp_path, private_org
     published = tmp_path / "published"
     published.mkdir()
     subprocess.run(["git", "init", "-q", str(published)], check=True)  # noqa: S603, S607
-    (published / "README.md").write_text("see github.com/impact-ai/impact-ai-autoinstrumentation\n")
+    (published / "README.md").write_text("see github.com/impact-ai/impact-autoinstrumentation\n")
     arguments = ["--source", "--root", str(published), "--denylist", str(private_org_file)]
     assert check.main(arguments) == 0
     (published / "NOTES.md").write_text(f"built in {PRIVATE_ORG}/example-kit\n")

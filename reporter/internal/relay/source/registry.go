@@ -6,7 +6,7 @@
 // recorded requests into testdata/<id>/.
 package source
 
-import "github.com/impact-ai/impact-ai-autoinstrumentation/reporter/internal/relay"
+import "github.com/impact-ai/impact-autoinstrumentation/reporter/internal/relay"
 
 // All is every relay source's decoder, in the order of their ids. A new source
 // adds its file and one line here.

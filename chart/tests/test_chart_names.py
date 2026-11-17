@@ -148,8 +148,8 @@ def selectors(documents: list) -> dict:
 def test_the_chart_is_called_impact_ai_and_its_directory_has_the_same_name():
     chart = yaml.safe_load((CHART / "Chart.yaml").read_text())
     assert chart["name"] == "impact-ai" and CHART.name == "impact-ai"
-    assert chart["home"] == "https://github.com/Impact-AI/impact-ai-autoinstrumentation"
-    assert chart["sources"] == ["https://github.com/Impact-AI/impact-ai-autoinstrumentation"]
+    assert chart["home"] == "https://github.com/Impact-AI/impact-autoinstrumentation"
+    assert chart["sources"] == ["https://github.com/Impact-AI/impact-autoinstrumentation"]
 
 
 def test_the_images_are_published_under_their_public_names_at_the_root_of_the_organisation():
