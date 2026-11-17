@@ -63,11 +63,12 @@ def test_datadog_stub_does_not_accept_a_tls_default_older_than_12(monkeypatch, m
         minimum_version = minimum
 
         def load_cert_chain(self, *args):
-            pass
+            assert backend.tls is None
+            assert self.minimum_version == max(minimum, ssl.TLSVersion.TLSv1_2)
 
     class Server:
         def __init__(self, *args):
-            pass
+            assert backend.tls is context
 
         def serve_forever(self):
             pass

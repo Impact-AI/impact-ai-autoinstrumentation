@@ -104,13 +104,14 @@ def main() -> None:
     parser.add_argument("--cert", required=True)
     parser.add_argument("--key", required=True)
     args = parser.parse_args()
-    tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     # Establish the floor on every path, then retain a stricter system default.
-    minimum = tls.minimum_version
-    tls.minimum_version = ssl.TLSVersion.TLSv1_2
+    minimum = context.minimum_version
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
     if minimum > ssl.TLSVersion.TLSv1_2:
-        tls.minimum_version = minimum
-    tls.load_cert_chain(args.cert, args.key)
+        context.minimum_version = minimum
+    context.load_cert_chain(args.cert, args.key)
+    tls = context
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     server.daemon_threads = True
     server.serve_forever()
